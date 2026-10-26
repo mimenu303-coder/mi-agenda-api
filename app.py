@@ -1,8 +1,11 @@
 import sqlite3
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
 
+@app.route('/')
+def index():
+    return render_template('prueba.html')
 
 # Inicializar la base de datos SQLite simple
 def init_db():

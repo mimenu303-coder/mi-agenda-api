@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Probar API Agenda</title>
+</head>
+<body>
+    <h1>Registrar Contacto</h1>
+    <form id="contactoForm">
+        <label for="nombre">Nombre:</label><br>
+        <input type="text" id="nombre" name="nombre" required><br><br>
+
+        <label for="telefono">Teléfono:</label><br>
+        <input type="text" id="telefono" name="telefono" required><br><br>
+
+        <button type="submit">Enviar</button>
+    </form>
+
+    <pre id="resultado"></pre>
+
+    <script>
+        const form = document.getElementById('contactoForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nombre = document.getElementById('nombre').value;
+            const telefono = document.getElementById('telefono').value;
+
+            // Reemplaza esta URL con tu enlace de Render que termina en onrender.com
+            const urlApi = 'https://mi-agenda-api-6ke6.onrender.com/api/contactos';
+            try {
+                const response = await fetch(urlApi, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nombre, telefono })
+                });
+
+                const data = await response.json();
+                document.getElementById('resultado').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('resultado').textContent = 'Error: ' + error;
+            }
+        });
+    </script>
+</body>
+</html>
