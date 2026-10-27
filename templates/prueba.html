@@ -28,10 +28,6 @@
 
             // Reemplaza esta URL con tu enlace de Render que termina en onrender.com
             const urlApi = 'https://mi-agenda-api-6ke6.onrender.com/api/contactos';
-<<<<<<< HEAD
-=======
-
->>>>>>> bd11abf3301aa01b11a6bda91e1e08d1d6dbd71c
             try {
                 const response = await fetch(urlApi, {
                     method: 'POST',
@@ -44,6 +40,7 @@
 
                 const data = await response.json();
                 document.getElementById('resultado').textContent = JSON.stringify(data, null, 2);
+                setTimeout()={document.getElementById('resultado').textContent= data.mensaje;3000;};
                 if (data.mensaje) 
                    form.reset();                  
             } catch (error) {
