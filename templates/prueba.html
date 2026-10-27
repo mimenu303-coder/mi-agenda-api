@@ -39,11 +39,12 @@
                 });
 
                 const data = await response.json();
-                document.getElementById('resultado').textContent = JSON.stringify(data, null, 2);
-                setTimeout(()=>{document.getElementById('resultado').textContent= data.mensaje;},3000);
-
-                if (data.mensaje) 
-                   form.reset();                  
+                if (data.mensaje){
+                  //document.getElementById('resultado').textContent = JSON.stringify(data, null, 2); 
+                  document.getElementById('resultado').textContent = data.mensaje;
+                  form.reset();
+                  setTimeout(() => {document.getElementById('resultado').textContent = '';},3000); 
+                }                                     
             } catch (error) {
                 document.getElementById('resultado').textContent = 'Error: ' + error;
             }
