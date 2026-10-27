@@ -40,7 +40,7 @@
 
                 const data = await response.json();
                 if (data.mensaje){
-                  //document.getElementById('resultado').textContent = JSON.stringify(data, null, 2); 
+                  document.getElementById('resultado').textContent = JSON.stringify(data, null, 2); 
                   document.getElementById('resultado').textContent = data.mensaje;
                   form.reset();
                   setTimeout(() => {document.getElementById('resultado').textContent = '';},3000); 
