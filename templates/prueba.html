@@ -35,10 +35,13 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ nombre, telefono })
+
                 });
 
                 const data = await response.json();
                 document.getElementById('resultado').textContent = JSON.stringify(data, null, 2);
+                if (data.mensaje) 
+                   form.reset();                  
             } catch (error) {
                 document.getElementById('resultado').textContent = 'Error: ' + error;
             }
