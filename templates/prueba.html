@@ -44,8 +44,8 @@
                   document.getElementById('resultado').textContent = data.mensaje;
                   form.reset();
                   setTimeout(() => {document.getElementById('resultado').textContent = '';},3000); 
-                  confirm("Deseas continuar creando mas CONTACTOS");
-                }                                     
+                } 
+                confirm("Deseas continuar creando mas CONTACTOS");                                    
             } catch (error) {
                 document.getElementById('resultado').textContent = 'Error: ' + error;
             }
