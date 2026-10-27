@@ -43,7 +43,7 @@
                   document.getElementById('resultado').textContent = JSON.stringify(data, null, 2); 
                   document.getElementById('resultado').textContent = data.mensaje;
                   form.reset();
-                  setTimeout(() => {document.getElementById('resultado').textContent = '';confirm("Deseas continuar creando mas CONTACTOS");},3000); 
+                  setTimeout(() => {confirm("Deseas continuar creando mas CONTACTOS"); document.getElementById('resultado').textContent = '';},3000); 
                 } 
                                                     
             } catch (error) {
