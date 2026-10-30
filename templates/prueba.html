@@ -19,6 +19,16 @@
     <pre id="resultado"></pre>
 
     <script>
+        let urlApi;
+
+        // Verificamos si estamos en entorno local
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '') {
+            // URL para cuando pruebas en tu computadora
+            urlApi = 'http://127.0.0.1:5000/api/contactos';
+        } else {
+            // URL para cuando la app esté publicada en la nube
+            urlApi = 'https://mi-agenda-api-6ke6.onrender.com/api/contactos';
+        }
         const form = document.getElementById('contactoForm');
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -26,8 +36,9 @@
             const nombre = document.getElementById('nombre').value;
             const telefono = document.getElementById('telefono').value;
 
-            // Reemplaza esta URL con tu enlace de Render que termina en onrender.com
-            const urlApi = 'https://mi-agenda-api-6ke6.onrender.com/api/contactos';
+            // Reemplaza esta URL con tu enlace de Render que termina en onrender.com para que solo funcione en la nuebe
+            // const urlApi = 'https://mi-agenda-api-6ke6.onrender.com/api/contactos';
+            
             try {
                 const response = await fetch(urlApi, {
                     method: 'POST',
