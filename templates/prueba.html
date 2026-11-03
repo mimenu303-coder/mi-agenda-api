@@ -12,7 +12,31 @@
 
         <label for="telefono">Teléfono:</label><br>
         <input type="text" id="telefono" name="telefono" required><br><br>
-
+        <label for="Fenaci">Fecha de Nacimiento:</label><br>
+        <input type="text" id="Fenaci" name="Fenaci" required><br><br>      
+        <label for="Sexo">Sexo</label><br>
+        <input type="radio" id="M" name="Sexo" value="Masculino">
+        <label for="Sexo">Masculino</label><br>
+        <input type="radio" id="F" name="Sexo" value="Femenino">
+        <label for="Sexo">Femenino</label>
+        <label for="Peso">Peso:</label><br>
+        <input type="text" id="Peso" name="Peso" required><br><br>         
+        <label for="Talla">Talla:</label><br>
+        <input type="text" id="Talla" name="Talla" required><br><br>  
+        <label for="TipoTriaje">Seleccione Tipo de Triaje:</label>
+        <input list="TipoTriaje" name="TipoTriaje" id="TipoTriaje" placeholder="Haga click...">
+        <datalist id="TipoTriaje">
+         <option value="IM">
+         <option value="EV">
+         <option value="Nebulizacion">
+         <option value="Tratamiento">
+         <option value="Sin Tratamiento">
+         <option value="Suturas">
+         <option value="Lavado Nasal">
+         <option value="Lavado Oido">
+         <option value="Curas Realizadas">    
+        </datalist>
+        
         <button type="submit">Enviar</button>
     </form><br><br>
     <label>Aqui va el Resultado </label><br>
