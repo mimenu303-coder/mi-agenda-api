@@ -67,7 +67,6 @@
             const telefono = document.getElementById('telefono').value;
             const fenaci = document.getElementById('Fenaci').value;
             
-            // Para los radio buttons de sexo, obtenemos el que esté seleccionado
             const sexoSeleccionado = document.querySelector('input[name="Sexo"]:checked');
             const sexo = sexoSeleccionado ? sexoSeleccionado.value : '';
 
@@ -75,13 +74,15 @@
             const talla = document.getElementById('Talla').value;
             const tipoTriaje = document.getElementById('inputTriaje').value;
 
+            // Obtenemos automáticamente la fecha del día en formato YYYY-MM-DD
+            const fechaRegistro = new Date().toISOString().split('T')[0];
+
             try {
                 const response = await fetch(urlApi, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    // Enviamos todos los campos requeridos por la API
                     body: JSON.stringify({ 
                         nombre, 
                         telefono, 
@@ -89,7 +90,8 @@
                         sexo, 
                         peso, 
                         talla, 
-                        tipoTriaje 
+                        tipoTriaje,
+                        fecha_registro: fechaRegistro // Enviamos la fecha del día
                     })
                 });
 
