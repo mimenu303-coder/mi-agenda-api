@@ -12,34 +12,40 @@
 
         <label for="telefono">Teléfono:</label><br>
         <input type="text" id="telefono" name="telefono" required><br><br>
+
         <label for="Fenaci">Fecha de Nacimiento:</label><br>
-        <input type="text" id="Fenaci" name="Fenaci" required><br><br>      
-        <label for="Sexo">Sexo</label><br>
-        <input type="radio" id="M" name="Sexo" value="Masculino">
-        <label for="Sexo">Masculino</label><br>
+        <input type="date" id="Fenaci" name="Fenaci" required><br><br>     
+       
+        <label>Sexo:</label><br>
+        <input type="radio" id="M" name="Sexo" value="Masculino" required>
+        <label for="M">Masculino</label><br>
         <input type="radio" id="F" name="Sexo" value="Femenino">
-        <label for="Sexo">Femenino</label>
-        <label for="Peso">Peso:</label><br>
-        <input type="text" id="Peso" name="Peso" required><br><br>         
-        <label for="Talla">Talla:</label><br>
-        <input type="text" id="Talla" name="Talla" required><br><br>  
-        <label for="TipoTriaje">Seleccione Tipo de Triaje:</label>
-        <input list="TipoTriaje" name="TipoTriaje" id="TipoTriaje" placeholder="Haga click...">
-        <datalist id="TipoTriaje">
-         <option value="IM">
-         <option value="EV">
-         <option value="Nebulizacion">
-         <option value="Tratamiento">
-         <option value="Sin Tratamiento">
-         <option value="Suturas">
-         <option value="Lavado Nasal">
-         <option value="Lavado Oido">
-         <option value="Curas Realizadas">    
+        <label for="F">Femenino</label><br><br>
+
+        <label for="Peso">Peso (kg):</label><br>
+        <input type="number" step="0.01" id="Peso" name="Peso" required><br><br>         
+       
+        <label for="Talla">Talla (m):</label><br>
+        <input type="number" step="0.01" id="Talla" name="Talla" required><br><br>  
+
+        <label for="inputTriaje">Seleccione Tipo de Triaje:</label><br>
+        <input list="listaTriaje" name="TipoTriaje" id="inputTriaje" placeholder="Haga click..." required><br><br>
+        <datalist id="listaTriaje">
+            <option value="IM">
+            <option value="EV">
+            <option value="Nebulizacion">
+            <option value="Tratamiento">
+            <option value="Sin Tratamiento">
+            <option value="Suturas">
+            <option value="Lavado Nasal">
+            <option value="Lavado Oido">
+            <option value="Curas Realizadas">    
         </datalist>
         
         <button type="submit">Enviar</button>
     </form><br><br>
-    <label>Aqui va el Resultado </label><br>
+
+    <label>Aquí va el Resultado:</label><br>
     <pre id="resultado"></pre>
 
     <script>
@@ -47,42 +53,61 @@
 
         // Verificamos si estamos en entorno local
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '') {
-            // URL para cuando pruebas en tu computadora
             urlApi = 'http://127.0.0.1:5000/api/contactos';
         } else {
-            // URL para cuando la app esté publicada en la nube
             urlApi = 'https://mi-agenda-api-6ke6.onrender.com/api/contactos';
         }
+
         const form = document.getElementById('contactoForm');
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            // Capturamos todos los valores del formulario
             const nombre = document.getElementById('nombre').value;
             const telefono = document.getElementById('telefono').value;
-
-            // Reemplaza esta URL con tu enlace de Render que termina en onrender.com para que solo funcione en la nuebe
-            // const urlApi = 'https://mi-agenda-api-6ke6.onrender.com/api/contactos';
+            const fenaci = document.getElementById('Fenaci').value;
             
+            // Para los radio buttons de sexo, obtenemos el que esté seleccionado
+            const sexoSeleccionado = document.querySelector('input[name="Sexo"]:checked');
+            const sexo = sexoSeleccionado ? sexoSeleccionado.value : '';
+
+            const peso = document.getElementById('Peso').value;
+            const talla = document.getElementById('Talla').value;
+            const tipoTriaje = document.getElementById('inputTriaje').value;
+
             try {
                 const response = await fetch(urlApi, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ nombre, telefono })
-
+                    // Enviamos todos los campos requeridos por la API
+                    body: JSON.stringify({ 
+                        nombre, 
+                        telefono, 
+                        fenaci, 
+                        sexo, 
+                        peso, 
+                        talla, 
+                        tipoTriaje 
+                    })
                 });
 
                 const data = await response.json();
-                if (data.mensaje){
-                  document.getElementById('resultado').textContent = JSON.stringify(data, null, 2); 
-                  document.getElementById('resultado').textContent = data.mensaje;
-                  form.reset();
-                  setTimeout(() => {confirm("Deseas continuar creando mas CONTACTOS"); document.getElementById('resultado').textContent = '';},3000); 
-                } 
-                                                    
+                
+                if (response.ok) {
+                    document.getElementById('resultado').textContent = JSON.stringify(data, null, 2); 
+                    form.reset();
+                    setTimeout(() => {
+                        confirm("¿Deseas continuar creando más contactos?"); 
+                        document.getElementById('resultado').textContent = '';
+                    }, 3000); 
+                } else {
+                    document.getElementById('resultado').textContent = 'Error del servidor: ' + JSON.stringify(data);
+                }
+                                    
             } catch (error) {
-                document.getElementById('resultado').textContent = 'Error: ' + error;
+                document.getElementById('resultado').textContent = 'Error de conexión: ' + error;
             }
         });
     </script>
