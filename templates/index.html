@@ -49,13 +49,13 @@
 
             <!-- Sección dinámica para lactantes (< 1 año) -->
             <div id="seccionLactante" style="display: none; margin-bottom: 15px; background: #fff3cd; padding: 10px; border-radius: 4px; max-width: 400px;">
-                <label for="lactante">Tipo de Lactancia:</label><br>
+                <label for="lactante">Tipo de Lactancia (Menor de 1 año):</label><br>
                 <select id="lactante" name="lactante" style="width: 100%; padding: 6px;">
                     <option value="">Seleccione...</option>
                     <option value="Exclusivo">Exclusivo</option>
                     <option value="Mixto">Mixto</option>
                 </select>
-            </div>
+            </div><br>
            
             <label>Sexo:</label><br>
             <input type="radio" id="M" name="Sexo" value="M" required>
@@ -144,11 +144,12 @@
     </div>
 
     <script>
-        let urlApi;
+        // Configuración de URLs para entorno local y producción en Render
+        let baseUrl;
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '') {
-            urlApi = 'http://127.0.0.1:5000/api/contactos';
+            baseUrl = 'http://127.0.0.1:5000';
         } else {
-            urlApi = 'https://mi-agenda-api-6ke6.onrender.com/api/contactos';
+            baseUrl = 'https://mi-agenda-api-6ke6.onrender.com';
         }
 
         function mostrarSeccion(seccionId) {
@@ -200,6 +201,7 @@
             textoEdadGlobal = `${anos} años, ${meses} meses, ${dias} días`;
             labelEdad.textContent = `Edad calculada: ${textoEdadGlobal}`;
 
+            // Mostrar el campo lactante solo si es menor de 1 año
             if (anos === 0) {
                 seccionLactante.style.display = "block";
             } else {
@@ -228,7 +230,7 @@
             const fechaRegistro = new Date().toISOString().split('T')[0];
 
             try {
-                const response = await fetch(urlApi, {
+                const response = await fetch(`${baseUrl}/api/contactos`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -256,7 +258,7 @@
 
         async function cargarContactos() {
             try {
-                const response = await fetch(urlApi);
+                const response = await fetch(`${baseUrl}/api/contactos`);
                 const contactos = await response.json();
                 const tbody = document.getElementById('tablaContactos');
                 tbody.innerHTML = ''; 
@@ -297,7 +299,7 @@
             resDiv.innerHTML = "Cargando informe...";
 
             try {
-                const response = await fetch(`http://${window.location.host}/api/informe-diario?inicio=${inicio}&fin=${fin}`);
+                const response = await fetch(`${baseUrl}/api/informe-diario?inicio=${inicio}&fin=${fin}`);
                 const data = await response.json();
 
                 let html = `<div class="card-informe">
@@ -333,7 +335,7 @@
             resDiv.innerHTML = "Cargando matriz semanal...";
 
             try {
-                const response = await fetch(`http://${window.location.host}/api/informe-semanal?inicio=${inicio}&fin=${fin}`);
+                const response = await fetch(`${baseUrl}/api/informe-semanal?inicio=${inicio}&fin=${fin}`);
                 const data = await response.json();
 
                 let html = `<p><b>Total Registros:</b> ${data.total_registros} | <b>M:</b> ${data.conteo_sexo.M} | <b>F:</b> ${data.conteo_sexo.F}</p>`;
