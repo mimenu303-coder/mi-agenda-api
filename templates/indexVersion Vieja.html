@@ -10,10 +10,11 @@
         .menu button:hover { background-color: #0056b3; }
         .seccion { display: none; background: white; padding: 20px; border-radius: 6px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); }
         .seccion.activa { display: block; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; }
         pre { background: #eee; padding: 10px; border-radius: 4px; }
+        .info-edad { font-weight: bold; color: #007BFF; margin-top: 5px; display: block; }
     </style>
 </head>
 <body>
@@ -31,28 +32,39 @@
         <h2>Registrar Nuevo Paciente</h2>
         <form id="contactoForm">
             <label for="nombre">Nombre:</label><br>
-            <input type="text" id="nombre" name="nombre" required><br><br>
+            <input type="text" id="nombre" name="nombre" required style="width: 100%; max-width: 400px; padding: 6px;"><br><br>
 
             <label for="telefono">Teléfono:</label><br>
-            <input type="text" id="telefono" name="telefono" required><br><br>
+            <input type="text" id="telefono" name="telefono" required style="width: 100%; max-width: 400px; padding: 6px;"><br><br>
 
             <label for="Fenaci">Fecha de Nacimiento:</label><br>
-            <input type="date" id="Fenaci" name="Fenaci" required><br><br>     
+            <input type="date" id="Fenaci" name="Fenaci" required style="padding: 6px;"><br>
+            <span id="labelEdad" class="info-edad">Edad calculada: -</span><br>
+
+            <!-- Sección dinámica para lactantes (menores de 1 año) -->
+            <div id="seccionLactante" style="display: none; margin-bottom: 15px; background: #fff3cd; padding: 10px; border-radius: 4px; max-width: 400px;">
+                <label for="lactante">Tipo de Lactancia (Menor de 1 año):</label><br>
+                <select id="lactante" name="lactante" style="width: 100%; padding: 6px;">
+                    <option value="">Seleccione...</option>
+                    <option value="Exclusivo">Exclusivo</option>
+                    <option value="Mixto">Mixto</option>
+                </select>
+            </div>
            
             <label>Sexo:</label><br>
-            <input type="radio" id="M" name="Sexo" value="Masculino" required>
-            <label for="M">Masculino</label><br>
-            <input type="radio" id="F" name="Sexo" value="Femenino">
+            <input type="radio" id="M" name="Sexo" value="M" required>
+            <label for="M">Masculino</label>
+            <input type="radio" id="F" name="Sexo" value="F" style="margin-left: 15px;">
             <label for="F">Femenino</label><br><br>
 
             <label for="Peso">Peso (kg):</label><br>
-            <input type="number" step="0.01" id="Peso" name="Peso" required><br><br>         
+            <input type="number" step="0.01" id="Peso" name="Peso" required style="padding: 6px;"><br><br>         
            
             <label for="Talla">Talla (m):</label><br>
-            <input type="number" step="0.01" id="Talla" name="Talla" required><br><br>  
+            <input type="number" step="0.01" id="Talla" name="Talla" required style="padding: 6px;"><br><br>  
 
             <label for="inputTriaje">Seleccione Tipo de Triaje:</label><br>
-            <input list="listaTriaje" name="TipoTriaje" id="inputTriaje" placeholder="Haga click..." required><br><br>
+            <input list="listaTriaje" name="TipoTriaje" id="inputTriaje" placeholder="Haga click..." required style="width: 100%; max-width: 400px; padding: 6px;"><br><br>
             <datalist id="listaTriaje">
                 <option value="IM">
                 <option value="EV">
@@ -64,8 +76,11 @@
                 <option value="Lavado Oido">
                 <option value="Curas Realizadas">    
             </datalist>
+
+            <label for="observacion">Observación:</label><br>
+            <textarea id="observacion" name="observacion" rows="3" style="width: 100%; max-width: 400px; padding: 6px;"></textarea><br><br>
             
-            <button type="submit" style="padding: 10px 15px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Guardar en Base de Datos</button>
+            <button type="submit" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Guardar en Base de Datos</button>
         </form><br>
         <pre id="resultado"></pre>
     </div>
@@ -73,25 +88,30 @@
     <!-- SECCIÓN 2: LISTADO DE REGISTROS -->
     <div id="seccion-listado" class="seccion">
         <h2>Registros Almacenados en la Base de Datos</h2>
-        <button onclick="cargarContactos()" style="padding: 8px 15px; cursor: pointer;">Refrescar Tabla</button>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Teléfono</th>
-                    <th>F. Nacimiento</th>
-                    <th>Sexo</th>
-                    <th>Peso</th>
-                    <th>Talla</th>
-                    <th>Triaje</th>
-                    <th>F. Registro</th>
-                </tr>
-            </thead>
-            <tbody id="tablaContactos">
-                <!-- Se llenará dinámicamente con JavaScript -->
-            </tbody>
-        </table>
+        <button onclick="cargarContactos()" style="padding: 8px 15px; cursor: pointer; margin-bottom: 10px;">Refrescar Tabla</button>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>F. Registro</th>
+                        <th>Nombre</th>
+                        <th>Teléfono</th>
+                        <th>F. Nacimiento</th>
+                        <th>Edad</th>
+                        <th>Sexo</th>
+                        <th>Peso (kg)</th>
+                        <th>Talla (m)</th>
+                        <th>Triaje</th>
+                        <th>Lactante</th>
+                        <th>Observación</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaContactos">
+                    <!-- Se llenará dinámicamente con JavaScript -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
@@ -110,11 +130,54 @@
                 document.getElementById('seccion-registro').classList.add('activa');
             } else if (seccionId === 'listado') {
                 document.getElementById('seccion-listado').classList.add('activa');
-                cargarContactos(); // Carga automática al cambiar a la pestaña de listado
+                cargarContactos(); 
             }
         }
 
-        // 3. Envío de datos por POST (Crear nuevo registro)
+        // 3. Cálculo automático de años, meses y días a partir de la fecha de nacimiento
+        let textoEdadGlobal = "";
+        document.getElementById("Fenaci").addEventListener("change", function () {
+            const fenaciVal = this.value;
+            const seccionLactante = document.getElementById("seccionLactante");
+            const labelEdad = document.getElementById("labelEdad");
+
+            if (!fenaciVal) {
+                labelEdad.textContent = "Edad calculada: -";
+                textoEdadGlobal = "";
+                seccionLactante.style.display = "none";
+                return;
+            }
+
+            const fNace = new Date(fenaciVal + "T00:00:00");
+            const fHoy = new Date();
+
+            let anos = fHoy.getFullYear() - fNace.getFullYear();
+            let meses = fHoy.getMonth() - fNace.getMonth();
+            let dias = fHoy.getDate() - fNace.getDate();
+
+            if (dias < 0) {
+                meses--;
+                const ultimoDiaMesAnterior = new Date(fHoy.getFullYear(), fHoy.getMonth(), 0).getDate();
+                dias += ultimoDiaMesAnterior;
+            }
+            if (meses < 0) {
+                anos--;
+                meses += 12;
+            }
+
+            textoEdadGlobal = `${anos} años, ${meses} meses, ${dias} días`;
+            labelEdad.textContent = `Edad calculada: ${textoEdadGlobal}`;
+
+            // Si es menor de 1 año (0 años), muestra la opción de lactante
+            if (anos === 0) {
+                seccionLactante.style.display = "block";
+            } else {
+                seccionLactante.style.display = "none";
+                document.getElementById("lactante").value = "";
+            }
+        });
+
+        // 4. Envío de datos por POST (Crear nuevo registro)
         const form = document.getElementById('contactoForm');
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -129,6 +192,8 @@
             const peso = document.getElementById('Peso').value;
             const talla = document.getElementById('Talla').value;
             const tipoTriaje = document.getElementById('inputTriaje').value;
+            const observacion = document.getElementById('observacion').value;
+            const lactante = document.getElementById('lactante').value;
             
             // Fecha del día actual automatizada en formato YYYY-MM-DD
             const fechaRegistro = new Date().toISOString().split('T')[0];
@@ -137,7 +202,19 @@
                 const response = await fetch(urlApi, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombre, telefono, fenaci, sexo, peso, talla, tipoTriaje, fecha_registro: fechaRegistro })
+                    body: JSON.stringify({ 
+                        nombre, 
+                        telefono, 
+                        fenaci, 
+                        sexo, 
+                        peso, 
+                        talla, 
+                        tipoTriaje, 
+                        observacion,
+                        lactante,
+                        edad_texto: textoEdadGlobal,
+                        fecha_registro: fechaRegistro 
+                    })
                 });
 
                 const data = await response.json();
@@ -145,6 +222,9 @@
                 if (response.ok) {
                     document.getElementById('resultado').textContent = JSON.stringify(data, null, 2); 
                     form.reset();
+                    document.getElementById("labelEdad").textContent = "Edad calculada: -";
+                    document.getElementById("seccionLactante").style.display = "none";
+                    textoEdadGlobal = "";
                     setTimeout(() => {
                         document.getElementById('resultado').textContent = '';
                     }, 4000); 
@@ -156,17 +236,17 @@
             }
         });
 
-        // 4. Función para listar todos los registros mediante GET
+        // 5. Función para listar todos los registros mediante GET
         async function cargarContactos() {
             try {
                 const response = await fetch(urlApi);
                 const contactos = await response.json();
                 
                 const tbody = document.getElementById('tablaContactos');
-                tbody.innerHTML = ''; // Limpiar la tabla antes de rellenar
+                tbody.innerHTML = ''; 
 
                 if (contactos.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">No hay registros guardados aún.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;">No hay registros guardados aún.</td></tr>';
                     return;
                 }
 
@@ -174,14 +254,17 @@
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${c.id}</td>
-                        <td>${c.nombre}</td>
-                        <td>${c.telefono}</td>
+                        <td>${c.fecha_registro || ''}</td>
+                        <td>${c.nombre || ''}</td>
+                        <td>${c.telefono || ''}</td>
                         <td>${c.fenaci || ''}</td>
+                        <td>${c.edad_texto || ''}</td>
                         <td>${c.sexo || ''}</td>
                         <td>${c.peso || ''}</td>
                         <td>${c.talla || ''}</td>
                         <td>${c.tipo_triaje || ''}</td>
-                        <td>${c.fecha_registro || ''}</td>
+                        <td>${c.lactante || ''}</td>
+                        <td>${c.observacion || ''}</td>
                     `;
                     tbody.appendChild(tr);
                 });

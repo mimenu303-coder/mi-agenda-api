@@ -6,15 +6,16 @@
     <style>
         body { font-family: Arial, sans-serif; margin: 30px; background-color: #f9f9f9; }
         .menu { margin-bottom: 25px; }
-        .menu button { padding: 10px 20px; font-size: 16px; cursor: pointer; margin-right: 10px; background-color: #007BFF; color: white; border: none; border-radius: 4px; }
+        .menu button { padding: 10px 15px; font-size: 15px; cursor: pointer; margin-right: 8px; background-color: #007BFF; color: white; border: none; border-radius: 4px; }
         .menu button:hover { background-color: #0056b3; }
         .seccion { display: none; background: white; padding: 20px; border-radius: 6px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); }
         .seccion.activa { display: block; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; }
         pre { background: #eee; padding: 10px; border-radius: 4px; }
         .info-edad { font-weight: bold; color: #007BFF; margin-top: 5px; display: block; }
+        .card-informe { background: #fdfdfd; border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -25,6 +26,8 @@
     <div class="menu">
         <button onclick="mostrarSeccion('registro')">Registrar Nuevo</button>
         <button onclick="mostrarSeccion('listado')">Listar Registros</button>
+        <button onclick="mostrarSeccion('diario')">Informe Diario</button>
+        <button onclick="mostrarSeccion('semanal')">Informe Semanal</button>
     </div>
 
     <!-- SECCIÓN 1: FORMULARIO DE REGISTRO -->
@@ -37,13 +40,16 @@
             <label for="telefono">Teléfono:</label><br>
             <input type="text" id="telefono" name="telefono" required style="width: 100%; max-width: 400px; padding: 6px;"><br><br>
 
+            <label for="turno">Turno:</label><br>
+            <input type="text" id="turno" name="turno" style="width: 100%; max-width: 400px; padding: 6px;"><br><br>
+
             <label for="Fenaci">Fecha de Nacimiento:</label><br>
             <input type="date" id="Fenaci" name="Fenaci" required style="padding: 6px;"><br>
             <span id="labelEdad" class="info-edad">Edad calculada: -</span><br>
 
-            <!-- Sección dinámica para lactantes (menores de 1 año) -->
+            <!-- Sección dinámica para lactantes (< 1 año) -->
             <div id="seccionLactante" style="display: none; margin-bottom: 15px; background: #fff3cd; padding: 10px; border-radius: 4px; max-width: 400px;">
-                <label for="lactante">Tipo de Lactancia (Menor de 1 año):</label><br>
+                <label for="lactante">Tipo de Lactancia:</label><br>
                 <select id="lactante" name="lactante" style="width: 100%; padding: 6px;">
                     <option value="">Seleccione...</option>
                     <option value="Exclusivo">Exclusivo</option>
@@ -95,27 +101,49 @@
                     <tr>
                         <th>ID</th>
                         <th>F. Registro</th>
+                        <th>Turno</th>
                         <th>Nombre</th>
                         <th>Teléfono</th>
                         <th>F. Nacimiento</th>
                         <th>Edad</th>
                         <th>Sexo</th>
-                        <th>Peso (kg)</th>
-                        <th>Talla (m)</th>
+                        <th>Peso</th>
+                        <th>Talla</th>
                         <th>Triaje</th>
                         <th>Lactante</th>
-                        <th>Observación</th>
+                        <th>Obs</th>
                     </tr>
                 </thead>
-                <tbody id="tablaContactos">
-                    <!-- Se llenará dinámicamente con JavaScript -->
-                </tbody>
+                <tbody id="tablaContactos"></tbody>
             </table>
         </div>
     </div>
 
+    <!-- SECCIÓN 3: INFORME DIARIO -->
+    <div id="seccion-diario" class="seccion">
+        <h2>Generar Informe Diario / Por Fechas</h2>
+        <label>Fecha Inicial:</label>
+        <input type="date" id="diarioInicio" style="padding: 5px;">
+        <label style="margin-left: 15px;">Fecha Final:</label>
+        <input type="date" id="diarioFin" style="padding: 5px;">
+        <button onclick="cargarInformeDiario()" style="padding: 6px 15px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 15px;">Consultar</button>
+        <hr style="margin: 20px 0;">
+        <div id="resultadoDiario"></div>
+    </div>
+
+    <!-- SECCIÓN 4: INFORME SEMANAL -->
+    <div id="seccion-semanal" class="seccion">
+        <h2>Generar Informe Semanal Matriz</h2>
+        <label>Fecha Inicial:</label>
+        <input type="date" id="semanalInicio" style="padding: 5px;">
+        <label style="margin-left: 15px;">Fecha Final:</label>
+        <input type="date" id="semanalFin" style="padding: 5px;">
+        <button onclick="cargarInformeSemanal()" style="padding: 6px 15px; background: #6f42c1; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 15px;">Consultar Matriz</button>
+        <hr style="margin: 20px 0;">
+        <div id="resultadoSemanal" style="overflow-x: auto;"></div>
+    </div>
+
     <script>
-        // 1. Detección automática de entorno (Local vs Render)
         let urlApi;
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '') {
             urlApi = 'http://127.0.0.1:5000/api/contactos';
@@ -123,18 +151,22 @@
             urlApi = 'https://mi-agenda-api-6ke6.onrender.com/api/contactos';
         }
 
-        // 2. Control de pestañas del menú
         function mostrarSeccion(seccionId) {
             document.querySelectorAll('.seccion').forEach(el => el.classList.remove('activa'));
-            if (seccionId === 'registro') {
-                document.getElementById('seccion-registro').classList.add('activa');
-            } else if (seccionId === 'listado') {
-                document.getElementById('seccion-listado').classList.add('activa');
-                cargarContactos(); 
+            document.getElementById(`seccion-${seccionId}`).classList.add('activa');
+            if (seccionId === 'listado') cargarContactos();
+            if (seccionId === 'diario' || seccionId === 'semanal') {
+                const hoy = new Date().toISOString().split('T')[0];
+                if(seccionId === 'diario') {
+                    document.getElementById('diarioInicio').value = hoy;
+                    document.getElementById('diarioFin').value = hoy;
+                } else {
+                    document.getElementById('semanalInicio').value = hoy;
+                    document.getElementById('semanalFin').value = hoy;
+                }
             }
         }
 
-        // 3. Cálculo automático de años, meses y días a partir de la fecha de nacimiento
         let textoEdadGlobal = "";
         document.getElementById("Fenaci").addEventListener("change", function () {
             const fenaciVal = this.value;
@@ -168,7 +200,6 @@
             textoEdadGlobal = `${anos} años, ${meses} meses, ${dias} días`;
             labelEdad.textContent = `Edad calculada: ${textoEdadGlobal}`;
 
-            // Si es menor de 1 año (0 años), muestra la opción de lactante
             if (anos === 0) {
                 seccionLactante.style.display = "block";
             } else {
@@ -177,13 +208,13 @@
             }
         });
 
-        // 4. Envío de datos por POST (Crear nuevo registro)
         const form = document.getElementById('contactoForm');
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const nombre = document.getElementById('nombre').value;
             const telefono = document.getElementById('telefono').value;
+            const turno = document.getElementById('turno').value;
             const fenaci = document.getElementById('Fenaci').value;
             
             const sexoSeleccionado = document.querySelector('input[name="Sexo"]:checked');
@@ -194,8 +225,6 @@
             const tipoTriaje = document.getElementById('inputTriaje').value;
             const observacion = document.getElementById('observacion').value;
             const lactante = document.getElementById('lactante').value;
-            
-            // Fecha del día actual automatizada en formato YYYY-MM-DD
             const fechaRegistro = new Date().toISOString().split('T')[0];
 
             try {
@@ -203,31 +232,20 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        nombre, 
-                        telefono, 
-                        fenaci, 
-                        sexo, 
-                        peso, 
-                        talla, 
-                        tipoTriaje, 
-                        observacion,
-                        lactante,
+                        nombre, telefono, turno, fenaci, sexo, peso, talla, tipoTriaje, observacion, lactante,
                         edad_texto: textoEdadGlobal,
                         fecha_registro: fechaRegistro 
                     })
                 });
 
                 const data = await response.json();
-                
                 if (response.ok) {
                     document.getElementById('resultado').textContent = JSON.stringify(data, null, 2); 
                     form.reset();
                     document.getElementById("labelEdad").textContent = "Edad calculada: -";
                     document.getElementById("seccionLactante").style.display = "none";
                     textoEdadGlobal = "";
-                    setTimeout(() => {
-                        document.getElementById('resultado').textContent = '';
-                    }, 4000); 
+                    setTimeout(() => { document.getElementById('resultado').textContent = ''; }, 4000); 
                 } else {
                     document.getElementById('resultado').textContent = 'Error: ' + JSON.stringify(data);
                 }
@@ -236,17 +254,15 @@
             }
         });
 
-        // 5. Función para listar todos los registros mediante GET
         async function cargarContactos() {
             try {
                 const response = await fetch(urlApi);
                 const contactos = await response.json();
-                
                 const tbody = document.getElementById('tablaContactos');
                 tbody.innerHTML = ''; 
 
                 if (contactos.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;">No hay registros guardados aún.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;">No hay registros guardados aún.</td></tr>';
                     return;
                 }
 
@@ -255,6 +271,7 @@
                     tr.innerHTML = `
                         <td>${c.id}</td>
                         <td>${c.fecha_registro || ''}</td>
+                        <td>${c.turno || ''}</td>
                         <td>${c.nombre || ''}</td>
                         <td>${c.telefono || ''}</td>
                         <td>${c.fenaci || ''}</td>
@@ -270,6 +287,81 @@
                 });
             } catch (error) {
                 console.error('Error al obtener los registros:', error);
+            }
+        }
+
+        async function cargarInformeDiario() {
+            const inicio = document.getElementById('diarioInicio').value;
+            const fin = document.getElementById('diarioFin').value;
+            const resDiv = document.getElementById('resultadoDiario');
+            resDiv.innerHTML = "Cargando informe...";
+
+            try {
+                const response = await fetch(`http://${window.location.host}/api/informe-diario?inicio=${inicio}&fin=${fin}`);
+                const data = await response.json();
+
+                let html = `<div class="card-informe">
+                    <h3>Resumen del Conteo (${inicio} al ${fin})</h3>
+                    <p><b>Total de Registros:</b> ${data.total_registros}</p>
+                    <p><b>Masculino (M):</b> ${data.conteo_sexo.M} | <b>Femenino (F):</b> ${data.conteo_sexo.F}</p>
+                </div>`;
+
+                html += `<div class="card-informe"><h4>Conteo por Triaje</h4><ul>`;
+                for (const [triaje, val] of Object.entries(data.conteo_triaje)) {
+                    html += `<li><b>${triaje}</b> - Total: ${val.M + val.F} (M: ${val.M}, F: ${val.F})</li>`;
+                }
+                html += `</ul></div>`;
+
+                html += `<div class="card-informe"><h4>Conteo por Edades</h4><ul>`;
+                for (const [grupo, val] of Object.entries(data.conteo_edades)) {
+                    if(val.Total > 0) {
+                        html += `<li><b>${grupo}</b> - Total: ${val.Total} (M: ${val.M}, F: ${val.F})</li>`;
+                    }
+                }
+                html += `</ul></div>`;
+
+                resDiv.innerHTML = html;
+            } catch (err) {
+                resDiv.innerHTML = "Error al generar informe diario.";
+            }
+        }
+
+        async function cargarInformeSemanal() {
+            const inicio = document.getElementById('semanalInicio').value;
+            const fin = document.getElementById('semanalFin').value;
+            const resDiv = document.getElementById('resultadoSemanal');
+            resDiv.innerHTML = "Cargando matriz semanal...";
+
+            try {
+                const response = await fetch(`http://${window.location.host}/api/informe-semanal?inicio=${inicio}&fin=${fin}`);
+                const data = await response.json();
+
+                let html = `<p><b>Total Registros:</b> ${data.total_registros} | <b>M:</b> ${data.conteo_sexo.M} | <b>F:</b> ${data.conteo_sexo.F}</p>`;
+                html += `<table><thead><tr><th>Triaje / Edades</th>`;
+                
+                data.edades.forEach(e => {
+                    html += `<th colspan="2" style="text-align:center;">${e}</th>`;
+                });
+                html += `</tr><tr><th></th>`;
+                data.edades.forEach(() => {
+                    html += `<th>M</th><th>F</th>`;
+                });
+                html += `</tr></thead><tbody>`;
+
+                data.tratamientos.forEach(t => {
+                    html += `<tr><td><b>${t}</b></td>`;
+                    data.edades.forEach(e => {
+                        const m = data.matriz[t][e].M;
+                        const f = data.matriz[t][e].F;
+                        html += `<td>${m}</td><td>${f}</td>`;
+                    });
+                    html += `</tr>`;
+                });
+
+                html += `</tbody></table>`;
+                resDiv.innerHTML = html;
+            } catch (err) {
+                resDiv.innerHTML = "Error al generar informe semanal.";
             }
         }
     </script>
