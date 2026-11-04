@@ -1,14 +1,15 @@
 import os
-import psycopg2
-from flask import Flask, jsonify, request
+import psycopg2 
+from flask import Flask, jsonify, request,render_template
 from flask_cors import CORS
+
 
 app = Flask(__name__)
 CORS(app)
 
 @app.route("/")
 def index():
-    return "Hello, World!"
+    return render_template('index.html')
 
 # CONFIGURACIÓN AUTOMÁTICA DE LA BASE DE DATOS
 # 1. Parámetros locales por defecto (Ajusta tus datos locales una sola vez aquí)
