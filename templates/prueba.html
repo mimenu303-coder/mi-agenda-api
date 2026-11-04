@@ -43,21 +43,11 @@
         </datalist>
         
         <button type="submit">Enviar</button>
-    </form><br><br>
+    </form>
 
-    <label>Aquí va el Resultado:</label><br>
     <pre id="resultado"></pre>
 
     <script>
-        let urlApi;
-
-        // Verificamos si estamos en entorno local
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '') {
-            urlApi = 'http://127.0.0.1:5000/api/contactos';
-        } else {
-            urlApi = 'https://mi-agenda-api-6ke6.onrender.com/api/contactos';
-        }
-
         const form = document.getElementById('contactoForm');
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -65,18 +55,9 @@
             // Capturamos todos los valores del formulario
             const nombre = document.getElementById('nombre').value;
             const telefono = document.getElementById('telefono').value;
-            const fenaci = document.getElementById('Fenaci').value;
-            
-            const sexoSeleccionado = document.querySelector('input[name="Sexo"]:checked');
-            const sexo = sexoSeleccionado ? sexoSeleccionado.value : '';
 
-            const peso = document.getElementById('Peso').value;
-            const talla = document.getElementById('Talla').value;
-            const tipoTriaje = document.getElementById('inputTriaje').value;
-
-            // Obtenemos automáticamente la fecha del día en formato YYYY-MM-DD
-            const fechaRegistro = new Date().toISOString().split('T')[0];
-
+            // Reemplaza esta URL con tu enlace de Render que termina en onrender.com
+            const urlApi = 'https://mi-agenda-api-6ke6.onrender.com/api/contactos';
             try {
                 const response = await fetch(urlApi, {
                     method: 'POST',
