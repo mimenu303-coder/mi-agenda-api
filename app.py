@@ -6,6 +6,10 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+@app.route("/")
+def index():
+    return "Hello, World!"
+
 # CONFIGURACIÓN AUTOMÁTICA DE LA BASE DE DATOS
 # 1. Parámetros locales por defecto (Ajusta tus datos locales una sola vez aquí)
 DB_HOST_LOCAL = "localhost"
