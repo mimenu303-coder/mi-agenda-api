@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlefDOOR — Colmena de Colaboración Global</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Cormorant Garamond, Cinzel & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Cormorant Garamond"', 'serif'],
+            display: ['"Cinzel"', 'serif'],
+          },
+          colors: {
+            obsidian: '#070605',
+            gold: {
+              100: '#FFF8E1',
+              200: '#FFECB3',
+              300: '#FFE082',
+              400: '#FFD54F',
+              500: '#F59E0B',
+              600: '#D97706',
+              700: '#B45309',
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'float': 'float 8s ease-in-out infinite',
+            'shimmer': 'shimmer 2.5s linear infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            shimmer: {
+              '0%': { backgroundPosition: '-200% 0' },
+              '100%': { backgroundPosition: '200% 0' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* ==========================================================================
+       ESTILOS MODERNOS INSPIADOS EN REPOSITORIOS OPEN-SOURCE (LINEAR / RAYCAST / ACETERNITY)
+       ========================================================================== */
+    :root {
+      --gold-glow: rgba(251, 191, 36, 0.35);
+      --gold-border: rgba(251, 191, 36, 0.28);
+      --glass-bg: rgba(11, 10, 9, 0.68);
+      --glass-card: rgba(16, 14, 12, 0.72);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #050403;
+      color: #f8fafc;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* Fondo Inmersivo con la Fotografía Anexa */
+    .portal-bg-container {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      background-color: #050403;
+    }
+
+    .portal-bg-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 42%;
+      transition: transform 1.4s cubic-bezier(0.16, 1, 0.3, 1), filter 1.2s ease;
+      will-change: transform, filter;
+    }
+
+    /* Efecto de zoom sutil al cruzar el umbral */
+    body.portal-unlocked .portal-bg-image {
+      transform: scale(1.08);
+      filter: brightness(0.62) contrast(1.08);
+    }
+
+    /* Viñeta cinematográfica y resplandor ambiental */
+    .portal-vignette {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(251, 191, 36, 0.08) 0%, rgba(5, 4, 3, 0.58) 55%, rgba(3, 2, 2, 0.94) 100%),
+        linear-gradient(to bottom, rgba(5, 4, 3, 0.55) 0%, rgba(5, 4, 3, 0.15) 45%, rgba(5, 4, 3, 0.88) 100%);
+      pointer-events: none;
+    }
+
+    /* Partículas de polvo dorado flotantes en CSS puro */
+    .particles-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .dust-particle {
+      position: absolute;
+      border-radius: 9999px;
+      background: radial-gradient(circle, #FFF8E1 0%, #FBBF24 55%, transparent 100%);
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
+      opacity: 0;
+      animation: riseDust var(--dur, 12s) linear infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    @keyframes riseDust {
+      0% {
+        transform: translate3d(0, 20vh, 0) scale(0.4);
+        opacity: 0;
+      }
+      20% {
+        opacity: var(--max-op, 0.75);
+      }
+      80% {
+        opacity: var(--max-op, 0.6);
+      }
+      100% {
+        transform: translate3d(var(--drift, 35px), -75vh, 0) scale(1.1);
+        opacity: 0;
+      }
+    }
+
+    /* Tarjeta Glassmorphism Oscura con Borde Luminoso */
+    .glass-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(22px) saturate(140%);
+      -webkit-backdrop-filter: blur(22px) saturate(140%);
+      border: 1px solid rgba(253, 230, 138, 0.18);
+      box-shadow:
+        0 25px 60px -15px rgba(0, 0, 0, 0.85),
+        0 0 40px -10px rgba(245, 158, 11, 0.16),
+        inset 0 1px 0 0 rgba(255, 251, 235, 0.15);
+    }
+
+    /* Tarjetas Bento Interactivas con Brillo Radial Dinámico (Spotlight Card estilo Aceternity/GitHub) */
+    .bento-spotlight-card {
+      position: relative;
+      background: var(--glass-card);
+      backdrop-filter: blur(20px) saturate(135%);
+      -webkit-backdrop-filter: blur(20px) saturate(135%);
+      border: 1px solid rgba(253, 224, 71, 0.16);
+      border-radius: 1.5rem;
+      overflow: hidden;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.35s ease, box-shadow 0.35s ease;
+      transform-style: preserve-3d;
+    }
+
+    .bento-spotlight-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        520px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+        rgba(251, 191, 36, 0.18),
+        transparent 45%
+      );
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .bento-spotlight-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: radial-gradient(
+        350px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+        rgba(253, 224, 71, 0.75),
+        rgba(251, 191, 36, 0.1) 50%,
+        transparent 80%
+      );
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .bento-spotlight-card:hover {
+      border-color: rgba(253, 224, 71, 0.42);
+      box-shadow:
+        0 24px 50px -12px rgba(0, 0, 0, 0.85),
+        0 0 32px -6px rgba(245, 158, 11, 0.25);
+    }
+
+    .bento-spotlight-card:hover::before,
+    .bento-spotlight-card:hover::after {
+      opacity: 1;
+    }
+
+    /* Botón Principal Dorado Luminoso */
+    .btn-gold-portal {
+      position: relative;
+      background: linear-gradient(135deg, #FDE68A 0%, #F59E0B 50%, #D97706 100%);
+      color: #090705;
+      font-weight: 700;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      box-shadow: 0 8px 25px -4px rgba(245, 158, 11, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+    }
+
+    .btn-gold-portal:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 32px -4px rgba(251, 191, 36, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+      filter: brightness(1.05);
+    }
+
+    .btn-gold-portal:active {
+      transform: translateY(0);
+    }
+
+    /* Inputs con estilo oscuro refinado */
+    .portal-input {
+      background: rgba(7, 6, 5, 0.65);
+      border: 1px solid rgba(253, 230, 138, 0.16);
+      color: #FEF3C7;
+      transition: all 0.25s ease;
+    }
+
+    .portal-input::placeholder {
+      color: rgba(214, 211, 209, 0.42);
+    }
+
+    .portal-input:focus {
+      outline: none;
+      border-color: rgba(251, 191, 36, 0.65);
+      background: rgba(12, 10, 8, 0.85);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+    }
+
+    /* Animaciones de transición de vistas SPA */
+    .view-section {
+      transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .view-hidden {
+      opacity: 0;
+      transform: translateY(16px) scale(0.985);
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      visibility: hidden;
+    }
+
+    .view-active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+      position: relative;
+      visibility: visible;
+    }
+
+    /* Destello de apertura de puerta */
+    .portal-flash-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: radial-gradient(circle at 50% 45%, rgba(255, 251, 235, 0.95) 0%, rgba(251, 191, 36, 0.65) 35%, rgba(5, 4, 3, 0.95) 85%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.65s ease;
+    }
+
+    .portal-flash-overlay.active {
+      opacity: 1;
+    }
+
+    /* Scrollbar minimalista */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090807;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(245, 158, 11, 0.35);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(245, 158, 11, 0.6);
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-amber-500/30 selection:text-amber-200">
+
+  <!-- CAPA 0: FONDO INMERSIVO CON FOTOGRAFÍA ANEXA -->
+  <div class="portal-bg-container" aria-hidden="true">
+    <img
+      id="bgHeroImage"
+      src="IMG-20260612-WA0006.jpg"
+      alt="Puerta entreabierta con luz dorada intensa - AlefDOOR"
+      class="portal-bg-image"
+      onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1920&q=85';"
+    />
+    <div class="portal-vignette"></div>
+  </div>
+
+  <!-- CAPA 1: PARTÍCULAS DE LUZ DORADA FLOTANTES -->
+  <div id="particlesLayer" class="particles-layer" aria-hidden="true"></div>
+
+  <!-- OVERLAY DE DESTELLO AL CRUZAR EL PORTAL -->
+  <div id="portalFlash" class="portal-flash-overlay" aria-hidden="true"></div>
+
+  <!-- NOTIFICACIÓN TOAST FLOTANTE -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- ========================================================================
+       BARRA DE NAVEGACIÓN SUPERIOR (Visible tras iniciar sesión)
+       ======================================================================== -->
+  <header id="topNavbar" class="fixed top-0 inset-x-0 z-40 transition-all duration-500 -translate-y-full opacity-0 pointer-events-none">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+      <nav class="glass-panel rounded-2xl px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+        <!-- Marca & Retorno al Hub -->
+        <button
+          onclick="navigateTo('hub')"
+          class="flex items-center gap-3 text-left group focus:outline-none"
+          title="Volver al Portal Principal de las 3 Páginas"
+        >
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-300/25 to-amber-600/20 border border-amber-400/40 flex items-center justify-center shadow-inner group-hover:border-amber-300 transition-colors">
+            <i data-lucide="door-open" class="w-5 h-5 text-amber-300"></i>
+          </div>
+          <div>
+            <div class="flex items-baseline gap-1">
+              <span class="font-serif italic text-xl font-bold text-amber-100 tracking-wide">Alef</span>
+              <span class="font-display text-sm font-semibold text-amber-300 tracking-[0.2em]">DOOR</span>
+            </div>
+            <p class="text-[10px] text-stone-400 hidden sm:block tracking-wider uppercase">Colmena de Colaboración Global</p>
+          </div>
+        </button>
+
+        <!-- Indicador de Ruta / Píldoras de Navegación Rápida -->
+        <div class="hidden md:flex items-center gap-1.5 bg-black/40 p-1 rounded-xl border border-amber-200/10">
+          <button
+            onclick="navigateTo('hub')"
+            data-nav="hub"
+            class="nav-pill px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 text-amber-200 bg-amber-500/20 border border-amber-400/30"
+          >
+            <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+            Portal Central
+          </button>
+          <button
+            onclick="navigateTo('colmena')"
+            data-nav="colmena"
+            class="nav-pill px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 text-stone-300 hover:text-amber-200"
+          >
+            <i data-lucide="hexagon" class="w-3.5 h-3.5"></i>
+            Colmena Central
+          </button>
+          <button
+            onclick="navigateTo('laboratorio')"
+            data-nav="laboratorio"
+            class="nav-pill px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 text-stone-300 hover:text-amber-200"
+          >
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            Laboratorio
+          </button>
+          <button
+            onclick="navigateTo('agora')"
+            data-nav="agora"
+            class="nav-pill px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 text-stone-300 hover:text-amber-200"
+          >
+            <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+            Ágora Global
+          </button>
+        </div>
+
+        <!-- Perfil de Usuario y Cerrar Sesión -->
+        <div class="flex items-center gap-2.5 sm:gap-3">
+          <div class="flex items-center gap-2.5 bg-black/40 border border-amber-200/15 rounded-xl px-3 py-1.5">
+            <div id="userAvatarBadge" class="w-7 h-7 rounded-lg bg-gradient-to-tr from-amber-500 to-yellow-200 text-stone-950 font-bold text-xs flex items-center justify-center shadow">
+              AD
+            </div>
+            <div class="hidden sm:block leading-tight">
+              <p id="userDisplayName" class="text-xs font-semibold text-amber-100">Explorador Alef</p>
+              <p id="userRoleBadge" class="text-[10px] text-amber-400/80">Nodo Verificado</p>
+            </div>
+          </div>
+
+          <button
+            onclick="handleLogout()"
+            class="p-2 sm:px-3 sm:py-2 rounded-xl bg-stone-900/80 hover:bg-red-950/60 text-stone-300 hover:text-red-200 border border-stone-700/60 hover:border-red-500/40 transition-all flex items-center gap-1.5 text-xs font-medium"
+            title="Cerrar Sesión y volver al umbral"
+          >
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span class="hidden lg:inline">Salir</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       CONTENEDOR PRINCIPAL DE VISTAS SPA
+       ======================================================================== -->
+  <main class="relative z-10 min-h-screen flex flex-col justify-between">
+
+    <!-- ======================================================================
+         VISTA 0: PORTADA DE AUTENTICACIÓN (UMBRAL DE ENTRADA)
+         ====================================================================== -->
+    <section id="view-auth" class="view-section view-active min-h-screen flex flex-col items-center justify-between px-4 py-8 sm:py-10">
+      <!-- Encabezado Superior Minimalista con Identidad Visual -->
+      <div class="w-full max-w-5xl flex items-center justify-between">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/55 backdrop-blur-md border border-amber-300/20 text-xs text-amber-200/90">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+          <span class="w-2 h-2 rounded-full bg-amber-400 -ml-3.5"></span>
+          <span class="tracking-wide font-medium">Red Activa · 3 Ecosistemas Conectados</span>
+        </div>
+
+        <div class="hidden sm:flex items-center gap-2 text-xs text-stone-300/80 bg-black/45 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Acceso Cifrado AlefID</span>
+        </div>
+      </div>
+
+      <!-- Centro: Tarjeta de Autenticación Glassmorphism sobre el Umbral -->
+      <div class="w-full max-w-md my-auto py-6">
+        <!-- Título Hero que dialoga con la fotografía -->
+        <div class="text-center mb-6 select-none">
+          <div class="inline-flex items-center justify-center mb-2">
+            <h1 class="text-5xl sm:text-6xl tracking-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)]">
+              <span class="font-serif italic font-semibold text-amber-100">Alef</span><span class="font-display font-medium text-amber-50 tracking-[0.14em] text-4xl sm:text-5xl">DOOR</span>
+            </h1>
+          </div>
+          <p class="font-serif text-lg sm:text-xl text-amber-200/90 tracking-wide drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
+            Colmena de Colaboración Global
+          </p>
+        </div>
+
+        <!-- Tarjeta Glassmorphism Oscura -->
+        <div class="glass-panel rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+          <!-- Destello superior sutil en el borde -->
+          <div class="absolute top-0 inset-x-12 h-px bg-gradient-to-r from-transparent via-amber-300/75 to-transparent"></div>
+
+          <!-- Selector de Pestañas: Iniciar Sesión / Crear Cuenta -->
+          <div class="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-black/55 border border-amber-200/10 mb-6">
+            <button
+              type="button"
+              id="tabLogin"
+              onclick="switchAuthMode('login')"
+              class="py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all bg-amber-400/15 text-amber-200 border border-amber-400/30 shadow-sm"
+            >
+              Iniciar Sesión
+            </button>
+            <button
+              type="button"
+              id="tabRegister"
+              onclick="switchAuthMode('register')"
+              class="py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-all text-stone-400 hover:text-amber-100 border border-transparent"
+            >
+              Crear Cuenta
+            </button>
+          </div>
+
+          <!-- Formulario de Autenticación -->
+          <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4" novalidate>
+            <!-- Campo Nombre Completo (Solo en Registro) -->
+            <div id="registerNameGroup" class="hidden space-y-1.5">
+              <label for="inputName" class="block text-xs font-medium text-amber-100/80 ml-1">
+                Nombre o Alias en la Colmena
+              </label>
+              <div class="relative">
+                <i data-lucide="user" class="w-4 h-4 text-amber-400/70 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                <input
+                  id="inputName"
+                  type="text"
+                  placeholder="Ej. Elena Vance"
+                  class="portal-input w-full rounded-xl pl-10 pr-4 py-3 text-sm"
+                />
+              </div>
+            </div>
+
+            <!-- Campo Correo Electrónico -->
+            <div class="space-y-1.5">
+              <label for="inputEmail" class="block text-xs font-medium text-amber-100/80 ml-1">
+                Correo Electrónico
+              </label>
+              <div class="relative">
+                <i data-lucide="mail" class="w-4 h-4 text-amber-400/70 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                <input
+                  id="inputEmail"
+                  type="email"
+                  required
+                  placeholder="miembro@alefdoor.org"
+                  class="portal-input w-full rounded-xl pl-10 pr-4 py-3 text-sm"
+                />
+              </div>
+            </div>
+
+            <!-- Campo Contraseña -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between ml-1">
+                <label for="inputPassword" class="block text-xs font-medium text-amber-100/80">
+                  Llave de Acceso (Contraseña)
+                </label>
+                <button
+                  type="button"
+                  onclick="fillDemoCredentials()"
+                  class="text-[11px] text-amber-300/80 hover:text-amber-200 underline underline-offset-2 transition-colors"
+                >
+                  Autocompletar credenciales
+                </button>
+              </div>
+              <div class="relative">
+                <i data-lucide="key-round" class="w-4 h-4 text-amber-400/70 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                <input
+                  id="inputPassword"
+                  type="password"
+                  required
+                  minlength="4"
+                  placeholder="••••••••"
+                  class="portal-input w-full rounded-xl pl-10 pr-11 py-3 text-sm"
+                />
+                <button
+                  type="button"
+                  onclick="togglePasswordVisibility()"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-amber-200 p-1"
+                  aria-label="Mostrar u ocultar contraseña"
+                >
+                  <i id="eyeIcon" data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Mensaje de Error Validación -->
+            <div id="authErrorBox" class="hidden rounded-xl bg-red-950/65 border border-red-500/40 px-3.5 py-2.5 text-xs text-red-200 flex items-center gap-2">
+              <i data-lucide="alert-circle" class="w-4 h-4 text-red-400 shrink-0"></i>
+              <span id="authErrorText">Por favor verifica tus credenciales.</span>
+            </div>
+
+            <!-- Botón Principal de Envío -->
+            <button
+              type="submit"
+              id="authSubmitBtn"
+              class="btn-gold-portal w-full py-3.5 px-5 rounded-xl text-sm flex items-center justify-center gap-2 mt-2"
+            >
+              <span id="authSubmitText">Cruzar el Umbral</span>
+              <i id="authSubmitIcon" data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </form>
+
+          <!-- Separador -->
+          <div class="relative my-5">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-amber-200/15"></div>
+            </div>
+            <div class="relative flex justify-center text-xs">
+              <span class="px-3 bg-[#0e0c0a] text-stone-400 rounded-full border border-amber-200/10">
+                o explora sin registro
+              </span>
+            </div>
+          </div>
+
+          <!-- Botón Acceso Rápido Demo / Invitado -->
+          <button
+            type="button"
+            onclick="handleDemoAccess()"
+            class="w-full py-3 px-4 rounded-xl bg-white/[0.04] hover:bg-amber-400/10 border border-amber-200/20 hover:border-amber-300/45 text-amber-100 text-xs sm:text-sm font-medium transition-all flex items-center justify-center gap-2.5 group"
+          >
+            <i data-lucide="sparkles" class="w-4 h-4 text-amber-300 group-hover:rotate-12 transition-transform"></i>
+            <span>Acceso Invitado / Demo Instantáneo</span>
+          </button>
+
+          <!-- Vista previa de las 3 páginas bloqueadas -->
+          <div class="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-stone-400">
+            <span class="flex items-center gap-1.5">
+              <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400/80"></i>
+              Desbloquea 3 espacios:
+            </span>
+            <div class="flex items-center gap-1.5 text-amber-200/80 font-medium">
+              <span>Colmena</span>
+              <span>•</span>
+              <span>Laboratorio</span>
+              <span>•</span>
+              <span>Ágora</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pie de Portada -->
+      <footer class="w-full max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-stone-400/90 text-center">
+        <p>© 2026 AlefDOOR · Arquitectura Abierta de Colaboración Global</p>
+        <p class="text-amber-200/60">Un umbral hacia la inteligencia colectiva</p>
+      </footer>
+    </section>
+
+
+    <!-- ======================================================================
+         VISTA 1: HUB CENTRAL DE CONEXIÓN A LAS 3 PÁGINAS (BENTO / GLASS)
+         ====================================================================== -->
+    <section id="view-hub" class="view-section view-hidden min-h-screen pt-28 pb-14 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+      <div class="max-w-6xl mx-auto w-full">
+        <!-- Encabezado de Bienvenida del Hub -->
+        <div class="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-400/10 border border-amber-300/30 text-amber-200 text-xs font-medium mb-4">
+            <i data-lucide="key" class="w-3.5 h-3.5 text-amber-300"></i>
+            <span>Portal Desbloqueado · Bienvenido, <strong id="hubWelcomeName" class="text-amber-100">Explorador</strong></span>
+          </div>
+          <h2 class="font-serif text-3xl sm:text-5xl font-semibold text-amber-50 tracking-tight mb-3 drop-shadow">
+            Elige tu Puerta en la <span class="italic text-amber-300">Colmena</span>
+          </h2>
+          <p class="text-sm sm:text-base text-stone-300 leading-relaxed">
+            Has cruzado el umbral de <strong class="text-amber-200 font-medium">AlefDOOR</strong>. Selecciona cualquiera de los tres ecosistemas interconectados para colaborar, innovar o dialogar en tiempo real.
+          </p>
+        </div>
+
+        <!-- Grid Bento de las 3 Páginas Principales -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-7">
+
+          <!-- PÁGINA 1: COLMENA CENTRAL -->
+          <article
+            onclick="navigateTo('colmena')"
+            class="bento-spotlight-card tilt-card cursor-pointer p-7 sm:p-8 flex flex-col justify-between group min-h-[360px]"
+          >
+            <div class="relative z-10">
+              <!-- Etiqueta Superior -->
+              <div class="flex items-center justify-between mb-6">
+                <span class="px-3 py-1 rounded-full text-[11px] font-semibold tracking-wider uppercase bg-amber-500/15 text-amber-300 border border-amber-400/30">
+                  Página 01 · Red Activa
+                </span>
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-300/20 to-amber-600/10 border border-amber-300/30 flex items-center justify-center group-hover:scale-110 group-hover:border-amber-300 transition-all duration-300">
+                  <i data-lucide="hexagon" class="w-6 h-6 text-amber-300"></i>
+                </div>
+              </div>
+
+              <!-- Título y Descripción -->
+              <h3 class="font-serif text-2xl sm:text-3xl font-bold text-amber-50 group-hover:text-amber-200 transition-colors mb-3">
+                Colmena Central
+              </h3>
+              <p class="text-sm text-stone-300/90 leading-relaxed mb-6">
+                Red de nodos activos, espacios de trabajo sincronizados y tablero de proyectos globales en curso donde cada miembro aporta su especialidad.
+              </p>
+            </div>
+
+            <!-- Métricas y Botón de Entrada -->
+            <div class="relative z-10 pt-5 border-t border-amber-200/10">
+              <div class="flex items-center justify-between text-xs text-stone-400 mb-4">
+                <span class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  128 Nodos Conectados
+                </span>
+                <span>24 Proyectos Activos</span>
+              </div>
+              <div class="w-full py-3 px-4 rounded-xl bg-amber-400/10 group-hover:bg-amber-400 group-hover:text-stone-950 border border-amber-300/30 text-amber-200 font-semibold text-xs sm:text-sm flex items-center justify-between transition-all duration-300">
+                <span>Ingresar a Colmena Central</span>
+                <i data-lucide="arrow-up-right" class="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
+              </div>
+            </div>
+          </article>
+
+          <!-- PÁGINA 2: LABORATORIO DE IDEAS -->
+          <article
+            onclick="navigateTo('laboratorio')"
+            class="bento-spotlight-card tilt-card cursor-pointer p-7 sm:p-8 flex flex-col justify-between group min-h-[360px]"
+          >
+            <div class="relative z-10">
+              <div class="flex items-center justify-between mb-6">
+                <span class="px-3 py-1 rounded-full text-[11px] font-semibold tracking-wider uppercase bg-yellow-500/15 text-yellow-200 border border-yellow-400/30">
+                  Página 02 · Código Abierto
+                </span>
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-300/20 to-amber-700/10 border border-yellow-300/30 flex items-center justify-center group-hover:scale-110 group-hover:border-yellow-300 transition-all duration-300">
+                  <i data-lucide="flask-conical" class="w-6 h-6 text-yellow-300"></i>
+                </div>
+              </div>
+
+              <h3 class="font-serif text-2xl sm:text-3xl font-bold text-amber-50 group-hover:text-yellow-200 transition-colors mb-3">
+                Laboratorio de Ideas
+              </h3>
+              <p class="text-sm text-stone-300/90 leading-relaxed mb-6">
+                Incubadora de innovación abierta, repositorios colaborativos, prototipos experimentales y co-creación técnica en tiempo real.
+              </p>
+            </div>
+
+            <div class="relative z-10 pt-5 border-t border-amber-200/10">
+              <div class="flex items-center justify-between text-xs text-stone-400 mb-4">
+                <span class="flex items-center gap-1.5">
+                  <i data-lucide="git-branch" class="w-3.5 h-3.5 text-amber-300"></i>
+                  42 Repositorios Abiertos
+                </span>
+                <span>19 Prototipos</span>
+              </div>
+              <div class="w-full py-3 px-4 rounded-xl bg-amber-400/10 group-hover:bg-amber-400 group-hover:text-stone-950 border border-amber-300/30 text-amber-200 font-semibold text-xs sm:text-sm flex items-center justify-between transition-all duration-300">
+                <span>Explorar Laboratorio</span>
+                <i data-lucide="arrow-up-right" class="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
+              </div>
+            </div>
+          </article>
+
+          <!-- PÁGINA 3: ÁGORA GLOBAL -->
+          <article
+            onclick="navigateTo('agora')"
+            class="bento-spotlight-card tilt-card cursor-pointer p-7 sm:p-8 flex flex-col justify-between group min-h-[360px]"
+          >
+            <div class="relative z-10">
+              <div class="flex items-center justify-between mb-6">
+                <span class="px-3 py-1 rounded-full text-[11px] font-semibold tracking-wider uppercase bg-orange-500/15 text-amber-200 border border-orange-400/30">
+                  Página 03 · Comunidad Viva
+                </span>
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-300/20 to-amber-600/10 border border-orange-300/30 flex items-center justify-center group-hover:scale-110 group-hover:border-orange-300 transition-all duration-300">
+                  <i data-lucide="globe" class="w-6 h-6 text-amber-300"></i>
+                </div>
+              </div>
+
+              <h3 class="font-serif text-2xl sm:text-3xl font-bold text-amber-50 group-hover:text-amber-200 transition-colors mb-3">
+                Ágora Global
+              </h3>
+              <p class="text-sm text-stone-300/90 leading-relaxed mb-6">
+                Foro de encuentro internacional, sesiones de mentoría en vivo, debates estratégicos y conexión directa entre creadores de todo el mundo.
+              </p>
+            </div>
+
+            <div class="relative z-10 pt-5 border-t border-amber-200/10">
+              <div class="flex items-center justify-between text-xs text-stone-400 mb-4">
+                <span class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                  3 Salas en Vivo
+                </span>
+                <span>38 Países</span>
+              </div>
+              <div class="w-full py-3 px-4 rounded-xl bg-amber-400/10 group-hover:bg-amber-400 group-hover:text-stone-950 border border-amber-300/30 text-amber-200 font-semibold text-xs sm:text-sm flex items-center justify-between transition-all duration-300">
+                <span>Entrar al Ágora Global</span>
+                <i data-lucide="arrow-up-right" class="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ======================================================================
+         VISTA 2: PÁGINA 1 — COLMENA CENTRAL
+         ====================================================================== -->
+    <section id="view-colmena" class="view-section view-hidden min-h-screen pt-28 pb-14 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-6xl mx-auto space-y-6">
+        <!-- Cabecera de Página -->
+        <div class="glass-panel rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <button onclick="navigateTo('hub')" class="inline-flex items-center gap-1.5 text-xs text-amber-300 hover:text-amber-200 mb-3 transition-colors">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+              Volver al Portal de las 3 Páginas
+            </button>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-300/30 flex items-center justify-center">
+                <i data-lucide="hexagon" class="w-5 h-5 text-amber-300"></i>
+              </div>
+              <div>
+                <h2 class="font-serif text-2xl sm:text-4xl font-bold text-amber-50">Colmena Central</h2>
+                <p class="text-xs sm:text-sm text-stone-300">Nodos de trabajo colaborativo y coordinación de proyectos globales activos</p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onclick="createNewHiveNode()"
+            class="btn-gold-portal px-4 py-2.5 rounded-xl text-xs sm:text-sm inline-flex items-center justify-center gap-2 self-start md:self-auto"
+          >
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Nuevo Nodo Colaborativo</span>
+          </button>
+        </div>
+
+        <!-- Métricas Rápidas -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="glass-panel rounded-2xl p-4 sm:p-5">
+            <p class="text-xs text-stone-400 mb-1">Nodos en Línea</p>
+            <p class="text-2xl sm:text-3xl font-bold text-amber-200">128</p>
+            <p class="text-[11px] text-emerald-400 mt-1">+14% esta semana</p>
+          </div>
+          <div class="glass-panel rounded-2xl p-4 sm:p-5">
+            <p class="text-xs text-stone-400 mb-1">Células Activas</p>
+            <p id="activeCellsCount" class="text-2xl sm:text-3xl font-bold text-amber-200">24</p>
+            <p class="text-[11px] text-amber-300/80 mt-1">Sincronización global</p>
+          </div>
+          <div class="glass-panel rounded-2xl p-4 sm:p-5">
+            <p class="text-xs text-stone-400 mb-1">Tareas Completadas</p>
+            <p class="text-2xl sm:text-3xl font-bold text-amber-200">1,492</p>
+            <p class="text-[11px] text-stone-400 mt-1">Ciclo Q4 2026</p>
+          </div>
+          <div class="glass-panel rounded-2xl p-4 sm:p-5">
+            <p class="text-xs text-stone-400 mb-1">Índice de Sinergia</p>
+            <p class="text-2xl sm:text-3xl font-bold text-amber-200">98.4%</p>
+            <p class="text-[11px] text-emerald-400 mt-1">Latencia óptima</p>
+          </div>
+        </div>
+
+        <!-- Lista de Espacios Colaborativos Interactivos -->
+        <div id="colmenaGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Renderizado dinámico mediante JS -->
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ======================================================================
+         VISTA 3: PÁGINA 2 — LABORATORIO DE IDEAS
+         ====================================================================== -->
+    <section id="view-laboratorio" class="view-section view-hidden min-h-screen pt-28 pb-14 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-6xl mx-auto space-y-6">
+        <!-- Cabecera -->
+        <div class="glass-panel rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <button onclick="navigateTo('hub')" class="inline-flex items-center gap-1.5 text-xs text-amber-300 hover:text-amber-200 mb-3 transition-colors">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+              Volver al Portal de las 3 Páginas
+            </button>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-yellow-400/15 border border-yellow-300/30 flex items-center justify-center">
+                <i data-lucide="flask-conical" class="w-5 h-5 text-yellow-300"></i>
+              </div>
+              <div>
+                <h2 class="font-serif text-2xl sm:text-4xl font-bold text-amber-50">Laboratorio de Ideas</h2>
+                <p class="text-xs sm:text-sm text-stone-300">Incubadora de innovación, repositorios de código abierto y propuestas comunitarias</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulario rápido para proponer idea -->
+          <form onsubmit="addLabIdea(event)" class="flex items-center gap-2 w-full md:w-auto">
+            <input
+              id="newIdeaInput"
+              type="text"
+              required
+              placeholder="Proponer nueva idea o repo..."
+              class="portal-input rounded-xl px-3.5 py-2.5 text-xs sm:text-sm w-full md:w-64"
+            />
+            <button type="submit" class="btn-gold-portal px-4 py-2.5 rounded-xl text-xs sm:text-sm shrink-0">
+              Publicar
+            </button>
+          </form>
+        </div>
+
+        <!-- Repositorios e Ideas en Incubación -->
+        <div id="labIdeasList" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- Renderizado dinámico mediante JS -->
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ======================================================================
+         VISTA 4: PÁGINA 3 — ÁGORA GLOBAL
+         ====================================================================== -->
+    <section id="view-agora" class="view-section view-hidden min-h-screen pt-28 pb-14 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-6xl mx-auto space-y-6">
+        <!-- Cabecera -->
+        <div class="glass-panel rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <button onclick="navigateTo('hub')" class="inline-flex items-center gap-1.5 text-xs text-amber-300 hover:text-amber-200 mb-3 transition-colors">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+              Volver al Portal de las 3 Páginas
+            </button>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-300/30 flex items-center justify-center">
+                <i data-lucide="globe" class="w-5 h-5 text-amber-300"></i>
+              </div>
+              <div>
+                <h2 class="font-serif text-2xl sm:text-4xl font-bold text-amber-50">Ágora Global</h2>
+                <p class="text-xs sm:text-sm text-stone-300">Comunidad en vivo, círculos de mentoría y conversación abierta entre miembros</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-500/15 border border-emerald-400/30 text-emerald-200 text-xs font-medium self-start md:self-auto">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span>Canal Global Abierto</span>
+          </div>
+        </div>
+
+        <!-- Layout de 2 Columnas: Eventos en Vivo + Muro de Conversación -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Columna Izquierda: Salas en Vivo -->
+          <div class="space-y-4">
+            <h3 class="font-serif text-xl font-semibold text-amber-100 px-1">Salas de Mentoría en Vivo</h3>
+            <div class="glass-panel rounded-2xl p-5 space-y-4">
+              <div class="p-3.5 rounded-xl bg-black/45 border border-amber-300/20 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] font-semibold text-amber-300 uppercase">En Directo · Sala 01</span>
+                  <span class="text-[11px] text-stone-400">42 oyentes</span>
+                </div>
+                <h4 class="text-sm font-semibold text-amber-50">Diseño de Sistemas Distribuidos y Ética IA</h4>
+                <p class="text-xs text-stone-400">Anfitrión: Dr. Mateo Solís · Madrid / Bogotá</p>
+                <button onclick="showToast('Te has unido como oyente a la Sala 01', 'success')" class="w-full mt-1 py-2 rounded-lg bg-amber-400/15 hover:bg-amber-400/25 border border-amber-300/30 text-amber-200 text-xs font-medium transition-colors">
+                  Unirse a la transmisión
+                </button>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-black/45 border border-white/10 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] font-semibold text-stone-300 uppercase">En Directo · Sala 02</span>
+                  <span class="text-[11px] text-stone-400">27 oyentes</span>
+                </div>
+                <h4 class="text-sm font-semibold text-amber-50">Arquitecturas Open-Source para Impacto Social</h4>
+                <p class="text-xs text-stone-400">Anfitriona: Sofía Andrade · Caracas / Buenos Aires</p>
+                <button onclick="showToast('Te has unido como oyente a la Sala 02', 'success')" class="w-full mt-1 py-2 rounded-lg bg-white/5 hover:bg-amber-400/15 border border-white/15 text-stone-200 text-xs font-medium transition-colors">
+                  Unirse a la transmisión
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna Derecha: Hilo del Ágora en Tiempo Real -->
+          <div class="lg:col-span-2 space-y-4">
+            <h3 class="font-serif text-xl font-semibold text-amber-100 px-1">Plaza de Diálogo Global</h3>
+            <div class="glass-panel rounded-2xl p-5 space-y-4">
+              <!-- Publicar mensaje en el Ágora -->
+              <form onsubmit="postAgoraMessage(event)" class="flex gap-2.5">
+                <input
+                  id="agoraMessageInput"
+                  type="text"
+                  required
+                  placeholder="Comparte una reflexión o convocatoria con la colmena..."
+                  class="portal-input flex-1 rounded-xl px-4 py-2.5 text-sm"
+                />
+                <button type="submit" class="btn-gold-portal px-4 py-2.5 rounded-xl text-xs sm:text-sm inline-flex items-center gap-1.5">
+                  <i data-lucide="send" class="w-4 h-4"></i>
+                  <span>Enviar</span>
+                </button>
+              </form>
+
+              <!-- Feed de mensajes -->
+              <div id="agoraFeed" class="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                <!-- Renderizado dinámico mediante JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================
+       LÓGICA DE APLICACIÓN, PARTÍCULAS, EFECTOS 3D Y AUTENTICACIÓN
+       ======================================================================== -->
+  <script>
+    // Inicializar iconos Lucide
+    lucide.createIcons();
+
+    // Estado de la aplicación
+    const appState = {
+      authMode: 'login', // 'login' | 'register'
+      user: null,
+      currentView: 'auth',
+      colmenaNodes: [
+        {
+          id: 1,
+          title: 'Núcleo de Inteligencia Colectiva',
+          region: 'Hispanoamérica · Nodo Alpha',
+          members: 34,
+          progress: 82,
+          tag: 'Estrategia'
+        },
+        {
+          id: 2,
+          title: 'Infraestructura Open-Source Alef',
+          region: 'Europa & América · Nodo Beta',
+          members: 51,
+          progress: 91,
+          tag: 'Ingeniería'
+        },
+        {
+          id: 3,
+          title: 'Red de Sostenibilidad y Territorio',
+          region: 'Andes & Caribe · Nodo Gamma',
+          members: 29,
+          progress: 68,
+          tag: 'Impacto'
+        }
+      ],
+      labIdeas: [
+        {
+          id: 101,
+          title: 'Protocolo Alef-Sync v2.4',
+          author: 'Camila Mendoza',
+          votes: 64,
+          status: 'En Desarrollo',
+          desc: 'Motor descentralizado para sincronizar documentos y pizarras colaborativas sin latencia.'
+        },
+        {
+          id: 102,
+          title: 'Atlas Interactivo de Mentores',
+          author: 'Julián Torres',
+          votes: 49,
+          status: 'Prototipo',
+          desc: 'Visualización geoespacial en tiempo real de especialistas disponibles en cada huso horario.'
+        },
+        {
+          id: 103,
+          title: 'Kit UI Glassmorphism Accesible',
+          author: 'Valeria Ríos',
+          votes: 83,
+          status: 'Publicado',
+          desc: 'Librería CSS de alto contraste inspirada en luz cálida sobre superficies oscuras.'
+        },
+        {
+          id: 104,
+          title: 'Traducción Simultánea en Salas Ágora',
+          author: 'Andrés Castellanos',
+          votes: 37,
+          status: 'Propuesta',
+          desc: 'Subtitulado neuronal multilingüe para debates abiertos entre miembros de distintos idiomas.'
+        }
+      ],
+      agoraMessages: [
+        {
+          author: 'Elena Vance',
+          role: 'Arquitecta de Sistemas · Madrid',
+          time: 'Hace 4 min',
+          text: 'Acabamos de liberar la nueva versión del repositorio en el Laboratorio de Ideas. ¡Buscamos colaboradores para pruebas de interfaz!'
+        },
+        {
+          author: 'Mateo Solís',
+          role: 'Coordinador de Nodo · Bogotá',
+          time: 'Hace 18 min',
+          text: 'Bienvenidos a los nuevos integrantes que cruzaron hoy el umbral de AlefDOOR. Recuerden revisar los proyectos activos en la Colmena Central.'
+        },
+        {
+          author: 'Sofía Andrade',
+          role: 'Investigadora · Caracas',
+          time: 'Hace 42 min',
+          text: 'En 15 minutos abrimos el círculo de mentoría sobre comunidades de código abierto en la Sala 02.'
+        }
+      ]
+    };
+
+    // 1. GENERADOR DE PARTÍCULAS DORADAS FLOTANTES
+    function initGoldenParticles() {
+      const container = document.getElementById('particlesLayer');
+      if (!container) return;
+      const count = window.innerWidth < 640 ? 18 : 34;
+      container.innerHTML = '';
+
+      for (let i = 0; i < count; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'dust-particle';
+        const size = (Math.random() * 3.2 + 1.5).toFixed(1);
+        const left = (Math.random() * 100).toFixed(2);
+        const top = (Math.random() * 85 + 15).toFixed(2);
+        const dur = (Math.random() * 10 + 9).toFixed(1);
+        const delay = (Math.random() * -14).toFixed(1);
+        const drift = ((Math.random() - 0.5) * 90).toFixed(0);
+        const maxOp = (Math.random() * 0.55 + 0.25).toFixed(2);
+
+        dot.style.width = `${size}px`;
+        dot.style.height = `${size}px`;
+        dot.style.left = `${left}%`;
+        dot.style.top = `${top}%`;
+        dot.style.setProperty('--dur', `${dur}s`);
+        dot.style.setProperty('--delay', `${delay}s`);
+        dot.style.setProperty('--drift', `${drift}px`);
+        dot.style.setProperty('--max-op', maxOp);
+
+        container.appendChild(dot);
+      }
+    }
+
+    // 2. EFECTO SPOTLIGHT RADIAL + TILT 3D SUTIL EN TARJETAS BENTO
+    function initBentoInteractions() {
+      const cards = document.querySelectorAll('.bento-spotlight-card');
+      cards.forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+
+          card.style.setProperty('--mouse-x', `${x}px`);
+          card.style.setProperty('--mouse-y', `${y}px`);
+
+          // Tilt 3D suave en pantallas de escritorio
+          if (window.innerWidth >= 1024) {
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -4;
+            const rotateY = ((x - centerX) / centerX) * 4;
+            card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-4px)`;
+          }
+        });
+
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+        });
+      });
+    }
+
+    // 3. CAMBIO DE MODO EN AUTENTICACIÓN (LOGIN / REGISTRO)
+    function switchAuthMode(mode) {
+      appState.authMode = mode;
+      const tabLogin = document.getElementById('tabLogin');
+      const tabRegister = document.getElementById('tabRegister');
+      const nameGroup = document.getElementById('registerNameGroup');
+      const submitText = document.getElementById('authSubmitText');
+      const errorBox = document.getElementById('authErrorBox');
+
+      errorBox.classList.add('hidden');
+
+      if (mode === 'login') {
+        tabLogin.className = 'py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all bg-amber-400/15 text-amber-200 border border-amber-400/30 shadow-sm';
+        tabRegister.className = 'py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-all text-stone-400 hover:text-amber-100 border border-transparent';
+        nameGroup.classList.add('hidden');
+        submitText.textContent = 'Cruzar el Umbral';
+      } else {
+        tabRegister.className = 'py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all bg-amber-400/15 text-amber-200 border border-amber-400/30 shadow-sm';
+        tabLogin.className = 'py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-all text-stone-400 hover:text-amber-100 border border-transparent';
+        nameGroup.classList.remove('hidden');
+        submitText.textContent = 'Crear Identidad y Entrar';
+      }
+    }
+
+    // Mostrar/ocultar contraseña
+    function togglePasswordVisibility() {
+      const input = document.getElementById('inputPassword');
+      const icon = document.getElementById('eyeIcon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    }
+
+    // Autocompletar credenciales de prueba
+    function fillDemoCredentials() {
+      document.getElementById('inputEmail').value = 'arquitecto@alefdoor.org';
+      document.getElementById('inputPassword').value = 'Alef2026!';
+      if (appState.authMode === 'register') {
+        document.getElementById('inputName').value = 'Arquitecto Alef';
+      }
+      showToast('Credenciales de prueba listas. Pulsa "Cruzar el Umbral".', 'info');
+    }
+
+    // Validación y envío del formulario de autenticación
+    function handleAuthSubmit(event) {
+      event.preventDefault();
+      const email = document.getElementById('inputEmail').value.trim();
+      const password = document.getElementById('inputPassword').value.trim();
+      const nameInput = document.getElementById('inputName').value.trim();
+      const errorBox = document.getElementById('authErrorBox');
+      const errorText = document.getElementById('authErrorText');
+
+      if (!email || !email.includes('@')) {
+        errorText.textContent = 'Ingresa un correo electrónico válido para continuar.';
+        errorBox.classList.remove('hidden');
+        return;
+      }
+
+      if (password.length < 4) {
+        errorText.textContent = 'La llave de acceso debe tener al menos 4 caracteres.';
+        errorBox.classList.remove('hidden');
+        return;
+      }
+
+      if (appState.authMode === 'register' && nameInput.length < 2) {
+        errorText.textContent = 'Por favor indica tu nombre o alias en la colmena.';
+        errorBox.classList.remove('hidden');
+        return;
+      }
+
+      errorBox.classList.add('hidden');
+
+      const derivedName = appState.authMode === 'register'
+        ? nameInput
+        : email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+      unlockPortal({
+        name: derivedName,
+        email: email,
+        role: appState.authMode === 'register' ? 'Nuevo Miembro' : 'Nodo Verificado'
+      });
+    }
+
+    // Acceso Instantáneo Invitado / Demo
+    function handleDemoAccess() {
+      unlockPortal({
+        name: 'Invitado Alef',
+        email: 'demo@alefdoor.org',
+        role: 'Acceso Demo'
+      });
+    }
+
+    // 4. TRANSICIÓN ANIMADA DE APERTURA DE PORTAL Y DESBLOQUEO
+    function unlockPortal(userObj) {
+      const submitBtn = document.getElementById('authSubmitBtn');
+      const submitText = document.getElementById('authSubmitText');
+      const flash = document.getElementById('portalFlash');
+
+      submitBtn.disabled = true;
+      submitText.textContent = 'Abriendo el portal...';
+
+      // Activar destello dorado de puerta abriéndose
+      flash.classList.add('active');
+      document.body.classList.add('portal-unlocked');
+
+      setTimeout(() => {
+        appState.user = userObj;
+
+        // Actualizar UI con datos del usuario
+        const initials = userObj.name
+          .split(' ')
+          .map(p => p[0])
+          .join('')
+          .substring(0, 2)
+          .toUpperCase();
+
+        document.getElementById('userAvatarBadge').textContent = initials || 'AD';
+        document.getElementById('userDisplayName').textContent = userObj.name;
+        document.getElementById('userRoleBadge').textContent = userObj.role;
+        document.getElementById('hubWelcomeName').textContent = userObj.name;
+
+        // Mostrar barra de navegación superior
+        const navbar = document.getElementById('topNavbar');
+        navbar.classList.remove('-translate-y-full', 'opacity-0', 'pointer-events-none');
+        navbar.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+
+        // Renderizar datos iniciales de las 3 páginas
+        renderColmena();
+        renderLabIdeas();
+        renderAgoraFeed();
+
+        // Navegar al Hub de las 3 Páginas
+        navigateTo('hub');
+
+        // Desvanecer destello
+        flash.classList.remove('active');
+        submitBtn.disabled = false;
+        submitText.textContent = appState.authMode === 'login' ? 'Cruzar el Umbral' : 'Crear Identidad y Entrar';
+
+        showToast(`¡Bienvenido a AlefDOOR, ${userObj.name}!`, 'success');
+      }, 550);
+    }
+
+    // Cerrar Sesión y regresar a la portada
+    function handleLogout() {
+      appState.user = null;
+      document.body.classList.remove('portal-unlocked');
+
+      const navbar = document.getElementById('topNavbar');
+      navbar.classList.add('-translate-y-full', 'opacity-0', 'pointer-events-none');
+      navbar.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+
+      navigateTo('auth');
+      showToast('Sesión cerrada. Has regresado al umbral.', 'info');
+    }
+
+    // 5. NAVEGACIÓN SPA ENTRE PORTADA, HUB Y LAS 3 PÁGINAS
+    function navigateTo(viewName) {
+      appState.currentView = viewName;
+      const views = ['auth', 'hub', 'colmena', 'laboratorio', 'agora'];
+
+      views.forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        if (!el) return;
+        if (v === viewName) {
+          el.classList.remove('view-hidden');
+          el.classList.add('view-active');
+        } else {
+          el.classList.remove('view-active');
+          el.classList.add('view-hidden');
+        }
+      });
+
+      // Actualizar estado activo en las píldoras del navbar
+      document.querySelectorAll('.nav-pill').forEach(btn => {
+        const target = btn.getAttribute('data-nav');
+        if (target === viewName) {
+          btn.className = 'nav-pill px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 text-amber-200 bg-amber-500/20 border border-amber-400/30';
+        } else {
+          btn.className = 'nav-pill px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 text-stone-300 hover:text-amber-200 border border-transparent';
+        }
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 6. RENDERIZADO E INTERACTIVIDAD DE LAS 3 PÁGINAS
+
+    // Página 1: Colmena Central
+    function renderColmena() {
+      const grid = document.getElementById('colmenaGrid');
+      const countEl = document.getElementById('activeCellsCount');
+      if (!grid) return;
+
+      countEl.textContent = 21 + appState.colmenaNodes.length;
+
+      grid.innerHTML = appState.colmenaNodes.map(node => `
+        <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-amber-300/40 transition-all">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-400/15 text-amber-200 border border-amber-300/25">
+                ${node.tag}
+              </span>
+              <span class="text-xs text-stone-400 flex items-center gap-1">
+                <i data-lucide="users" class="w-3.5 h-3.5 text-amber-300"></i>
+                ${node.members}
+              </span>
+            </div>
+            <h3 class="font-serif text-xl font-bold text-amber-50 mb-1">${node.title}</h3>
+            <p class="text-xs text-stone-400">${node.region}</p>
+          </div>
+
+          <div class="space-y-3 pt-3 border-t border-white/10">
+            <div>
+              <div class="flex justify-between text-[11px] mb-1">
+                <span class="text-stone-400">Avance de Sincronización</span>
+                <span class="text-amber-200 font-semibold">${node.progress}%</span>
+              </div>
+              <div class="w-full h-1.5 rounded-full bg-black/60 overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-amber-500 to-yellow-200 rounded-full" style="width: ${node.progress}%"></div>
+              </div>
+            </div>
+            <button
+              onclick="joinColmenaNode(${node.id})"
+              class="w-full py-2 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 border border-amber-300/25 text-amber-200 text-xs font-semibold transition-colors"
+            >
+              Conectar al Nodo
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    function createNewHiveNode() {
+      const titles = [
+        'Célula de Innovación Bio-Digital',
+        'Observatorio de Datos Abiertos',
+        'Taller de Diseño Regenerativo',
+        'Red de Educación Sin Fronteras'
+      ];
+      const randomTitle = titles[Math.floor(Math.random() * titles.length)];
+      appState.colmenaNodes.unshift({
+        id: Date.now(),
+        title: randomTitle,
+        region: 'Red Global · Nuevo Nodo',
+        members: 1,
+        progress: 15,
+        tag: 'Colaboración'
+      });
+      renderColmena();
+      showToast(`Nodo "${randomTitle}" creado en la Colmena Central.`, 'success');
+    }
+
+    function joinColmenaNode(id) {
+      const node = appState.colmenaNodes.find(n => n.id === id);
+      if (node) {
+        node.members += 1;
+        renderColmena();
+        showToast(`Te has conectado a "${node.title}".`, 'success');
+      }
+    }
+
+    // Página 2: Laboratorio de Ideas
+    function renderLabIdeas() {
+      const list = document.getElementById('labIdeasList');
+      if (!list) return;
+
+      list.innerHTML = appState.labIdeas.map(idea => `
+        <div class="glass-panel rounded-2xl p-5 sm:p-6 flex flex-col justify-between gap-4 hover:border-amber-300/35 transition-all">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2.5">
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-yellow-400/15 text-yellow-200 border border-yellow-300/25">
+                ${idea.status}
+              </span>
+              <span class="text-xs text-stone-400">por <strong class="text-stone-200 font-medium">${idea.author}</strong></span>
+            </div>
+            <h3 class="font-serif text-xl font-bold text-amber-50 mb-1.5">${idea.title}</h3>
+            <p class="text-xs sm:text-sm text-stone-300 leading-relaxed">${idea.desc}</p>
+          </div>
+
+          <div class="flex items-center justify-between pt-3 border-t border-white/10">
+            <button
+              onclick="voteLabIdea(${idea.id})"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400/10 hover:bg-amber-400/25 border border-amber-300/30 text-amber-200 text-xs font-semibold transition-all"
+            >
+              <i data-lucide="flame" class="w-3.5 h-3.5 text-amber-300"></i>
+              <span>Impulsar (${idea.votes})</span>
+            </button>
+            <span class="text-[11px] text-stone-400 flex items-center gap-1">
+              <i data-lucide="git-fork" class="w-3.5 h-3.5"></i>
+              Licencia MIT / Abierta
+            </span>
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    function addLabIdea(event) {
+      event.preventDefault();
+      const input = document.getElementById('newIdeaInput');
+      const value = input.value.trim();
+      if (!value) return;
+
+      appState.labIdeas.unshift({
+        id: Date.now(),
+        title: value,
+        author: appState.user ? appState.user.name : 'Miembro Alef',
+        votes: 1,
+        status: 'Nueva Propuesta',
+        desc: 'Iniciativa abierta recién registrada en el Laboratorio de Ideas para co-creación comunitaria.'
+      });
+
+      input.value = '';
+      renderLabIdeas();
+      showToast('Propuesta publicada en el Laboratorio de Ideas.', 'success');
+    }
+
+    function voteLabIdea(id) {
+      const idea = appState.labIdeas.find(i => i.id === id);
+      if (idea) {
+        idea.votes += 1;
+        renderLabIdeas();
+        showToast(`Has impulsado "${idea.title}".`, 'info');
+      }
+    }
+
+    // Página 3: Ágora Global
+    function renderAgoraFeed() {
+      const feed = document.getElementById('agoraFeed');
+      if (!feed) return;
+
+      feed.innerHTML = appState.agoraMessages.map(msg => `
+        <div class="p-4 rounded-xl bg-black/45 border border-amber-200/10 space-y-1.5">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-semibold text-amber-200">${msg.author}</span>
+              <span class="text-[11px] text-stone-400 ml-2">${msg.role}</span>
+            </div>
+            <span class="text-[11px] text-stone-500">${msg.time}</span>
+          </div>
+          <p class="text-xs sm:text-sm text-stone-200 leading-relaxed">${msg.text}</p>
+        </div>
+      `).join('');
+    }
+
+    function postAgoraMessage(event) {
+      event.preventDefault();
+      const input = document.getElementById('agoraMessageInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appState.agoraMessages.unshift({
+        author: appState.user ? appState.user.name : 'Miembro Alef',
+        role: `${appState.user ? appState.user.role : 'Nodo'} · En línea`,
+        time: 'Ahora mismo',
+        text: text
+      });
+
+      input.value = '';
+      renderAgoraFeed();
+      showToast('Mensaje compartido en el Ágora Global.', 'success');
+    }
+
+    // 7. SISTEMA DE NOTIFICACIONES TOAST
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      const iconName = type === 'success' ? 'check-circle-2' : 'sparkles';
+      toast.className = 'pointer-events-auto glass-panel rounded-2xl px-4 py-3 flex items-center gap-3 text-xs sm:text-sm text-amber-50 border border-amber-300/30 shadow-2xl transform transition-all duration-300 translate-y-2 opacity-0';
+      toast.innerHTML = `
+        <i data-lucide="${iconName}" class="w-4 h-4 text-amber-300 shrink-0"></i>
+        <span class="leading-snug">${message}</span>
+      `;
+
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3400);
+    }
+
+    // Inicializar efectos al cargar la página
+    window.addEventListener('DOMContentLoaded', () => {
+      initGoldenParticles();
+      initBentoInteractions();
+    });
+
+    window.addEventListener('resize', () => {
+      initGoldenParticles();
+    });
+  </script>
+</body>
+</html>

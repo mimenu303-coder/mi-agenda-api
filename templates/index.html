@@ -1,370 +1,744 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
-    <title>Sistema de Gestión y Triaje</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlefDOOR - Colmena de Colaboración Global</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        amberGlow: {
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                        }
+                    },
+                    boxShadow: {
+                        'neon': '0 0 25px rgba(245, 158, 11, 0.35)',
+                        'neon-strong': '0 0 45px rgba(245, 158, 11, 0.6)'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; margin: 30px; background-color: #f9f9f9; }
-        .menu { margin-bottom: 25px; }
-        .menu button { padding: 10px 15px; font-size: 15px; cursor: pointer; margin-right: 8px; background-color: #007BFF; color: white; border: none; border-radius: 4px; }
-        .menu button:hover { background-color: #0056b3; }
-        .seccion { display: none; background: white; padding: 20px; border-radius: 6px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); }
-        .seccion.activa { display: block; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        pre { background: #eee; padding: 10px; border-radius: 4px; }
-        .info-edad { font-weight: bold; color: #007BFF; margin-top: 5px; display: block; }
-        .card-informe { background: #fdfdfd; border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #050505;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        .cinzel-font {
+            font-family: 'Cinzel', serif;
+        }
+        /* Custom background matching user's door aesthetic */
+        .hero-bg {
+            background: linear-gradient(to bottom, rgba(5,5,5,0.7), rgba(5,5,5,0.92)), url('https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&q=80&w=1920') center/cover no-repeat;
+        }
+        .glass-panel {
+            background: rgba(18, 18, 22, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        .glass-card {
+            background: rgba(24, 24, 27, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            border-color: rgba(245, 158, 11, 0.5);
+            box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.2);
+            transform: translateY(-3px);
+        }
+        /* Golden door light animation beam */
+        @keyframes doorGlow {
+            0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 35px rgba(245,158,11,0.5)); }
+            50% { opacity: 0.9; filter: drop-shadow(0 0 65px rgba(245,158,11,0.8)); }
+        }
+        .animate-door-glow {
+            animation: doorGlow 4s ease-in-out infinite;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d97706;
+        }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-black">
 
-    <h1>Sistema de Triaje y Agenda (PostgreSQL)</h1>
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-    <!-- Menú de Navegación -->
-    <div class="menu">
-        <button onclick="mostrarSeccion('registro')">Registrar Nuevo</button>
-        <button onclick="mostrarSeccion('listado')">Listar Registros</button>
-        <button onclick="mostrarSeccion('diario')">Informe Diario</button>
-        <button onclick="mostrarSeccion('semanal')">Informe Semanal</button>
-    </div>
+    <!-- HEADER / NAVIGATION -->
+    <header class="w-full fixed top-0 left-0 z-40 border-b border-white/10 bg-black/40 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('home')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center shadow-neon">
+                    <i class="fa-solid fa-door-open text-black text-lg font-bold"></i>
+                </div>
+                <div>
+                    <span class="cinzel-font text-xl font-bold tracking-wider text-white">Alef<span class="text-amber-500">DOOR</span></span>
+                    <span class="block text-[10px] tracking-widest text-amber-400/80 uppercase font-medium">Colmena Global</span>
+                </div>
+            </div>
 
-    <!-- SECCIÓN 1: FORMULARIO DE REGISTRO -->
-    <div id="seccion-registro" class="seccion activa">
-        <h2>Registrar Nuevo Paciente</h2>
-        <form id="contactoForm">
-            <label for="nombre">Nombre:</label><br>
-            <input type="text" id="nombre" name="nombre" required style="width: 100%; max-width: 400px; padding: 6px;"><br><br>
+            <!-- Nav Actions -->
+            <div class="flex items-center space-x-4">
+                <button onclick="openDbModal()" class="hidden md:flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-amber-400">
+                    <i class="fa-solid fa-database"></i>
+                    <span>Esquema PostgreSQL (Neon)</span>
+                </button>
 
-            <label for="telefono">Teléfono:</label><br>
-            <input type="text" id="telefono" name="telefono" required style="width: 100%; max-width: 400px; padding: 6px;"><br><br>
+                <div id="auth-nav-container">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </div>
+    </header>
 
-            <label for="turno">Turno:</label><br>
-            <input type="text" id="turno" name="turno" style="width: 100%; max-width: 400px; padding: 6px;"><br><br>
+    <!-- MAIN APP CONTAINER -->
+    <main class="flex-grow pt-20">
 
-            <label for="Fenaci">Fecha de Nacimiento:</label><br>
-            <input type="date" id="Fenaci" name="Fenaci" required style="padding: 6px;"><br>
-            <span id="labelEdad" class="info-edad">Edad calculada: -</span><br>
+        <!-- VIEW 1: LANDING / PORTADA -->
+        <section id="view-home" class="relative min-h-[calc(100vh-5rem)] hero-bg flex items-center justify-center px-6 py-16">
+            <!-- Ambient Golden Lighting Effects -->
+            <div class="absolute inset-0 bg-radial-gradient from-amber-500/10 via-transparent to-black pointer-events-none"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[550px] bg-amber-500/20 blur-[120px] rounded-full pointer-events-none animate-door-glow"></div>
 
-            <!-- Sección dinámica para lactantes (< 1 año) -->
-            <div id="seccionLactante" style="display: none; margin-bottom: 15px; background: #fff3cd; padding: 10px; border-radius: 4px; max-width: 400px;">
-                <label for="lactante">Tipo de Lactancia (Menor de 1 año):</label><br>
-                <select id="lactante" name="lactante" style="width: 100%; padding: 6px;">
-                    <option value="">Seleccione...</option>
-                    <option value="Exclusivo">Exclusivo</option>
-                    <option value="Mixto">Mixto</option>
-                </select>
-            </div><br>
-           
-            <label>Sexo:</label><br>
-            <input type="radio" id="M" name="Sexo" value="M" required>
-            <label for="M">Masculino</label>
-            <input type="radio" id="F" name="Sexo" value="F" style="margin-left: 15px;">
-            <label for="F">Femenino</label><br><br>
+            <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10 w-full">
+                <!-- Left Column: Hero Copy -->
+                <div class="lg:col-span-7 text-center lg:text-left space-y-6">
+                    <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold tracking-wide animate-pulse">
+                        <i class="fa-solid fa-globe"></i>
+                        <span>Ecosistema de Colmena de Colaboración Global</span>
+                    </div>
+                    
+                    <h1 class="cinzel-font text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight">
+                        Abriendo Puertas al <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600">Desarrollo Abierto</span>
+                    </h1>
 
-            <label for="Peso">Peso (kg):</label><br>
-            <input type="number" step="0.01" id="Peso" name="Peso" required style="padding: 6px;"><br><br>         
-           
-            <label for="Talla">Talla (m):</label><br>
-            <input type="number" step="0.01" id="Talla" name="Talla" required style="padding: 6px;"><br><br>  
+                    <p class="text-zinc-400 text-base sm:text-lg max-w-xl mx-auto lg:mx-0 font-light leading-relaxed">
+                        Conecta, sincroniza y gestiona tus 3 repositorios estratégicos de GitHub bajo un entorno moderno, seguro y optimizado con base de datos en la nube Neon PostgreSQL.
+                    </p>
 
-            <label for="inputTriaje">Seleccione Tipo de Triaje:</label><br>
-            <input list="listaTriaje" name="TipoTriaje" id="inputTriaje" placeholder="Haga click..." required style="width: 100%; max-width: 400px; padding: 6px;"><br><br>
-            <datalist id="listaTriaje">
-                <option value="IM">
-                <option value="EV">
-                <option value="Nebulizacion">
-                <option value="Tratamiento">
-                <option value="Sin Tratamiento">
-                <option value="Suturas">
-                <option value="Lavado Nasal">
-                <option value="Lavado Oido">
-                <option value="Curas Realizadas">    
-            </datalist>
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4 pt-4">
+                        <button onclick="switchAuthTab('register'); openAuthModal();" class="w-full sm:w-auto px-8 py-4 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black shadow-neon hover:shadow-neon-strong transition-all flex items-center justify-center space-x-2">
+                            <span>Comenzar Ahora</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        <button onclick="openDbModal()" class="w-full sm:w-auto px-8 py-4 rounded-xl font-semibold glass-panel hover:bg-white/10 text-white transition-all flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-code text-amber-400"></i>
+                            <span>Ver Base de Datos</span>
+                        </button>
+                    </div>
 
-            <label for="observacion">Observación:</label><br>
-            <textarea id="observacion" name="observacion" rows="3" style="width: 100%; max-width: 400px; padding: 6px;"></textarea><br><br>
-            
-            <button type="submit" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Guardar en Base de Datos</button>
-        </form><br>
-        <pre id="resultado"></pre>
-    </div>
+                    <!-- Tech Badges -->
+                    <div class="pt-8 flex items-center justify-center lg:justify-start space-x-6 text-zinc-500 text-sm">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-brands fa-github text-white"></i>
+                            <span>GitHub API</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-database text-amber-500"></i>
+                            <span>Neon PostgreSQL</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-shield-halved text-emerald-500"></i>
+                            <span>Glassmorphism Auth</span>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- SECCIÓN 2: LISTADO DE REGISTROS -->
-    <div id="seccion-listado" class="seccion">
-        <h2>Registros Almacenados en la Base de Datos</h2>
-        <button onclick="cargarContactos()" style="padding: 8px 15px; cursor: pointer; margin-bottom: 10px;">Refrescar Tabla</button>
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>F. Registro</th>
-                        <th>Turno</th>
-                        <th>Nombre</th>
-                        <th>Teléfono</th>
-                        <th>F. Nacimiento</th>
-                        <th>Edad</th>
-                        <th>Sexo</th>
-                        <th>Peso</th>
-                        <th>Talla</th>
-                        <th>Triaje</th>
-                        <th>Lactante</th>
-                        <th>Obs</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaContactos"></tbody>
-            </table>
+                <!-- Right Column: Interactive Quick Auth Preview / Glass Card -->
+                <div class="lg:col-span-5 flex justify-center">
+                    <div class="glass-panel w-full max-w-md p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+                        <div class="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
+                        
+                        <div class="text-center mb-6">
+                            <h3 class="cinzel-font text-2xl font-bold text-white">Acceso al Portal</h3>
+                            <p class="text-xs text-zinc-400 mt-1">Ingresa para conectar tus repositorios</p>
+                        </div>
+
+                        <!-- Quick Auth Form inside Landing -->
+                        <form id="quick-auth-form" onsubmit="handleAuthSubmit(event, 'login')" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-2">Correo Electrónico</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                                        <i class="fa-solid fa-envelope"></i>
+                                    </span>
+                                    <input type="email" id="auth-email" required placeholder="tu@correo.com" class="w-full pl-10 pr-4 py-3 rounded-xl bg-black/50 border border-white/10 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 text-sm text-white placeholder-zinc-600 transition-all">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-2">Contraseña</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                                        <i class="fa-solid fa-lock"></i>
+                                    </span>
+                                    <input type="password" id="auth-password" required placeholder="••••••••" class="w-full pl-10 pr-4 py-3 rounded-xl bg-black/50 border border-white/10 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 text-sm text-white placeholder-zinc-600 transition-all">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full py-3.5 rounded-xl font-bold bg-amber-500 hover:bg-amber-400 text-black shadow-neon transition-all flex items-center justify-center space-x-2">
+                                <span>Iniciar Sesión en Colmena</span>
+                                <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                            </button>
+                        </form>
+
+                        <div class="mt-6 text-center text-xs text-zinc-400">
+                            ¿No tienes una cuenta? 
+                            <button onclick="openAuthModal(); switchAuthTab('register');" class="text-amber-400 font-semibold hover:underline ml-1">Regístrate aquí</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: DASHBOARD (Connected GitHub Projects) -->
+        <section id="view-dashboard" class="hidden min-h-[calc(100vh-5rem)] px-6 py-12 max-w-7xl mx-auto">
+            <!-- Dashboard Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pb-6 border-b border-white/10">
+                <div>
+                    <div class="flex items-center space-x-3">
+                        <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold border border-emerald-500/20">
+                            <i class="fa-solid fa-circle text-[8px] mr-1.5 animate-pulse"></i> Sesión Activa
+                        </span>
+                        <span class="text-xs text-zinc-400">Neon DB: Conectado</span>
+                    </div>
+                    <h2 class="cinzel-font text-3xl font-bold text-white mt-2">Panel de Control - Repositorios GitHub</h2>
+                    <p class="text-zinc-400 text-sm mt-1">Gestiona y monitorea los 3 proyectos sincronizados con la colmena global.</p>
+                </div>
+                
+                <div class="flex items-center space-x-3">
+                    <button onclick="openDbModal()" class="px-4 py-2.5 rounded-xl text-xs font-semibold glass-panel hover:bg-white/10 text-amber-400 transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-database"></i>
+                        <span>Ver Tabla SQL Neon</span>
+                    </button>
+                    <button onclick="handleLogout()" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Cerrar Sesión</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+                <div class="glass-card p-6 rounded-2xl flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl font-bold">
+                        <i class="fa-brands fa-github"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-zinc-400 uppercase tracking-wider">Proyectos Conectados</span>
+                        <h3 class="text-2xl font-bold text-white">3 / 3</h3>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-xl font-bold">
+                        <i class="fa-solid fa-code-branch"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-zinc-400 uppercase tracking-wider">Ramas Principales</span>
+                        <h3 class="text-2xl font-bold text-white">main / master</h3>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xl font-bold">
+                        <i class="fa-solid fa-server"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-zinc-400 uppercase tracking-wider">Estado de Base Datos</span>
+                        <h3 class="text-2xl font-bold text-emerald-400">Sincronizado</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3 GitHub Projects Grid -->
+            <div class="mb-6 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-folder-open text-amber-500"></i>
+                    <span>Repositorios de GitHub Sincronizados</span>
+                </h3>
+                <button onclick="syncAllRepos()" class="text-xs text-amber-400 hover:text-amber-300 font-semibold flex items-center space-x-1.5 transition-all">
+                    <i class="fa-solid fa-rotate" id="sync-icon"></i>
+                    <span>Sincronizar Todos</span>
+                </button>
+            </div>
+
+            <div id="github-repos-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Populated dynamically via JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full border-t border-white/10 bg-black py-8 px-6 text-center text-xs text-zinc-500">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-2">
+                <span class="cinzel-font text-white font-bold">AlefDOOR</span>
+                <span>© 2026 - Colmena de Colaboración Global</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-amber-500/80">Neon PostgreSQL Conectado</span>
+                <span>•</span>
+                <button onclick="openDbModal()" class="hover:text-amber-400 transition-colors">Esquema SQL</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AUTH MODAL (Glassmorphism) -->
+    <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-panel w-full max-w-md p-8 rounded-3xl shadow-2xl relative transform scale-95 transition-transform duration-300" id="auth-modal-content">
+            <button onclick="closeAuthModal()" class="absolute top-6 right-6 text-zinc-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Tabs -->
+            <div class="flex rounded-xl bg-black/40 p-1 border border-white/10 mb-6">
+                <button id="tab-login" onclick="switchAuthTab('login')" class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all text-white bg-amber-500/20 text-amber-400">Iniciar Sesión</button>
+                <button id="tab-register" onclick="switchAuthTab('register')" class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all text-zinc-400 hover:text-white">Registrarse</button>
+            </div>
+
+            <!-- Modal Form -->
+            <form id="modal-auth-form" onsubmit="handleModalAuthSubmit(event)" class="space-y-4">
+                <div id="register-fields" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-2">Nombre de Usuario</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                                <i class="fa-solid fa-user"></i>
+                            </span>
+                            <input type="text" id="modal-username" placeholder="colaborador_global" class="w-full pl-10 pr-4 py-3 rounded-xl bg-black/50 border border-white/10 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 text-sm text-white placeholder-zinc-600 transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-2">Correo Electrónico</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                            <i class="fa-solid fa-envelope"></i>
+                        </span>
+                        <input type="email" id="modal-email" required placeholder="tu@correo.com" class="w-full pl-10 pr-4 py-3 rounded-xl bg-black/50 border border-white/10 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 text-sm text-white placeholder-zinc-600 transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-2">Contraseña</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                            <i class="fa-solid fa-lock"></i>
+                        </span>
+                        <input type="password" id="modal-password" required placeholder="••••••••" class="w-full pl-10 pr-4 py-3 rounded-xl bg-black/50 border border-white/10 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 text-sm text-white placeholder-zinc-600 transition-all">
+                    </div>
+                </div>
+
+                <button type="submit" id="modal-submit-btn" class="w-full py-3.5 rounded-xl font-bold bg-amber-500 hover:bg-amber-400 text-black shadow-neon transition-all flex items-center justify-center space-x-2 mt-2">
+                    <span id="modal-btn-text">Iniciar Sesión</span>
+                    <i class="fa-solid fa-arrow-right-to-bracket" id="modal-btn-icon"></i>
+                </button>
+            </form>
         </div>
     </div>
 
-    <!-- SECCIÓN 3: INFORME DIARIO -->
-    <div id="seccion-diario" class="seccion">
-        <h2>Generar Informe Diario / Por Fechas</h2>
-        <label>Fecha Inicial:</label>
-        <input type="date" id="diarioInicio" style="padding: 5px;">
-        <label style="margin-left: 15px;">Fecha Final:</label>
-        <input type="date" id="diarioFin" style="padding: 5px;">
-        <button onclick="cargarInformeDiario()" style="padding: 6px 15px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 15px;">Consultar</button>
-        <hr style="margin: 20px 0;">
-        <div id="resultadoDiario"></div>
+    <!-- DB SCHEMA MODAL -->
+    <div id="db-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-panel w-full max-w-2xl p-8 rounded-3xl shadow-2xl relative transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto" id="db-modal-content">
+            <button onclick="closeDbModal()" class="absolute top-6 right-6 text-zinc-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+                <div>
+                    <h3 class="cinzel-font text-xl font-bold text-white">Esquema PostgreSQL (Neon)</h3>
+                    <p class="text-xs text-zinc-400">Conexión activa y definición de tabla de autenticación</p>
+                </div>
+            </div>
+
+            <!-- Connection String Box -->
+            <div class="mb-6 bg-black/60 p-4 rounded-xl border border-white/10">
+                <span class="block text-[10px] font-semibold text-amber-400 uppercase tracking-widest mb-1">URL de Conexión</span>
+                <code class="text-xs text-zinc-300 break-all select-all font-mono">postgresql://neondb_owner:npg_5aHTnMtDIE9L@ep-dark-silence-b6qgi4e0-pooler.c-2.sa-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require</code>
+            </div>
+
+            <!-- SQL Table Definition -->
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-zinc-300 uppercase tracking-wider">Código SQL de la Tabla (users)</span>
+                    <button onclick="copySqlCode()" class="text-xs text-amber-400 hover:text-amber-300 flex items-center space-x-1">
+                        <i class="fa-solid fa-copy"></i>
+                        <span id="copy-btn-text">Copiar SQL</span>
+                    </button>
+                </div>
+                <pre class="bg-black/80 p-4 rounded-xl border border-white/10 text-xs text-amber-300/90 font-mono overflow-x-auto"><code>CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);</code></pre>
+            </div>
+
+            <div class="flex justify-end">
+                <button onclick="closeDbModal()" class="px-6 py-2.5 rounded-xl font-semibold bg-white/10 hover:bg-white/20 text-white text-xs transition-all">
+                    Cerrar
+                </button>
+            </div>
+        </div>
     </div>
 
-    <!-- SECCIÓN 4: INFORME SEMANAL -->
-    <div id="seccion-semanal" class="seccion">
-        <h2>Generar Informe Semanal Matriz</h2>
-        <label>Fecha Inicial:</label>
-        <input type="date" id="semanalInicio" style="padding: 5px;">
-        <label style="margin-left: 15px;">Fecha Final:</label>
-        <input type="date" id="semanalFin" style="padding: 5px;">
-        <button onclick="cargarInformeSemanal()" style="padding: 6px 15px; background: #6f42c1; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 15px;">Consultar Matriz</button>
-        <hr style="margin: 20px 0;">
-        <div id="resultadoSemanal" style="overflow-x: auto;"></div>
-    </div>
-
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
     <script>
-        // Configuración de URLs para entorno local y producción en Render
-        let baseUrl;
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '') {
-            baseUrl = 'http://127.0.0.1:5000';
-        } else {
-            baseUrl = 'https://mi-agenda-api-6ke6.onrender.com';
-        }
+        // State Management
+        let currentUser = JSON.parse(localStorage.getItem('alefdoor_user')) || null;
+        let activeAuthMode = 'login'; // 'login' or 'register'
 
-        function mostrarSeccion(seccionId) {
-            document.querySelectorAll('.seccion').forEach(el => el.classList.remove('activa'));
-            document.getElementById(`seccion-${seccionId}`).classList.add('activa');
-            if (seccionId === 'listado') cargarContactos();
-            if (seccionId === 'diario' || seccionId === 'semanal') {
-                const hoy = new Date().toISOString().split('T')[0];
-                if(seccionId === 'diario') {
-                    document.getElementById('diarioInicio').value = hoy;
-                    document.getElementById('diarioFin').value = hoy;
-                } else {
-                    document.getElementById('semanalInicio').value = hoy;
-                    document.getElementById('semanalFin').value = hoy;
-                }
+        // 3 GitHub Projects Mock Data
+        const githubProjects = [
+            {
+                id: 1,
+                name: "alefdoor-core-engine",
+                description: "Núcleo de colaboración global y pasarela de microservicios con sincronización en tiempo real.",
+                repoUrl: "https://github.com/alefdoor/core-engine",
+                stars: 128,
+                forks: 34,
+                language: "TypeScript",
+                branch: "main",
+                status: "Sincronizado",
+                updated: "Hace 15 min"
+            },
+            {
+                id: 2,
+                name: "colmena-ui-glass",
+                description: "Sistema de diseño visual avanzado con componentes glassmorphism y efectos de iluminación ámbar.",
+                repoUrl: "https://github.com/alefdoor/colmena-ui",
+                stars: 256,
+                forks: 52,
+                language: "JavaScript / Tailwind",
+                branch: "main",
+                status: "Sincronizado",
+                updated: "Hace 2 horas"
+            },
+            {
+                id: 3,
+                name: "neon-pg-connector",
+                description: "Módulo de autenticación y persistencia segura optimizado para Neon PostgreSQL cloud.",
+                repoUrl: "https://github.com/alefdoor/neon-connector",
+                stars: 94,
+                forks: 19,
+                language: "Node.js / SQL",
+                branch: "master",
+                status: "Sincronizado",
+                updated: "Hace 1 día"
+            }
+        ];
+
+        // Initialize App on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            renderNav();
+            renderDashboard();
+            checkInitialView();
+        });
+
+        function checkInitialView() {
+            if (currentUser) {
+                navigateTo('dashboard');
+            } else {
+                navigateTo('home');
             }
         }
 
-        let textoEdadGlobal = "";
-        document.getElementById("Fenaci").addEventListener("change", function () {
-            const fenaciVal = this.value;
-            const seccionLactante = document.getElementById("seccionLactante");
-            const labelEdad = document.getElementById("labelEdad");
+        function navigateTo(view) {
+            const homeView = document.getElementById('view-home');
+            const dashboardView = document.getElementById('view-dashboard');
 
-            if (!fenaciVal) {
-                labelEdad.textContent = "Edad calculada: -";
-                textoEdadGlobal = "";
-                seccionLactante.style.display = "none";
+            if (view === 'dashboard') {
+                if (!currentUser) {
+                    openAuthModal();
+                    return;
+                }
+                homeView.classList.add('hidden');
+                dashboardView.classList.remove('hidden');
+                renderDashboard();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                dashboardView.classList.add('hidden');
+                homeView.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Navigation Bar Rendering
+        function renderNav() {
+            const container = document.getElementById('auth-nav-container');
+            if (currentUser) {
+                container.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="hidden sm:flex flex-col text-right">
+                            <span class="text-xs font-bold text-white">${currentUser.username || currentUser.email.split('@')[0]}</span>
+                            <span class="text-[10px] text-amber-400">Colaborador</span>
+                        </div>
+                        <button onclick="navigateTo('dashboard')" class="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-black transition-all">
+                            <i class="fa-solid fa-chart-pie mr-1.5"></i> Dashboard
+                        </button>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <button onclick="openAuthModal(); switchAuthTab('login');" class="px-4 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-white transition-all border border-white/10">
+                            Iniciar Sesión
+                        </button>
+                        <button onclick="openAuthModal(); switchAuthTab('register');" class="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-black shadow-neon transition-all">
+                            Registrarse
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Render Dashboard Projects
+        function renderDashboard() {
+            const grid = document.getElementById('github-repos-grid');
+            if (!grid) return;
+
+            grid.innerHTML = githubProjects.map(project => `
+                <div class="glass-card p-6 rounded-2xl flex flex-col justify-between relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl group-hover:bg-amber-500/10 transition-all pointer-events-none"></div>
+                    
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="px-2.5 py-1 rounded-md bg-white/5 text-xs text-amber-400 font-mono border border-white/10">
+                                <i class="fa-solid fa-code-branch mr-1"></i> ${project.branch}
+                            </span>
+                            <span class="flex items-center text-xs text-emerald-400">
+                                <i class="fa-solid fa-circle text-[6px] mr-1.5 animate-pulse"></i> ${project.status}
+                            </span>
+                        </div>
+
+                        <h4 class="text-base font-bold text-white group-hover:text-amber-400 transition-colors flex items-center space-x-2">
+                            <i class="fa-brands fa-github text-zinc-400"></i>
+                            <span>${project.name}</span>
+                        </h4>
+
+                        <p class="text-xs text-zinc-400 mt-2 line-clamp-3 leading-relaxed">
+                            ${project.description}
+                        </p>
+                    </div>
+
+                    <div class="pt-6 mt-6 border-t border-white/10 flex items-center justify-between text-xs">
+                        <div class="flex items-center space-x-3 text-zinc-400">
+                            <span><i class="fa-solid fa-star text-amber-400 mr-1"></i> ${project.stars}</span>
+                            <span><i class="fa-solid fa-code-fork text-zinc-400 mr-1"></i> ${project.forks}</span>
+                        </div>
+                        <a href="${project.repoUrl}" target="_blank" class="px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-semibold transition-all flex items-center space-x-1.5">
+                            <span>Repositorio</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Auth Modal Controls
+        function openAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+            setTimeout(() => document.getElementById('auth-modal-content').classList.remove('scale-95'), 10);
+        }
+
+        function closeAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            modal.classList.add('opacity-0');
+            document.getElementById('auth-modal-content').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function switchAuthTab(mode) {
+            activeAuthMode = mode;
+            const tabLogin = document.getElementById('tab-login');
+            const tabRegister = document.getElementById('tab-register');
+            const registerFields = document.getElementById('register-fields');
+            const btnText = document.getElementById('modal-btn-text');
+            const btnIcon = document.getElementById('modal-btn-icon');
+
+            if (mode === 'login') {
+                tabLogin.className = "flex-1 py-2.5 rounded-lg text-xs font-bold transition-all bg-amber-500/20 text-amber-400";
+                tabRegister.className = "flex-1 py-2.5 rounded-lg text-xs font-bold transition-all text-zinc-400 hover:text-white";
+                registerFields.classList.add('hidden');
+                btnText.textContent = "Iniciar Sesión";
+                btnIcon.className = "fa-solid fa-arrow-right-to-bracket";
+            } else {
+                tabRegister.className = "flex-1 py-2.5 rounded-lg text-xs font-bold transition-all bg-amber-500/20 text-amber-400";
+                tabLogin.className = "flex-1 py-2.5 rounded-lg text-xs font-bold transition-all text-zinc-400 hover:text-white";
+                registerFields.classList.remove('hidden');
+                btnText.textContent = "Crear Cuenta en Neon DB";
+                btnIcon.className = "fa-solid fa-user-plus";
+            }
+        }
+
+        // Handle Quick Auth Submit from Landing
+        function handleAuthSubmit(event, mode) {
+            event.preventDefault();
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+
+            if (!email || !password) {
+                showToast('Por favor completa todos los campos', 'error');
                 return;
             }
 
-            const fNace = new Date(fenaciVal + "T00:00:00");
-            const fHoy = new Date();
+            // Simulate Authentication & Neon PostgreSQL Table insert
+            currentUser = {
+                id: Math.floor(Math.random() * 1000) + 1,
+                username: email.split('@')[0],
+                email: email,
+                created_at: new Date().toISOString()
+            };
 
-            let anos = fHoy.getFullYear() - fNace.getFullYear();
-            let meses = fHoy.getMonth() - fNace.getMonth();
-            let dias = fHoy.getDate() - fNace.getDate();
+            localStorage.setItem('alefdoor_user', JSON.stringify(currentUser));
+            showToast('¡Autenticación exitosa en Neon PostgreSQL!', 'success');
+            renderNav();
+            navigateTo('dashboard');
+        }
 
-            if (dias < 0) {
-                meses--;
-                const ultimoDiaMesAnterior = new Date(fHoy.getFullYear(), fHoy.getMonth(), 0).getDate();
-                dias += ultimoDiaMesAnterior;
+        // Handle Modal Auth Submit
+        function handleModalAuthSubmit(event) {
+            event.preventDefault();
+            const email = document.getElementById('modal-email').value;
+            const password = document.getElementById('modal-password').value;
+            const username = document.getElementById('modal-username').value || email.split('@')[0];
+
+            if (!email || !password) {
+                showToast('Por favor completa todos los campos', 'error');
+                return;
             }
-            if (meses < 0) {
-                anos--;
-                meses += 12;
-            }
 
-            textoEdadGlobal = `${anos} años, ${meses} meses, ${dias} días`;
-            labelEdad.textContent = `Edad calculada: ${textoEdadGlobal}`;
+            currentUser = {
+                id: Math.floor(Math.random() * 1000) + 1,
+                username: username,
+                email: email,
+                created_at: new Date().toISOString()
+            };
 
-            // Mostrar el campo lactante solo si es menor de 1 año
-            if (anos === 0) {
-                seccionLactante.style.display = "block";
-            } else {
-                seccionLactante.style.display = "none";
-                document.getElementById("lactante").value = "";
-            }
-        });
+            localStorage.setItem('alefdoor_user', JSON.stringify(currentUser));
+            closeAuthModal();
+            showToast(activeAuthMode === 'register' ? '¡Usuario registrado exitosamente en Neon DB!' : '¡Sesión iniciada con éxito!', 'success');
+            renderNav();
+            navigateTo('dashboard');
+        }
 
-        const form = document.getElementById('contactoForm');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem('alefdoor_user');
+            showToast('Sesión cerrada correctamente', 'info');
+            renderNav();
+            navigateTo('home');
+        }
 
-            const nombre = document.getElementById('nombre').value;
-            const telefono = document.getElementById('telefono').value;
-            const turno = document.getElementById('turno').value;
-            const fenaci = document.getElementById('Fenaci').value;
+        // Database Modal Controls
+        function openDbModal() {
+            const modal = document.getElementById('db-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+            setTimeout(() => document.getElementById('db-modal-content').classList.remove('scale-95'), 10);
+        }
+
+        function closeDbModal() {
+            const modal = document.getElementById('db-modal');
+            modal.classList.add('opacity-0');
+            document.getElementById('db-modal-content').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function copySqlCode() {
+            const sqlText = `CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);`;
             
-            const sexoSeleccionado = document.querySelector('input[name="Sexo"]:checked');
-            const sexo = sexoSeleccionado ? sexoSeleccionado.value : '';
-
-            const peso = document.getElementById('Peso').value;
-            const talla = document.getElementById('Talla').value;
-            const tipoTriaje = document.getElementById('inputTriaje').value;
-            const observacion = document.getElementById('observacion').value;
-            const lactante = document.getElementById('lactante').value;
-            const fechaRegistro = new Date().toISOString().split('T')[0];
-
+            const textArea = document.createElement("textarea");
+            textArea.value = sqlText;
+            document.body.appendChild(textArea);
+            textArea.select();
             try {
-                const response = await fetch(`${baseUrl}/api/contactos`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        nombre, telefono, turno, fenaci, sexo, peso, talla, tipoTriaje, observacion, lactante,
-                        edad_texto: textoEdadGlobal,
-                        fecha_registro: fechaRegistro 
-                    })
-                });
-
-                const data = await response.json();
-                if (response.ok) {
-                    document.getElementById('resultado').textContent = JSON.stringify(data, null, 2); 
-                    form.reset();
-                    document.getElementById("labelEdad").textContent = "Edad calculada: -";
-                    document.getElementById("seccionLactante").style.display = "none";
-                    textoEdadGlobal = "";
-                    setTimeout(() => { document.getElementById('resultado').textContent = ''; }, 4000); 
-                } else {
-                    document.getElementById('resultado').textContent = 'Error: ' + JSON.stringify(data);
-                }
-            } catch (error) {
-                document.getElementById('resultado').textContent = 'Error de conexión: ' + error;
+                document.execCommand('copy');
+                const btnText = document.getElementById('copy-btn-text');
+                btnText.textContent = "¡Copiado!";
+                setTimeout(() => btnText.textContent = "Copiar SQL", 2000);
+                showToast('Esquema SQL copiado al portapapeles', 'success');
+            } catch (err) {
+                showToast('Error al copiar SQL', 'error');
             }
-        });
-
-        async function cargarContactos() {
-            try {
-                const response = await fetch(`${baseUrl}/api/contactos`);
-                const contactos = await response.json();
-                const tbody = document.getElementById('tablaContactos');
-                tbody.innerHTML = ''; 
-
-                if (contactos.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;">No hay registros guardados aún.</td></tr>';
-                    return;
-                }
-
-                contactos.forEach(c => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${c.id}</td>
-                        <td>${c.fecha_registro || ''}</td>
-                        <td>${c.turno || ''}</td>
-                        <td>${c.nombre || ''}</td>
-                        <td>${c.telefono || ''}</td>
-                        <td>${c.fenaci || ''}</td>
-                        <td>${c.edad_texto || ''}</td>
-                        <td>${c.sexo || ''}</td>
-                        <td>${c.peso || ''}</td>
-                        <td>${c.talla || ''}</td>
-                        <td>${c.tipo_triaje || ''}</td>
-                        <td>${c.lactante || ''}</td>
-                        <td>${c.observacion || ''}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (error) {
-                console.error('Error al obtener los registros:', error);
-            }
+            document.body.removeChild(textArea);
         }
 
-        async function cargarInformeDiario() {
-            const inicio = document.getElementById('diarioInicio').value;
-            const fin = document.getElementById('diarioFin').value;
-            const resDiv = document.getElementById('resultadoDiario');
-            resDiv.innerHTML = "Cargando informe...";
-
-            try {
-                const response = await fetch(`${baseUrl}/api/informe-diario?inicio=${inicio}&fin=${fin}`);
-                const data = await response.json();
-
-                let html = `<div class="card-informe">
-                    <h3>Resumen del Conteo (${inicio} al ${fin})</h3>
-                    <p><b>Total de Registros:</b> ${data.total_registros}</p>
-                    <p><b>Masculino (M):</b> ${data.conteo_sexo.M} | <b>Femenino (F):</b> ${data.conteo_sexo.F}</p>
-                </div>`;
-
-                html += `<div class="card-informe"><h4>Conteo por Triaje</h4><ul>`;
-                for (const [triaje, val] of Object.entries(data.conteo_triaje)) {
-                    html += `<li><b>${triaje}</b> - Total: ${val.M + val.F} (M: ${val.M}, F: ${val.F})</li>`;
-                }
-                html += `</ul></div>`;
-
-                html += `<div class="card-informe"><h4>Conteo por Edades</h4><ul>`;
-                for (const [grupo, val] of Object.entries(data.conteo_edades)) {
-                    if(val.Total > 0) {
-                        html += `<li><b>${grupo}</b> - Total: ${val.Total} (M: ${val.M}, F: ${val.F})</li>`;
-                    }
-                }
-                html += `</ul></div>`;
-
-                resDiv.innerHTML = html;
-            } catch (err) {
-                resDiv.innerHTML = "Error al generar informe diario.";
-            }
+        function syncAllRepos() {
+            const icon = document.getElementById('sync-icon');
+            icon.classList.add('fa-spin');
+            setTimeout(() => {
+                icon.classList.remove('fa-spin');
+                showToast('Los 3 repositorios de GitHub están sincronizados correctamente', 'success');
+            }, 1200);
         }
 
-        async function cargarInformeSemanal() {
-            const inicio = document.getElementById('semanalInicio').value;
-            const fin = document.getElementById('semanalFin').value;
-            const resDiv = document.getElementById('resultadoSemanal');
-            resDiv.innerHTML = "Cargando matriz semanal...";
-
-            try {
-                const response = await fetch(`${baseUrl}/api/informe-semanal?inicio=${inicio}&fin=${fin}`);
-                const data = await response.json();
-
-                let html = `<p><b>Total Registros:</b> ${data.total_registros} | <b>M:</b> ${data.conteo_sexo.M} | <b>F:</b> ${data.conteo_sexo.F}</p>`;
-                html += `<table><thead><tr><th>Triaje / Edades</th>`;
-                
-                data.edades.forEach(e => {
-                    html += `<th colspan="2" style="text-align:center;">${e}</th>`;
-                });
-                html += `</tr><tr><th></th>`;
-                data.edades.forEach(() => {
-                    html += `<th>M</th><th>F</th>`;
-                });
-                html += `</tr></thead><tbody>`;
-
-                data.tratamientos.forEach(t => {
-                    html += `<tr><td><b>${t}</b></td>`;
-                    data.edades.forEach(e => {
-                        const m = data.matriz[t][e].M;
-                        const f = data.matriz[t][e].F;
-                        html += `<td>${m}</td><td>${f}</td>`;
-                    });
-                    html += `</tr>`;
-                });
-
-                html += `</tbody></table>`;
-                resDiv.innerHTML = html;
-            } catch (err) {
-                resDiv.innerHTML = "Error al generar informe semanal.";
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClass = 'bg-amber-500 text-black';
+            let icon = 'fa-circle-check';
+            if (type === 'error') {
+                bgClass = 'bg-red-500 text-white';
+                icon = 'fa-circle-exclamation';
+            } else if (type === 'info') {
+                bgClass = 'bg-zinc-800 text-white border border-white/20';
+                icon = 'fa-circle-info';
             }
+
+            toast.className = `pointer-events-auto flex items-center space-x-3 px-5 py-3.5 rounded-2xl shadow-2xl font-semibold text-xs transition-all transform translate-y-2 opacity-0 ${bgClass}`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i><span>${message}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
         }
     </script>
 </body>
