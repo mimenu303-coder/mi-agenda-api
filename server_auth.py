@@ -1,17 +1,19 @@
 """
 =============================================================================
- ALEFDOOR — BACKEND ÚNICO (Flask + Neon PostgreSQL)
+ ALEFDOOR — BACKEND ÚNICO (Flask + Neon PostgreSQL)  · v2 CORREGIDO
 =============================================================================
- · Sirve TODOS los archivos estáticos del repo (portal + módulos + assets).
- · Autenticación con tokens de sesión en memoria (12h de vigencia).
- · Inicializa el esquema relacional completo en Neon la primera vez.
- · Expone la API REST que consumen todos los módulos (bar_sap, etc.).
- · Las fotos de la galería se almacenan como base64 (TEXT) en la tabla galeria.
+ CAMBIOS v2:
+   1) db(): elimina 'channel_binding=require' de la URL (psycopg2 lo rechaza)
+   2) init_db(): se ejecuta al IMPORTAR el módulo (gunicorn lo llama siempre,
+      no dentro de if __name__ == '__main__', que gunicorn NO ejecuta)
+   3) Seed admin alineado con el HTML:  admin_alef / AdminAlef2026!
+   4) try/except + traceback para ver errores reales en los logs de Render
 =============================================================================
 """
 import os
 import time
 import uuid
+import traceback
 from functools import wraps
 from flask import Flask, request, jsonify, send_from_directory, abort
 from flask_cors import CORS
@@ -30,9 +32,9 @@ DATABASE_URL = os.environ.get(
 )
 
 # ── Sesiones en memoria (token → usuario + timestamp) ─────────────────────
-SESSIONS = {}   # {token: {'user': str, 'ts': float}}
+SESSIONS = {}
 
-# ── Archivos estáticos permitidos (whitelist por seguridad) ───────────────
+# ── Archivos estáticos permitidos ─────────────────────────────────────────
 STATIC_DIRS  = {'assets', 'proyectos'}
 STATIC_FILES = {'index.html', 'IMG-20260612-WA0006.jpg', 'favicon.ico'}
 
@@ -41,10 +43,23 @@ STATIC_FILES = {'index.html', 'IMG-20260612-WA0006.jpg', 'favicon.ico'}
 # CONEXIÓN Y ESQUEMA
 # ============================================================================
 def db():
-    return psycopg2.connect(DATABASE_URL, sslmode='require')
+    """
+    Conexión a Neon PostgreSQL.
+    ⚠️ IMPORTANTE: psycopg2 NO reconoce el parámetro 'channel_binding'
+    (lo añade el driver moderno de Neon). Lo eliminamos de la URL.
+    """
+    url = DATABASE_URL
+    for p in ['&channel_binding=require', '?channel_binding=require',
+              'channel_binding=require']:
+        url = url.replace(p, '')
+    # Aseguramos sslmode=require
+    if 'sslmode=require' not in url:
+        url += ('&' if '?' in url else '?') + 'sslmode=require'
+    return psycopg2.connect(url, sslmode='require')
 
 
 def init_db():
+    """Crea tablas y semillas si no existen. Idempotente."""
     conn = db()
     try:
         cur = conn.cursor()
@@ -127,16 +142,17 @@ def init_db():
         """)
         conn.commit()
 
-        # Semilla: usuario admin
+        # ── Semilla: usuario admin (alineado con el HTML) ─────────────────
         cur.execute("SELECT COUNT(*) FROM admin")
         if cur.fetchone()[0] == 0:
             cur.execute(
                 "INSERT INTO admin (username, password_hash) VALUES (%s, %s)",
-                ('admin', generate_password_hash('admin123'))
+                ('admin_alef', generate_password_hash('AdminAlef2026!'))
             )
             conn.commit()
+            print("✅ Admin sembrado: admin_alef / AdminAlef2026!")
 
-        # Semilla: áreas
+        # ── Semilla: áreas ────────────────────────────────────────────────
         cur.execute("SELECT COUNT(*) FROM area")
         if cur.fetchone()[0] == 0:
             cur.execute("""
@@ -148,7 +164,7 @@ def init_db():
             """)
             conn.commit()
 
-        # Semilla: cargos
+        # ── Semilla: cargos ───────────────────────────────────────────────
         cur.execute("SELECT COUNT(*) FROM cargo")
         if cur.fetchone()[0] == 0:
             cur.execute("""
@@ -157,13 +173,14 @@ def init_db():
                   ('ESTILISTA'),('MANICURISTA')
             """)
             conn.commit()
+
         print("✅ Esquema y semillas listos")
     finally:
         conn.close()
 
 
 # ============================================================================
-# AUTENTICACIÓN — decorador
+# AUTENTICACIÓN
 # ============================================================================
 def auth_required(f):
     @wraps(f)
@@ -183,18 +200,22 @@ def login():
     pwd  = data.get('password') or ''
     if not user or not pwd:
         return jsonify({'error': 'Faltan credenciales'}), 400
-    conn = db()
     try:
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT * FROM admin WHERE username=%s", (user,))
-        row = cur.fetchone()
-        if not row or not check_password_hash(row['password_hash'], pwd):
-            return jsonify({'error': 'Usuario o contraseña incorrectos'}), 401
-        token = str(uuid.uuid4())
-        SESSIONS[token] = {'user': user, 'ts': time.time()}
-        return jsonify({'token': token, 'user': user})
-    finally:
-        conn.close()
+        conn = db()
+        try:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            cur.execute("SELECT * FROM admin WHERE username=%s", (user,))
+            row = cur.fetchone()
+            if not row or not check_password_hash(row['password_hash'], pwd):
+                return jsonify({'error': 'Usuario o contraseña incorrectos'}), 401
+            token = str(uuid.uuid4())
+            SESSIONS[token] = {'user': user, 'ts': time.time()}
+            return jsonify({'token': token, 'user': user})
+        finally:
+            conn.close()
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': f'Error de BD: {e}'}), 500
 
 
 @app.post('/api/auth/logout')
@@ -538,7 +559,6 @@ def post_reserva():
     conn = db()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        # Regla: máx 3 servicios por cliente/día
         cur.execute("""SELECT COUNT(*) AS n FROM servicios_agendados sa
                        JOIN agenda a ON a.id_agenda = sa.id_agenda
                        WHERE a.id_cliente=%s AND a.fecha_reserva=%s""",
@@ -553,7 +573,6 @@ def post_reserva():
                     (id_cli, fecha, total, propina))
         id_agenda = cur.fetchone()['id_agenda']
         for it in items:
-            # Verificar disponibilidad del empleado a esa hora
             cur.execute("""SELECT 1 FROM servicios_agendados sa
                            JOIN agenda a ON a.id_agenda = sa.id_agenda
                            WHERE sa.id_empleado=%s AND a.fecha_reserva=%s AND sa.hora=%s""",
@@ -576,7 +595,7 @@ def post_reserva():
 
 
 # ============================================================================
-# ARCHIVOS ESTÁTICOS (portal + módulos + assets)
+# ARCHIVOS ESTÁTICOS
 # ============================================================================
 @app.route('/')
 def root():
@@ -592,9 +611,23 @@ def static_files(path):
 
 
 # ============================================================================
-# ARRANQUE
+# INICIALIZACIÓN AL IMPORTAR EL MÓDULO
+# ----------------------------------------------------------------------------
+# ⚠️ CRÍTICO: gunicorn hace `import server_auth` pero NO ejecuta
+# `if __name__ == '__main__'`. Por eso init_db() DEBE estar aquí, al nivel
+# del módulo, para que se ejecute en cada arranque del worker en Render.
 # ============================================================================
-if __name__ == '__main__':
+try:
+    print("🔄 Ejecutando init_db() al importar el módulo…")
     init_db()
+    print("✅ init_db() completado — tablas listas en Neon")
+except Exception as e:
+    print(f"⚠️ init_db() falló: {e}")
+    traceback.print_exc()
+    # No relanzamos: dejamos que la app arranque para que puedas ver el
+    # error real en los logs de Render. Los endpoints fallarán con 500 hasta
+    # que la BD esté accesible.
+
+if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
