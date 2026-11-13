@@ -1,513 +1,878 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AlefDOOR | Sistema Integral de Barbería, Spa y Peluquería</title>
-    
-    <!-- Tipografías de Google Fonts: Playfair Display + Outfit -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-    
-    <!-- Iconos Lucide -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlefDOOR · Barbería, Spa y Peluquería</title>
 
-    <!-- Hoja de Estilos Unificada -->
-    <link rel="stylesheet" href="assets/css/alefdoor-theme.css">
+  <!-- Tipografías + Iconos -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-    <style>
-        .app-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1.5rem;
-        }
+  <!-- ⭐ TEMA GLOBAL COMPARTIDO (ruta relativa desde proyectos/bar_sap/) -->
+  <link rel="stylesheet" href="../../assets/css/alefdoor-theme.css">
 
-        .nav-tabs {
-            display: flex;
-            gap: 0.6rem;
-            flex-wrap: wrap;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid rgba(245, 158, 11, 0.2);
-            padding-bottom: 1rem;
-        }
+  <style>
+    /* ── Solo lo específico de este módulo (barbería) ──────────────────── */
+    .app-container { max-width: 1440px; margin: 0 auto; padding: 1.5rem 1.5rem 4rem; }
+    .hero { text-align: center; margin-bottom: 2rem; }
+    .hero h1 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      background: linear-gradient(135deg, #fde68a, #f59e0b 55%, #fde68a);
+      -webkit-background-clip: text; background-clip: text;
+      color: transparent; margin-bottom: .5rem;
+    }
+    .hero p { color: var(--alef-text-muted); font-size: .95rem; }
 
-        .tab-btn {
-            background: rgba(20, 17, 14, 0.6);
-            border: 1px solid rgba(245, 158, 11, 0.2);
-            color: #d6d3d1;
-            padding: 0.65rem 1.1rem;
-            border-radius: 12px;
-            font-family: 'Outfit', sans-serif;
-            font-weight: 500;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
+    /* Navegación por pestañas */
+    .nav-tabs {
+      display: flex; flex-wrap: wrap; gap: .55rem;
+      padding: .6rem; margin-bottom: 2rem;
+      background: var(--alef-bg-card);
+      backdrop-filter: blur(var(--alef-blur));
+      border: 1px solid var(--alef-border);
+      border-radius: var(--alef-radius);
+    }
+    .tab-btn {
+      flex: 1 1 auto;
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: .4rem; padding: .7rem 1rem;
+      background: transparent; border: 1px solid transparent;
+      color: var(--alef-text-muted); border-radius: 10px;
+      cursor: pointer; font-weight: 500; font-size: .88rem;
+      transition: all .25s var(--alef-ease);
+    }
+    .tab-btn:hover { color: var(--alef-gold-light); background: rgba(245,158,11,.08); }
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(245,158,11,.24), rgba(180,83,9,.24));
+      border-color: var(--alef-gold); color: var(--alef-gold-light);
+      box-shadow: 0 0 24px rgba(245,158,11,.25);
+    }
+    .tab-btn i { width: 16px; height: 16px; }
 
-        .tab-btn:hover, .tab-btn.active {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.25) 100%);
-            border-color: #f59e0b;
-            color: #fde68a;
-            box-shadow: 0 0 20px rgba(245, 158, 11, 0.25);
-            transform: translateY(-2px);
-        }
+    .tab-content { display: none; animation: fadeInUp .4s var(--alef-ease); }
+    .tab-content.active { display: block; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); }
+                          to   { opacity: 1; transform: translateY(0); } }
 
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.4s ease forwards;
-        }
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 1.5rem;
+    }
+    @media (max-width: 900px) { .bento-grid { grid-template-columns: 1fr; } }
 
-        .tab-content.active {
-            display: block;
-        }
+    /* Zonas de subida de fotos */
+    .upload-zone {
+      border: 2px dashed var(--alef-border-hi);
+      border-radius: var(--alef-radius);
+      padding: 1.4rem; text-align: center;
+      background: rgba(245,158,11,.04);
+      transition: all .25s var(--alef-ease);
+      cursor: pointer; position: relative;
+    }
+    .upload-zone:hover {
+      background: rgba(245,158,11,.1);
+      border-color: var(--alef-gold);
+    }
+    .upload-zone input[type="file"] { display: none; }
+    .upload-zone .icon { color: var(--alef-gold); margin-bottom: .5rem; }
+    .upload-zone p { font-size: .85rem; color: var(--alef-text-muted); }
+    .upload-preview {
+      display: none; margin-top: .75rem;
+      border-radius: 10px; max-height: 200px; width: 100%;
+      object-fit: cover; border: 1px solid var(--alef-border);
+    }
+    .upload-preview.show { display: block; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .bento-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .bento-card {
-            background: rgba(18, 15, 12, 0.78);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(245, 158, 11, 0.25);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.8);
-        }
-
-        .bento-card h3 {
-            font-family: 'Playfair Display', serif;
-            color: #fde68a;
-            font-size: 1.35rem;
-            margin-bottom: 1.25rem;
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-        }
-
-        .data-table-wrapper {
-            overflow-x: auto;
-            border-radius: 14px;
-            border: 1px solid rgba(245, 158, 11, 0.2);
-            background: rgba(10, 8, 6, 0.6);
-        }
-
-        table.modern-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 0.92rem;
-        }
-
-        table.modern-table th {
-            background: rgba(245, 158, 11, 0.15);
-            color: #fde68a;
-            padding: 0.9rem 1rem;
-            font-weight: 600;
-            border-bottom: 1px solid rgba(245, 158, 11, 0.25);
-        }
-
-        table.modern-table td {
-            padding: 0.85rem 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            color: #f8fafc;
-        }
-
-        table.modern-table tr:hover td {
-            background: rgba(245, 158, 11, 0.08);
-        }
-    </style>
+    /* Visor tridimensional */
+    .gallery-viewer {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+    }
+    .gallery-slot {
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid var(--alef-border);
+      border-radius: var(--alef-radius);
+      padding: .9rem; text-align: center; overflow: hidden;
+    }
+    .gallery-slot h4 {
+      font-family: 'Outfit', sans-serif;
+      font-size: .75rem; letter-spacing: .08em;
+      color: var(--alef-gold-light); text-transform: uppercase;
+      margin-bottom: .7rem; font-weight: 600;
+    }
+    .gallery-slot .img-wrap {
+      aspect-ratio: 1 / 1; display: flex; align-items: center;
+      justify-content: center; background: rgba(0, 0, 0, 0.35);
+      border-radius: 8px; overflow: hidden;
+    }
+    .gallery-slot img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform .5s var(--alef-ease);
+    }
+    .gallery-slot:hover img { transform: scale(1.06); }
+    .gallery-slot .placeholder {
+      color: var(--alef-text-muted); font-size: .8rem; font-style: italic;
+    }
+    @media (max-width: 700px) { .gallery-viewer { grid-template-columns: 1fr; } }
+  </style>
 </head>
+
 <body>
 
-    <!-- Segundo plano atmosférico (Puerta luminosa) -->
-    <div class="background-stage" style="position:fixed; inset:0; z-index:-1; overflow:hidden; pointer-events:none;">
-        <div style="position:absolute; inset:-2%; background-image: radial-gradient(circle at 50% 25%, rgba(245, 158, 11, 0.2) 0%, rgba(3, 3, 2, 0.95) 75%), url('IMG-20260612-WA0006.jpg'); background-size:cover; background-position:center; filter:brightness(0.85);"></div>
+  <!-- ── Fondo: puerta luminosa + viñeta (definido en el tema) ────────── -->
+  <div class="alef-bg-stage"></div>
+
+  <div class="app-container">
+
+    <!-- ── Navbar de módulo (con enlace al portal) ──────────────────── -->
+    <nav class="alef-module-navbar">
+      <a href="../../index.html">
+        <i data-lucide="arrow-left" style="width:18px;"></i> Volver al Portal AlefDOOR
+      </a>
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <span style="font-family:'Playfair Display',serif;font-size:1.2rem;
+                     color:var(--alef-gold-light);font-style:italic;">
+          Barbería & Spa
+        </span>
+        <span style="font-size:.78rem;
+                     background:rgba(245,158,11,.15);
+                     border:1px solid var(--alef-border);
+                     padding:.25rem .75rem; border-radius:999px;
+                     color:var(--alef-gold-light);">
+          NeonDB PostgreSQL
+        </span>
+      </div>
+    </nav>
+
+    <!-- ── Hero ─────────────────────────────────────────────────────── -->
+    <div class="hero">
+      <h1>Sistema Integral de Barbería, Spa y Peluquería</h1>
+      <p>Control operativo · Agendamiento inteligente · Galería tridimensional</p>
     </div>
 
-    <div class="app-container">
-        
-        <!-- Barra de Navegación -->
-        <nav class="alef-module-navbar">
-            <a href="../../index.html"><i data-lucide="arrow-left" style="width:18px;"></i> Volver al Portal AlefDOOR</a>
-            <div style="display:flex; align-items:center; gap:0.75rem;">
-                <span style="font-family:'Playfair Display',serif; font-size:1.25rem; color:#fde68a; font-style:italic;">Barbería & Spa</span>
-                <span style="font-size:0.8rem; background:rgba(245, 158, 11, 0.15); border:1px solid rgba(245, 158, 11, 0.3); padding:0.25rem 0.75rem; border-radius:999px; color:#fde68a;">NeonDB PostgreSQL</span>
-            </div>
-        </nav>
-
-        <header style="margin-bottom: 2rem; text-align: center;">
-            <h1 style="font-size: 2.3rem; margin-bottom: 0.5rem;">Sistema Integral de Barbería, Spa y Peluquería</h1>
-            <p style="color: var(--alef-text-muted); font-size: 0.95rem;">Control operativo, agendamiento inteligente, consultas y visor tridimensional de galería.</p>
-        </header>
-
-        <!-- Navegación por Pestañas (Incluye Clientes, Reservas, Informes, Servicios, Empleados, Cargar Galería y Consultas) -->
-        <div class="nav-tabs">
-            <button class="tab-btn active" onclick="cambiarPestaña('clientes', event)"><i data-lucide="users" style="width:16px;"></i> Clientes</button>
-            <button class="tab-btn" onclick="cambiarPestaña('reservas', event)"><i data-lucide="calendar-plus" style="width:16px;"></i> Agendar</button>
-            <button class="tab-btn" onclick="cambiarPestaña('informes', event)"><i data-lucide="clipboard-list" style="width:16px;"></i> Informes</button>
-            <button class="tab-btn" onclick="cambiarPestaña('servicios', event)"><i data-lucide="scissors" style="width:16px;"></i> Servicios</button>
-            <button class="tab-btn" onclick="cambiarPestaña('empleados', event)"><i data-lucide="user-cog" style="width:16px;"></i> Empleados</button>
-            <button class="tab-btn" onclick="cambiarPestaña('cargar-galeria', event)"><i data-lucide="upload-cloud" style="width:16px;"></i> Cargar Galería</button>
-            <button class="tab-btn" onclick="cambiarPestaña('consultas', event)"><i data-lucide="search" style="width:16px;"></i> Consultas y Galería Pro</button>
-        </div>
-
-        <!-- PESTAÑA 1: CLIENTES -->
-        <div id="tab-clientes" class="tab-content active">
-            <div class="bento-grid">
-                <div class="bento-card">
-                    <h3><i data-lucide="user-plus" style="width:20px; color:#f59e0b;"></i> Registrar Nuevo Cliente</h3>
-                    <form onsubmit="registrarCliente(event)">
-                        <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Nro. Celular:</label><input type="text" id="cli-celular" class="form-control" required style="width:100%;"></div>
-                        <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Nombre y Apellido:</label><input type="text" id="cli-nombre" class="form-control" required style="width:100%;"></div>
-                        <div style="margin-bottom: 1.5rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Día de Cumpleaños:</label><input type="text" id="cli-cumple" class="form-control" placeholder="Ej: 15 de Mayo" style="width:100%;"></div>
-                        <button type="submit" style="width:100%;">Guardar Cliente</button>
-                    </form>
-                </div>
-                <div class="bento-card">
-                    <h3><i data-lucide="database" style="width:20px; color:#f59e0b;"></i> Clientes Registrados</h3>
-                    <div class="data-table-wrapper" style="max-height: 320px; overflow-y:auto;">
-                        <table class="modern-table">
-                            <thead><tr><th>Celular</th><th>Nombre y Apellido</th><th>Cumpleaños</th></tr></thead>
-                            <tbody id="tabla-clientes-body"><tr><td colspan="3" style="text-align:center; color:#a8a29e;">Cargando...</td></tr></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- PESTAÑA 2: AGENDAR RESERVA -->
-        <div id="tab-reservas" class="tab-content">
-            <div class="bento-card" style="max-width: 900px; margin: 0 auto;">
-                <h3><i data-lucide="calendar" style="width:20px; color:#f59e0b;"></i> Módulo de Agendamiento Inteligente</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                    <div><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Cliente:</label><select id="res-cliente" class="form-control" style="width:100%;"><option value="">-- Seleccione Cliente --</option></select></div>
-                    <div><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Fecha de Reserva:</label><input type="date" id="res-fecha" class="form-control" style="width:100%;"></div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
-                    <div><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Área:</label><select id="res-area" class="form-control" style="width:100%;" onchange="cargarServiciosPorArea()"><option value="">-- Seleccione Área --</option></select></div>
-                    <div><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Servicio:</label><select id="res-servicio" class="form-control" style="width:100%;"><option value="">-- Seleccione Servicio --</option></select></div>
-                    <div><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Hora (HH:MM):</label><input type="time" id="res-hora" class="form-control" value="10:00" style="width:100%;"></div>
-                </div>
-                <button onclick="agregarAlCarrito()" style="width:100%;">Añadir Servicio a la Reserva</button>
-                <div style="margin-top: 2rem;">
-                    <h4 style="color:#fde68a; margin-bottom: 0.75rem;">Servicios en la Reserva Actual</h4>
-                    <div class="data-table-wrapper">
-                        <table class="modern-table">
-                            <thead><tr><th>Hora</th><th>Servicio</th><th>Empleado Asignado</th><th>Precio</th></tr></thead>
-                            <tbody id="carrito-body"><tr><td colspan="4" style="text-align:center; color:#a8a29e;">No hay servicios en el carrito.</td></tr></tbody>
-                        </table>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-                        <div><label style="font-size: 0.9rem; margin-right: 0.5rem;">Propina ($):</label><input type="number" id="res-propina" value="0.0" class="form-control" style="width: 90px; display:inline-block;"></div>
-                        <button onclick="procesarReserva()" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important; color:#fff !important;">Procesar y Emitir Recibo</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- PESTAÑA 3: INFORMES DE AGENDA -->
-        <div id="tab-informes" class="tab-content">
-            <div class="bento-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-                    <h3><i data-lucide="clipboard-list" style="width:20px; color:#f59e0b;"></i> Parrilla y Control de Citas</h3>
-                    <div style="display: flex; gap: 0.75rem; align-items: center;">
-                        <input type="date" id="inf-fecha" class="form-control" onchange="cargarInformeAgenda()">
-                        <button onclick="cargarInformeAgenda()">🔄 Actualizar</button>
-                    </div>
-                </div>
-                <div class="data-table-wrapper">
-                    <table class="modern-table">
-                        <thead><tr><th>Atendida</th><th>Horario</th><th>Estado</th><th>Servicio</th><th>Empleado Asignado</th><th>Cliente</th><th>Precio ($)</th></tr></thead>
-                        <tbody id="informe-body"><tr><td colspan="7" style="text-align:center; color:#a8a29e;">Cargando informe...</td></tr></tbody>
-                    </table>
-                </div>
-                <div id="informe-total" style="text-align: right; margin-top: 1rem; font-family:'Playfair Display',serif; font-size:1.2rem; color:#fde68a;">Sumatoria Total: $0.00</div>
-            </div>
-        </div>
-
-        <!-- PESTAÑA 4: GESTIÓN DE SERVICIOS -->
-        <div id="tab-servicios" class="tab-content">
-            <div class="bento-card" style="max-width: 650px; margin: 0 auto;">
-                <h3><i data-lucide="scissors" style="width:20px; color:#f59e0b;"></i> Registrar Nuevo Servicio</h3>
-                <form onsubmit="registrarServicio(event)">
-                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Área:</label><select id="serv-area" class="form-control" style="width:100%;" required><option value="">-- Seleccione Área --</option></select></div>
-                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Nombre del Servicio:</label><input type="text" id="serv-nombre" class="form-control" required style="width:100%;"></div>
-                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Estilo / Detalle:</label><input type="text" id="serv-estilo" class="form-control" style="width:100%;"></div>
-                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Precio ($):</label><input type="number" id="serv-precio" step="0.5" class="form-control" required style="width:100%;"></div>
-                    <div style="margin-bottom: 1.5rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Tiempo Máximo:</label><input type="text" id="serv-tiempo" value="00:45" class="form-control" style="width:100%;"></div>
-                    <button type="submit" style="width:100%;">Guardar Servicio</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- PESTAÑA 5: EMPLEADOS Y CARGOS -->
-        <div id="tab-empleados" class="tab-content">
-            <div class="bento-card" style="max-width: 650px; margin: 0 auto;">
-                <h3><i data-lucide="user-cog" style="width:20px; color:#f59e0b;"></i> Registro de Empleado</h3>
-                <form onsubmit="registrarEmpleado(event)">
-                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Cédula:</label><input type="text" id="emp-cedula" class="form-control" required style="width:100%;"></div>
-                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Nombres:</label><input type="text" id="emp-nombres" class="form-control" required style="width:100%;"></div>
-                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Apellidos:</label><input type="text" id="emp-apellidos" class="form-control" required style="width:100%;"></div>
-                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Cargo:</label><select id="emp-cargo" class="form-control" style="width:100%;" required><option value="">-- Seleccione Cargo --</option></select></div>
-                    <div style="margin-bottom: 1.5rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Área Asignada:</label><select id="emp-area" class="form-control" style="width:100%;" required><option value="">-- Seleccione Área --</option></select></div>
-                    <button type="submit" style="width:100%;">Registrar Empleado</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- ==================================================================
-             PESTAÑA 6: CARGAR GALERÍA (NUEVA SECCIÓN)
-             ================================================================== -->
-        <div id="tab-cargar-galeria" class="tab-content">
-            <div class="bento-card" style="max-width: 700px; margin: 0 auto;">
-                <h3><i data-lucide="upload-cloud" style="width:20px; color:#f59e0b;"></i> Asignar Fotografías a Servicio</h3>
-                <form onsubmit="guardarGaleria(event)">
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Servicio Asociado:</label>
-                        <select id="gal-serv-select" class="form-control" style="width:100%;" required>
-                            <option value="">-- Seleccione Servicio --</option>
-                        </select>
-                    </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Fecha de Registro:</label>
-                        <input type="date" id="gal-fecha" class="form-control" style="width:100%;">
-                    </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Ruta / Archivo Foto Frente:</label>
-                        <input type="text" id="gal-frente" class="form-control" placeholder="assets/img/corte_frente.jpg" style="width:100%;">
-                    </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Ruta / Archivo Foto Lado / Perfil:</label>
-                        <input type="text" id="gal-lado" class="form-control" placeholder="assets/img/corte_lado.jpg" style="width:100%;">
-                    </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Ruta / Archivo Foto Atrás / Posterior:</label>
-                        <input type="text" id="gal-atras" class="form-control" placeholder="assets/img/corte_atras.jpg" style="width:100%;">
-                    </div>
-                    <div style="margin-bottom: 1.5rem;">
-                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Descripción del Estilo:</label>
-                        <textarea id="gal-desc" class="form-control" rows="3" placeholder="Detalles técnicos del corte o tratamiento..." style="width:100%;"></textarea>
-                    </div>
-                    <button type="submit" style="width:100%;">Guardar en Galería NeonDB</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- ==================================================================
-             PESTAÑA 7: CONSULTAS Y GALERÍA PRO (NUEVA SECCIÓN)
-             ================================================================== -->
-        <div id="tab-consultas" class="tab-content">
-            <div class="bento-grid" style="grid-template-columns: 1fr; gap: 2rem;">
-                
-                <!-- Sub-sección 1: Consultas de Relación Empleados / Servicios -->
-                <div class="bento-card">
-                    <h3><i data-lucide="search" style="width:20px; color:#f59e0b;"></i> Consultas Cruzadas (Empleados y Servicios)</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
-                        <div>
-                            <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Buscar Empleados por Servicio:</label>
-                            <div style="display:flex; gap:0.5rem;">
-                                <select id="cons-serv" class="form-control" style="flex:1;"><option value="">-- Seleccione Servicio --</option></select>
-                                <button onclick="consultarEmpleadosPorServicio()">Filtrar</button>
-                            </div>
-                        </div>
-                        <div>
-                            <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Buscar Servicios por Empleado:</label>
-                            <div style="display:flex; gap:0.5rem;">
-                                <select id="cons-emp" class="form-control" style="flex:1;"><option value="">-- Seleccione Empleado --</option></select>
-                                <button onclick="consultarServiciosPorEmpleado()">Filtrar</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="data-table-wrapper">
-                        <table class="modern-table">
-                            <thead><tr><th>Dato Principal</th><th>Detalle / Estilo / Cargo</th><th>Información Adicional</th></tr></thead>
-                            <tbody id="tabla-resultados-consulta">
-                                <tr><td colspan="3" style="text-align:center; color:#a8a29e;">Realiza una consulta para ver los resultados.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Sub-sección 2: Visor de Galería Tridimensional -->
-                <div class="bento-card">
-                    <h3><i data-lucide="image" style="width:20px; color:#f59e0b;"></i> Visor Tridimensional del Servicio (Frente, Lado, Atrás)</h3>
-                    <div style="display:flex; gap:1rem; align-items:center; margin-bottom:1.5rem;">
-                        <select id="visor-galeria-serv" class="form-control" style="flex:1;">
-                            <option value="">-- Ver Todos los Servicios --</option>
-                        </select>
-                        <button onclick="cargarVisorGaleria()">Cargar Galería Pro</button>
-                    </div>
-                    <div id="visor-info-header" style="font-family:'Playfair Display',serif; color:#fde68a; font-size:1.1rem; margin-bottom:1rem; text-align:center;">
-                        Selecciona un servicio para explorar sus registros gráficos.
-                    </div>
-                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem; min-height:240px; margin-bottom:1rem;">
-                        <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(245,158,11,0.2); border-radius:14px; padding:1rem; text-align:center;">
-                            <p style="color:#fde68a; font-size:0.85rem; margin-bottom:0.5rem;">1. FRENTE</p>
-                            <div id="visor-frente" style="height:180px; display:flex; align-items:center; justify-content:center; color:#78716c; font-size:0.85rem;">[ Sin Foto ]</div>
-                        </div>
-                        <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(245,158,11,0.2); border-radius:14px; padding:1rem; text-align:center;">
-                            <p style="color:#fde68a; font-size:0.85rem; margin-bottom:0.5rem;">2. LADO / PERFIL</p>
-                            <div id="visor-lado" style="height:180px; display:flex; align-items:center; justify-content:center; color:#78716c; font-size:0.85rem;">[ Sin Foto ]</div>
-                        </div>
-                        <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(245,158,11,0.2); border-radius:14px; padding:1rem; text-align:center;">
-                            <p style="color:#fde68a; font-size:0.85rem; margin-bottom:0.5rem;">3. ATRÁS</p>
-                            <div id="visor-atras" style="height:180px; display:flex; align-items:center; justify-content:center; color:#78716c; font-size:0.85rem;">[ Sin Foto ]</div>
-                        </div>
-                    </div>
-                    <div id="visor-descripcion" style="text-align:center; color:#d6d3d1; font-size:0.9rem; font-style:italic;"></div>
-                </div>
-
-            </div>
-        </div>
-
+    <!-- ── Tabs ─────────────────────────────────────────────────────── -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" data-tab="clientes">   <i data-lucide="users"></i>        Clientes</button>
+      <button class="tab-btn" data-tab="agendar">           <i data-lucide="calendar-plus"></i> Agendar</button>
+      <button class="tab-btn" data-tab="informes">          <i data-lucide="clipboard-list"></i> Informes</button>
+      <button class="tab-btn" data-tab="servicios">         <i data-lucide="scissors"></i>      Servicios</button>
+      <button class="tab-btn" data-tab="empleados">         <i data-lucide="user-cog"></i>      Empleados</button>
+      <button class="tab-btn" data-tab="galeria">           <i data-lucide="upload-cloud"></i>  Cargar Galería</button>
+      <button class="tab-btn" data-tab="consultas">         <i data-lucide="search"></i>        Consultas Pro</button>
     </div>
 
-    <!-- Script de lógica e interactividad -->
-    <script>
-        lucide.createIcons();
-        let carritoReserva = [];
+    <!-- ══════════ TAB 1 — CLIENTES ══════════ -->
+    <section id="tab-clientes" class="tab-content active">
+      <div class="bento-grid">
+        <div class="alef-card">
+          <h3><i data-lucide="user-plus"></i> Registrar Cliente</h3>
+          <form id="form-cliente" onsubmit="crearCliente(event)">
+            <div class="field"><label>Nro. Celular</label>
+              <input type="text" id="cli-celular" class="form-control" required placeholder="+58 412 1234567"></div>
+            <div class="field"><label>Nombre y Apellido</label>
+              <input type="text" id="cli-nombre" class="form-control" required></div>
+            <div class="field"><label>Día de Cumpleaños</label>
+              <input type="text" id="cli-cumple" class="form-control" placeholder="Ej: 15 de Mayo"></div>
+            <button class="btn btn-primary btn-block"><i data-lucide="save"></i> Guardar Cliente</button>
+          </form>
+        </div>
+        <div class="alef-card">
+          <h3><i data-lucide="database"></i> Clientes Registrados</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Celular</th><th>Nombre y Apellido</th><th>Cumpleaños</th></tr></thead>
+              <tbody id="tbody-clientes"><tr class="empty-row"><td colspan="3">Cargando…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
 
-        function cambiarPestaña(nombreTab, event) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById(`tab-${nombreTab}`).classList.add('active');
-            if (event && event.currentTarget) {
-                event.currentTarget.classList.add('active');
-            }
-        }
+    <!-- ══════════ TAB 2 — AGENDAR ══════════ -->
+    <section id="tab-agendar" class="tab-content">
+      <div class="alef-card" style="max-width:1000px;margin:0 auto;">
+        <h3><i data-lucide="calendar-check"></i> Agendamiento Inteligente</h3>
+        <div class="row mb-2">
+          <div class="field"><label>Cliente</label>
+            <select id="res-cliente" class="form-control" required></select></div>
+          <div class="field"><label>Fecha</label>
+            <input type="date" id="res-fecha" class="form-control" required></div>
+        </div>
+        <div class="row mb-2">
+          <div class="field"><label>Área</label>
+            <select id="res-area" class="form-control" onchange="cargarServiciosArea()"></select></div>
+          <div class="field"><label>Servicio</label>
+            <select id="res-servicio" class="form-control"></select></div>
+          <div class="field"><label>Hora (HH:MM)</label>
+            <input type="time" id="res-hora" class="form-control" value="10:00" required></div>
+        </div>
+        <button class="btn btn-ghost btn-block mb-3" onclick="agregarAlCarrito()">
+          <i data-lucide="plus-circle"></i> Añadir servicio a la reserva
+        </button>
+        <h4 class="mb-2" style="color:var(--alef-gold-light);">Servicios en la reserva</h4>
+        <div class="table-wrapper mb-2" style="max-height:260px;">
+          <table>
+            <thead><tr><th>Hora</th><th>Servicio</th><th>Empleado</th><th>Precio</th><th></th></tr></thead>
+            <tbody id="carrito-body"><tr class="empty-row"><td colspan="5">Sin servicios aún.</td></tr></tbody>
+          </table>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
+          <div class="field" style="margin:0;max-width:180px;"><label>Propina ($)</label>
+            <input type="number" id="res-propina" class="form-control" value="0" step="0.5"></div>
+          <button class="btn btn-success" onclick="procesarReserva()">
+            <i data-lucide="check-circle"></i> Procesar y emitir recibo
+          </button>
+        </div>
+      </div>
+    </section>
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const hoy = new Date().toISOString().split('T')[0];
-            if(document.getElementById('res-fecha')) document.getElementById('res-fecha').value = hoy;
-            if(document.getElementById('inf-fecha')) {
-                document.getElementById('inf-fecha').value = hoy;
-                cargarInformeAgenda();
-            }
-            if(document.getElementById('gal-fecha')) document.getElementById('gal-fecha').value = hoy;
+    <!-- ══════════ TAB 3 — INFORMES ══════════ -->
+    <section id="tab-informes" class="tab-content">
+      <div class="alef-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:1.2rem;">
+          <h3 style="margin:0;"><i data-lucide="clipboard-list"></i> Parrilla y Control de Citas</h3>
+          <div style="display:flex;gap:.6rem;align-items:center;">
+            <input type="date" id="inf-fecha" class="form-control" style="width:auto;" onchange="cargarInforme()">
+            <button class="btn btn-ghost btn-sm" onclick="cargarInforme()">
+              <i data-lucide="refresh-cw"></i> Actualizar</button>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Atendida</th><th>Hora</th><th>Estado</th>
+              <th>Servicio</th><th>Empleado</th><th>Cliente</th><th>Precio</th></tr></thead>
+            <tbody id="tbody-informe"><tr class="empty-row"><td colspan="7">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="text-right mt-2" style="font-family:'Playfair Display',serif;
+             font-size:1.15rem;color:var(--alef-gold-light);">
+          Sumatoria total: <span id="informe-total">$0.00</span>
+        </div>
+      </div>
+    </section>
 
-            cargarCatalogosSimulados();
+    <!-- ══════════ TAB 4 — SERVICIOS ══════════ -->
+    <section id="tab-servicios" class="tab-content">
+      <div class="alef-card" style="max-width:700px;margin:0 auto;">
+        <h3><i data-lucide="scissors"></i> Registrar Nuevo Servicio</h3>
+        <form id="form-servicio" onsubmit="crearServicio(event)">
+          <div class="field"><label>Área</label>
+            <select id="serv-area" class="form-control" required></select></div>
+          <div class="field"><label>Nombre del Servicio</label>
+            <input type="text" id="serv-nombre" class="form-control" required></div>
+          <div class="field"><label>Estilo / Detalle</label>
+            <input type="text" id="serv-estilo" class="form-control"></div>
+          <div class="row">
+            <div class="field"><label>Precio ($)</label>
+              <input type="number" id="serv-precio" class="form-control" step="0.5" required></div>
+            <div class="field"><label>Tiempo máximo</label>
+              <input type="text" id="serv-tiempo" class="form-control" value="00:45"></div>
+          </div>
+          <button class="btn btn-primary btn-block"><i data-lucide="save"></i> Guardar Servicio</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ══════════ TAB 5 — EMPLEADOS ══════════ -->
+    <section id="tab-empleados" class="tab-content">
+      <div class="bento-grid">
+        <div class="alef-card">
+          <h3><i data-lucide="user-cog"></i> Registrar Empleado</h3>
+          <form id="form-empleado" onsubmit="crearEmpleado(event)">
+            <div class="row">
+              <div class="field"><label>Cédula</label>
+                <input type="text" id="emp-cedula" class="form-control" required></div>
+              <div class="field"><label>Celular</label>
+                <input type="text" id="emp-celular" class="form-control"></div>
+            </div>
+            <div class="row">
+              <div class="field"><label>Nombres</label>
+                <input type="text" id="emp-nombres" class="form-control" required></div>
+              <div class="field"><label>Apellidos</label>
+                <input type="text" id="emp-apellidos" class="form-control" required></div>
+            </div>
+            <div class="row">
+              <div class="field"><label>Cargo</label>
+                <select id="emp-cargo" class="form-control" required></select></div>
+              <div class="field"><label>Área asignada</label>
+                <select id="emp-area" class="form-control" required></select></div>
+            </div>
+            <div class="field"><label>Servicios (Ctrl/Cmd + clic)</label>
+              <select id="emp-servicios" class="form-control" multiple size="5"></select></div>
+            <button class="btn btn-primary btn-block">
+              <i data-lucide="user-plus"></i> Registrar Empleado</button>
+          </form>
+        </div>
+        <div class="alef-card">
+          <h3><i data-lucide="users-round"></i> Empleados Registrados</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Nombre</th><th>Cargo</th><th>Área</th><th>Servicios</th></tr></thead>
+              <tbody id="tbody-empleados"><tr class="empty-row"><td colspan="4">Cargando…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ TAB 6 — CARGAR GALERÍA ══════════ -->
+    <section id="tab-galeria" class="tab-content">
+      <div class="alef-card" style="max-width:850px;margin:0 auto;">
+        <h3><i data-lucide="upload-cloud"></i> Cargar Fotos a la Galería</h3>
+        <p class="text-muted mb-3" style="font-size:.88rem;">
+          Las fotos se guardan en Neon como base64 y se vinculan al servicio.
+          Se comprimen automáticamente antes de enviar.
+        </p>
+        <form id="form-galeria" onsubmit="guardarGaleria(event)">
+          <div class="row mb-2">
+            <div class="field"><label>Servicio asociado *</label>
+              <select id="gal-servicio" class="form-control" required></select></div>
+            <div class="field"><label>Fecha de registro</label>
+              <input type="date" id="gal-fecha" class="form-control"></div>
+          </div>
+          <div class="row mb-2">
+            <div class="field"><label>Foto FRENTE</label>
+              <label class="upload-zone" for="gal-frente">
+                <i data-lucide="image-plus" class="icon" style="width:32px;height:32px;"></i>
+                <p>Haz clic para seleccionar</p>
+                <input type="file" id="gal-frente" accept="image/*" onchange="previewImage(event,'preview-frente')">
+                <img id="preview-frente" class="upload-preview" alt="">
+              </label>
+            </div>
+            <div class="field"><label>Foto LADO / PERFIL</label>
+              <label class="upload-zone" for="gal-lado">
+                <i data-lucide="image-plus" class="icon" style="width:32px;height:32px;"></i>
+                <p>Haz clic para seleccionar</p>
+                <input type="file" id="gal-lado" accept="image/*" onchange="previewImage(event,'preview-lado')">
+                <img id="preview-lado" class="upload-preview" alt="">
+              </label>
+            </div>
+            <div class="field"><label>Foto ATRÁS</label>
+              <label class="upload-zone" for="gal-atras">
+                <i data-lucide="image-plus" class="icon" style="width:32px;height:32px;"></i>
+                <p>Haz clic para seleccionar</p>
+                <input type="file" id="gal-atras" accept="image/*" onchange="previewImage(event,'preview-atras')">
+                <img id="preview-atras" class="upload-preview" alt="">
+              </label>
+            </div>
+          </div>
+          <div class="field"><label>Descripción</label>
+            <textarea id="gal-desc" class="form-control" rows="3"
+                      placeholder="Detalles técnicos del corte o tratamiento…"></textarea></div>
+          <button class="btn btn-primary btn-block" id="btn-guardar-galeria">
+            <i data-lucide="save"></i> Guardar en Galería</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ══════════ TAB 7 — CONSULTAS + VISOR ══════════ -->
+    <section id="tab-consultas" class="tab-content">
+      <div class="bento-grid" style="grid-template-columns:1fr;">
+        <div class="alef-card">
+          <h3><i data-lucide="search"></i> Consultas Cruzadas</h3>
+          <div class="row mb-2">
+            <div>
+              <label style="display:block;font-size:.82rem;color:var(--alef-text-muted);margin-bottom:.45rem;">
+                Empleados que realizan un servicio</label>
+              <div style="display:flex;gap:.5rem;">
+                <select id="cons-serv" class="form-control"></select>
+                <button class="btn btn-ghost" onclick="consultarEmpleadosPorServicio()">Filtrar</button>
+              </div>
+            </div>
+            <div>
+              <label style="display:block;font-size:.82rem;color:var(--alef-text-muted);margin-bottom:.45rem;">
+                Servicios que realiza un empleado</label>
+              <div style="display:flex;gap:.5rem;">
+                <select id="cons-emp" class="form-control"></select>
+                <button class="btn btn-ghost" onclick="consultarServiciosPorEmpleado()">Filtrar</button>
+              </div>
+            </div>
+          </div>
+          <div class="table-wrapper" style="max-height:280px;">
+            <table>
+              <thead><tr><th>Dato principal</th><th>Detalle</th><th>Información</th></tr></thead>
+              <tbody id="tbody-consulta">
+                <tr class="empty-row"><td colspan="3">Realiza una consulta para ver resultados.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="alef-card">
+          <h3><i data-lucide="image"></i> Visor Tridimensional del Servicio</h3>
+          <div style="display:flex;gap:1rem;align-items:center;margin-bottom:1.2rem;flex-wrap:wrap;">
+            <select id="visor-servicio" class="form-control" style="flex:1;min-width:220px;">
+              <option value="">— Ver todos los servicios —</option>
+            </select>
+            <button class="btn btn-primary" onclick="cargarGaleria()">
+              <i data-lucide="gallery-horizontal-end"></i> Cargar Galería Pro
+            </button>
+          </div>
+          <div id="visor-header" class="text-center mb-2"
+               style="font-family:'Playfair Display',serif;color:var(--alef-gold-light);font-size:1.05rem;">
+            Selecciona un servicio para explorar sus registros gráficos.
+          </div>
+          <div class="gallery-viewer">
+            <div class="gallery-slot"><h4>1. Frente</h4>
+              <div class="img-wrap" id="visor-frente"><span class="placeholder">Sin foto</span></div></div>
+            <div class="gallery-slot"><h4>2. Lado / Perfil</h4>
+              <div class="img-wrap" id="visor-lado"><span class="placeholder">Sin foto</span></div></div>
+            <div class="gallery-slot"><h4>3. Atrás</h4>
+              <div class="img-wrap" id="visor-atras"><span class="placeholder">Sin foto</span></div></div>
+          </div>
+          <div id="visor-desc" class="text-center mt-2 text-muted"
+               style="font-style:italic;font-size:.88rem;"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script>
+    /* ====================================================================
+       CONFIG GLOBAL + AUTENTICACIÓN (lectura de token del portal raíz)
+       ==================================================================== */
+    const API = '';                       // mismo origen (Flask sirve todo)
+    let TOKEN = localStorage.getItem('alefdoor_token') || null;
+    let USER  = localStorage.getItem('alefdoor_user')  || 'admin';
+
+    // Si no hay token → redirigir al portal
+    if (!TOKEN) {
+      window.location.href = '../../index.html';
+    }
+
+    let CATALOGOS = { areas: [], cargos: [], servicios: [], empleados: [], clientes: [] };
+    let CARRITO   = [];
+
+    /* ── Fetch autenticado (con redirección si 401) ───────────────────── */
+    async function apiFetch(path, options = {}) {
+      const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+      if (TOKEN) headers['Authorization'] = `Bearer ${TOKEN}`;
+      const res = await fetch(API + path, { ...options, headers });
+      if (res.status === 401) {
+        localStorage.removeItem('alefdoor_token');
+        window.location.href = '../../index.html';
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+      return data;
+    }
+
+    /* ── Toast helper ─────────────────────────────────────────────────── */
+    function toast(msg, type = 'info', duration = 3500) {
+      const icons = { success: 'check-circle-2', error: 'x-circle', info: 'info' };
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.innerHTML = `<i data-lucide="${icons[type]}"></i><span>${msg}</span>`;
+      document.getElementById('toast-container').appendChild(el);
+      if (window.lucide) lucide.createIcons();
+      setTimeout(() => {
+        el.style.animation = 'alef-slide-out .35s var(--alef-ease) forwards';
+        setTimeout(() => el.remove(), 350);
+      }, duration);
+    }
+
+    /* ── Tabs ─────────────────────────────────────────────────────────── */
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+      });
+    });
+
+    /* ── Carga inicial ────────────────────────────────────────────────── */
+    async function iniciarApp() {
+      const hoy = new Date().toISOString().slice(0, 10);
+      document.getElementById('res-fecha').value = hoy;
+      document.getElementById('inf-fecha').value = hoy;
+      document.getElementById('gal-fecha').value = hoy;
+      await cargarCatalogos();
+      await cargarClientes();
+      await cargarEmpleados();
+      await cargarInforme();
+    }
+
+    async function cargarCatalogos() {
+      const [areas, cargos, servicios, empleados, clientes] = await Promise.all([
+        apiFetch('/api/areas'), apiFetch('/api/cargos'), apiFetch('/api/servicios'),
+        apiFetch('/api/empleados'), apiFetch('/api/clientes')
+      ]);
+      CATALOGOS = { areas, cargos, servicios, empleados, clientes };
+      const opt = (v, t) => `<option value="${v}">${t}</option>`;
+      document.getElementById('res-area').innerHTML =
+        '<option value="">— Seleccione área —</option>' +
+        areas.map(a => opt(a.id_area, `${a.nom_area} — ${a.nom_departamento}`)).join('');
+      document.getElementById('serv-area').innerHTML =
+        '<option value="">— Seleccione área —</option>' +
+        areas.map(a => opt(a.id_area, `${a.nom_area} — ${a.nom_departamento}`)).join('');
+      document.getElementById('emp-area').innerHTML =
+        '<option value="">— Seleccione área —</option>' +
+        areas.map(a => opt(a.id_area, `${a.nom_area} — ${a.nom_departamento}`)).join('');
+      document.getElementById('emp-cargo').innerHTML =
+        '<option value="">— Seleccione cargo —</option>' +
+        cargos.map(c => opt(c.id_cargo, c.nomb_cargo)).join('');
+      document.getElementById('emp-servicios').innerHTML =
+        servicios.map(s => `<option value="${s.id_servicio}">${s.nom_servicio} (${s.estilo||'—'})</option>`).join('');
+      document.getElementById('gal-servicio').innerHTML =
+        '<option value="">— Seleccione servicio —</option>' +
+        servicios.map(s => opt(s.id_servicio, `${s.nom_servicio} — $${Number(s.precio).toFixed(2)}`)).join('');
+      document.getElementById('cons-serv').innerHTML =
+        '<option value="">— Seleccione servicio —</option>' +
+        servicios.map(s => opt(s.id_servicio, s.nom_servicio)).join('');
+      document.getElementById('visor-servicio').innerHTML =
+        '<option value="">— Ver todos los servicios —</option>' +
+        servicios.map(s => opt(s.id_servicio, s.nom_servicio)).join('');
+      document.getElementById('cons-emp').innerHTML =
+        '<option value="">— Seleccione empleado —</option>' +
+        empleados.map(e => opt(e.id_empleado, `${e.nombres} ${e.apellidos}`)).join('');
+      document.getElementById('res-cliente').innerHTML =
+        '<option value="">— Seleccione cliente —</option>' +
+        clientes.map(c => opt(c.id_cliente, `${c.nombre_apellido} — ${c.nro_celular}`)).join('');
+    }
+
+    /* ── Clientes ─────────────────────────────────────────────────────── */
+    async function cargarClientes() {
+      const rows = await apiFetch('/api/clientes');
+      const tb = document.getElementById('tbody-clientes');
+      tb.innerHTML = rows.length
+        ? rows.map(c => `<tr><td>${c.nro_celular}</td><td>${c.nombre_apellido}</td>
+                         <td>${c.dia_cumpleanos || '—'}</td></tr>`).join('')
+        : '<tr class="empty-row"><td colspan="3">Aún no hay clientes.</td></tr>';
+    }
+    async function crearCliente(ev) {
+      ev.preventDefault();
+      try {
+        await apiFetch('/api/clientes', {
+          method: 'POST',
+          body: JSON.stringify({
+            nro_celular:     document.getElementById('cli-celular').value.trim(),
+            nombre_apellido: document.getElementById('cli-nombre').value.trim(),
+            dia_cumpleanos:  document.getElementById('cli-cumple').value.trim()
+          })
         });
+        toast('Cliente registrado', 'success');
+        document.getElementById('form-cliente').reset();
+        await cargarClientes(); await cargarCatalogos();
+      } catch (e) { toast(e.message, 'error'); }
+    }
 
-        function cargarCatalogosSimulados() {
-            const serviciosMock = [
-                { id: 1, nombre: "Corte Ejecutivo Degradado" },
-                { id: 2, nombre: "Perfilado de Barba" },
-                { id: 3, nombre: "Peinado y Brushing Damas" }
-            ];
+    /* ── Servicios ────────────────────────────────────────────────────── */
+    async function crearServicio(ev) {
+      ev.preventDefault();
+      try {
+        await apiFetch('/api/servicios', {
+          method: 'POST',
+          body: JSON.stringify({
+            id_area:      Number(document.getElementById('serv-area').value),
+            nom_servicio: document.getElementById('serv-nombre').value.trim(),
+            estilo:       document.getElementById('serv-estilo').value.trim(),
+            precio:       Number(document.getElementById('serv-precio').value),
+            tiempo_max:   document.getElementById('serv-tiempo').value.trim()
+          })
+        });
+        toast('Servicio registrado', 'success');
+        document.getElementById('form-servicio').reset();
+        await cargarCatalogos();
+      } catch (e) { toast(e.message, 'error'); }
+    }
+    async function cargarServiciosArea() {
+      const idArea = document.getElementById('res-area').value;
+      const sel = document.getElementById('res-servicio');
+      if (!idArea) { sel.innerHTML = '<option value="">— Seleccione servicio —</option>'; return; }
+      const filtrados = CATALOGOS.servicios.filter(s => String(s.id_area) === idArea);
+      sel.innerHTML = '<option value="">— Seleccione servicio —</option>' +
+        filtrados.map(s => `<option value="${s.id_servicio}" data-precio="${s.precio}">${s.nom_servicio} — $${Number(s.precio).toFixed(2)}</option>`).join('');
+    }
 
-            const empleadosMock = [
-                { id: 1, nombre: "Carlos Mendoza" },
-                { id: 2, nombre: "Ricardo Valera" }
-            ];
+    /* ── Empleados ────────────────────────────────────────────────────── */
+    async function cargarEmpleados() {
+      const rows = await apiFetch('/api/empleados');
+      const tb = document.getElementById('tbody-empleados');
+      tb.innerHTML = rows.length
+        ? rows.map(e => `<tr>
+            <td><b>${e.nombres} ${e.apellidos}</b><br>
+              <small class="text-muted">C.I ${e.cedula}</small></td>
+            <td>${e.cargo || '—'}</td><td>${e.area || '—'}</td>
+            <td><small>${e.servicios || '—'}</small></td></tr>`).join('')
+        : '<tr class="empty-row"><td colspan="4">Aún no hay empleados.</td></tr>';
+    }
+    async function crearEmpleado(ev) {
+      ev.preventDefault();
+      const servicios = Array.from(document.getElementById('emp-servicios').selectedOptions)
+        .map(o => Number(o.value));
+      try {
+        await apiFetch('/api/empleados', {
+          method: 'POST',
+          body: JSON.stringify({
+            cedula:    document.getElementById('emp-cedula').value.trim(),
+            nombres:   document.getElementById('emp-nombres').value.trim(),
+            apellidos: document.getElementById('emp-apellidos').value.trim(),
+            celular:   document.getElementById('emp-celular').value.trim(),
+            id_cargo:  Number(document.getElementById('emp-cargo').value),
+            id_area:   Number(document.getElementById('emp-area').value),
+            servicios
+          })
+        });
+        toast('Empleado registrado', 'success');
+        document.getElementById('form-empleado').reset();
+        await cargarEmpleados(); await cargarCatalogos();
+      } catch (e) { toast(e.message, 'error'); }
+    }
 
-            // Poblar selects de servicios
-            ['res-servicio', 'serv-area', 'gal-serv-select', 'cons-serv', 'visor-galeria-serv'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el && id !== 'serv-area') {
-                    serviciosMock.forEach(s => {
-                        const opt = document.createElement('option');
-                        opt.value = s.id;
-                        opt.textContent = s.nombre;
-                        el.appendChild(opt);
-                    });
-                }
-            });
+    /* ── Agendamiento ─────────────────────────────────────────────────── */
+    async function agregarAlCarrito() {
+      const id_cliente = Number(document.getElementById('res-cliente').value);
+      const fecha      = document.getElementById('res-fecha').value;
+      const id_serv    = Number(document.getElementById('res-servicio').value);
+      const hora       = document.getElementById('res-hora').value;
+      if (!id_cliente || !fecha || !id_serv || !hora) {
+        toast('Completa cliente, fecha, servicio y hora', 'error'); return;
+      }
+      if (CARRITO.length >= 3) { toast('Máximo 3 servicios por reserva', 'error'); return; }
+      if (CARRITO.some(c => c.hora === hora)) { toast('Ya hay un servicio a esa hora', 'error'); return; }
+      if (CARRITO.some(c => c.id_servicio === id_serv)) { toast('Ese servicio ya está en el carrito', 'error'); return; }
 
-            // Poblar select de empleados
-            const selEmp = document.getElementById('cons-emp');
-            if(selEmp) {
-                empleadosMock.forEach(e => {
-                    const opt = document.createElement('option');
-                    opt.value = e.id;
-                    opt.textContent = e.nombre;
-                    selEmp.appendChild(opt);
-                });
-            }
+      const serv = CATALOGOS.servicios.find(s => s.id_servicio === id_serv);
+      const empleadosDelServicio = await apiFetch(`/api/consultas/empleados-por-servicio/${id_serv}`);
+      if (!empleadosDelServicio.length) {
+        toast('Ningún empleado está habilitado para ese servicio', 'error'); return;
+      }
+      const agenda = await apiFetch(`/api/agenda?fecha=${fecha}`);
+      const ocupados = new Set(agenda.filter(a => a.hora === hora).map(a => a.empleado));
+      const libre = empleadosDelServicio.find(e => !ocupados.has(e.nombre));
+      if (!libre) { toast(`No hay empleados disponibles a las ${hora}`, 'error'); return; }
+
+      CARRITO.push({
+        id_servicio:  id_serv,
+        nom_servicio: serv.nom_servicio,
+        hora,
+        precio:       Number(serv.precio),
+        id_empleado:  libre.id_empleado,
+        nom_empleado: libre.nombre
+      });
+      renderCarrito();
+      toast(`Añadido · ${libre.nombre}`, 'success');
+    }
+    function renderCarrito() {
+      const tb = document.getElementById('carrito-body');
+      if (!CARRITO.length) {
+        tb.innerHTML = '<tr class="empty-row"><td colspan="5">Sin servicios aún.</td></tr>';
+        return;
+      }
+      tb.innerHTML = CARRITO.map((c, i) => `<tr>
+        <td>${c.hora}</td><td>${c.nom_servicio}</td>
+        <td>${c.nom_empleado}</td><td>$${c.precio.toFixed(2)}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="quitarDelCarrito(${i})">
+          <i data-lucide="trash-2" style="width:14px;height:14px;"></i></button></td>
+      </tr>`).join('');
+      if (window.lucide) lucide.createIcons();
+    }
+    function quitarDelCarrito(i) { CARRITO.splice(i, 1); renderCarrito(); }
+
+    async function procesarReserva() {
+      const id_cliente = Number(document.getElementById('res-cliente').value);
+      const fecha      = document.getElementById('res-fecha').value;
+      const propina    = Number(document.getElementById('res-propina').value) || 0;
+      if (!id_cliente || !fecha || CARRITO.length === 0) {
+        toast('Completa la reserva antes de procesar', 'error'); return;
+      }
+      try {
+        const r = await apiFetch('/api/reservas', {
+          method: 'POST',
+          body: JSON.stringify({
+            id_cliente, fecha_reserva: fecha, propina,
+            items: CARRITO.map(c => ({
+              id_servicio: c.id_servicio, id_empleado: c.id_empleado,
+              hora: c.hora, precio: c.precio
+            }))
+          })
+        });
+        toast(`Reserva registrada · Total $${Number(r.total).toFixed(2)}`, 'success', 4500);
+        CARRITO = []; renderCarrito();
+        document.getElementById('inf-fecha').value = fecha;
+        await cargarInforme();
+        document.querySelector('.tab-btn[data-tab="informes"]').click();
+      } catch (e) { toast(e.message, 'error', 5000); }
+    }
+
+    /* ── Informe ──────────────────────────────────────────────────────── */
+    async function cargarInforme() {
+      const fecha = document.getElementById('inf-fecha').value;
+      if (!fecha) return;
+      try {
+        const rows = await apiFetch(`/api/agenda?fecha=${fecha}`);
+        const tb = document.getElementById('tbody-informe');
+        if (!rows.length) {
+          tb.innerHTML = '<tr class="empty-row"><td colspan="7">Sin citas para esta fecha.</td></tr>';
+          document.getElementById('informe-total').textContent = '$0.00'; return;
         }
+        let total = 0;
+        tb.innerHTML = rows.map(r => {
+          total += Number(r.precio);
+          const atendido = r.atendido === 'SI';
+          return `<tr>
+            <td><button class="btn btn-ghost btn-sm" onclick="toggleAtendida(${r.id_ser_agen})">
+              ${atendido ? '☑ Atendida' : '☐ Pendiente'}</button></td>
+            <td>${r.hora}</td>
+            <td><span class="badge ${atendido ? 'badge-yes' : 'badge-no'}">
+              ${atendido ? 'ATENDIDA' : 'RESERVADO'}</span></td>
+            <td>${r.nom_servicio}</td><td>${r.empleado}</td>
+            <td>${r.cliente}</td><td>$${Number(r.precio).toFixed(2)}</td>
+          </tr>`;
+        }).join('');
+        document.getElementById('informe-total').textContent = '$' + total.toFixed(2);
+        if (window.lucide) lucide.createIcons();
+      } catch (e) { toast(e.message, 'error'); }
+    }
+    async function toggleAtendida(id) {
+      try { await apiFetch(`/api/agenda/${id}/atendida`, { method: 'PUT' }); await cargarInforme(); }
+      catch (e) { toast(e.message, 'error'); }
+    }
 
-        function registrarCliente(event) {
-            event.preventDefault();
-            alert("Cliente guardado en NeonDB.");
-            document.getElementById('cli-celular').value = '';
-            document.getElementById('cli-nombre').value = '';
-            document.getElementById('cli-cumple').value = '';
-        }
+    /* ── Galería (subida con compresión a base64) ─────────────────────── */
+    function previewImage(ev, previewId) {
+      const file = ev.target.files[0];
+      if (!file) return;
+      const img = document.getElementById(previewId);
+      const reader = new FileReader();
+      reader.onload = e => { img.src = e.target.result; img.classList.add('show'); };
+      reader.readAsDataURL(file);
+    }
+    function comprimirImagen(file, maxWidth = 1200, quality = 0.82) {
+      return new Promise((resolve, reject) => {
+        if (!file) return resolve(null);
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            let { width, height } = img;
+            if (width > maxWidth) { height = height * maxWidth / width; width = maxWidth; }
+            const canvas = document.createElement('canvas');
+            canvas.width = width; canvas.height = height;
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+    async function guardarGaleria(ev) {
+      ev.preventDefault();
+      const id_servicio = Number(document.getElementById('gal-servicio').value);
+      const fecha       = document.getElementById('gal-fecha').value;
+      const descripcion = document.getElementById('gal-desc').value.trim();
+      const fFrente = document.getElementById('gal-frente').files[0];
+      const fLado   = document.getElementById('gal-lado').files[0];
+      const fAtras  = document.getElementById('gal-atras').files[0];
+      if (!id_servicio) { toast('Selecciona un servicio', 'error'); return; }
+      if (!fFrente && !fLado && !fAtras) { toast('Sube al menos una foto', 'error'); return; }
 
-        function agregarAlCarrito() {
-            carritoReserva.push({ hora: "10:00", nombreServicio: "Corte Ejecutivo Degradado", empleado: "Carlos Mendoza", precio: 15.00 });
-            actualizarVistaCarrito();
-        }
+      const btn = document.getElementById('btn-guardar-galeria');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loader"></span> Comprimiendo…';
+      try {
+        const [doc_frente, doc_lado, doc_atras] = await Promise.all([
+          comprimirImagen(fFrente), comprimirImagen(fLado), comprimirImagen(fAtras)
+        ]);
+        await apiFetch('/api/galeria', {
+          method: 'POST',
+          body: JSON.stringify({ id_servicio, fecha, descripcion, doc_frente, doc_lado, doc_atras })
+        });
+        toast('Fotos guardadas en la galería', 'success');
+        document.getElementById('form-galeria').reset();
+        ['frente','lado','atras'].forEach(k => {
+          document.getElementById(`preview-${k}`).classList.remove('show');
+          document.getElementById(`preview-${k}`).src = '';
+        });
+      } catch (e) { toast(e.message, 'error', 5000); }
+      finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="save"></i> Guardar en Galería';
+        if (window.lucide) lucide.createIcons();
+      }
+    }
 
-        function actualizarVistaCarrito() {
-            const tbody = document.getElementById('carrito-body');
-            tbody.innerHTML = '';
-            carritoReserva.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${item.hora}</td><td>${item.nombreServicio}</td><td>${item.empleado}</td><td>$${item.precio.toFixed(2)}</td>`;
-                tbody.appendChild(tr);
-            });
+    /* ── Visor tridimensional ─────────────────────────────────────────── */
+    async function cargarGaleria() {
+      const id_serv = document.getElementById('visor-servicio').value;
+      const q = id_serv ? `?servicio=${id_serv}` : '';
+      try {
+        const rows = await apiFetch('/api/galeria' + q);
+        if (!rows.length) {
+          toast('No hay fotos registradas', 'info'); limpiarVisor(); return;
         }
+        const item = rows[0];
+        document.getElementById('visor-header').textContent =
+          `Área: ${item.nom_area} — ${item.nom_departamento} · Servicio: ${item.nom_servicio}`;
+        document.getElementById('visor-desc').textContent =
+          item.descripcion ? `“${item.descripcion}” · Registrado el ${item.fecha}` : '';
+        renderSlot('visor-frente', item.doc_frente);
+        renderSlot('visor-lado',   item.doc_lado);
+        renderSlot('visor-atras',  item.doc_atras);
+      } catch (e) { toast(e.message, 'error'); }
+    }
+    function renderSlot(elId, dataUrl) {
+      const el = document.getElementById(elId);
+      el.innerHTML = dataUrl
+        ? `<img src="${dataUrl}" alt="foto">`
+        : '<span class="placeholder">Sin foto</span>';
+    }
+    function limpiarVisor() {
+      ['visor-frente','visor-lado','visor-atras'].forEach(id => {
+        document.getElementById(id).innerHTML = '<span class="placeholder">Sin foto</span>';
+      });
+      document.getElementById('visor-header').textContent =
+        'Selecciona un servicio para explorar sus registros gráficos.';
+      document.getElementById('visor-desc').textContent = '';
+    }
 
-        function procesarReserva() {
-            alert("Reserva procesada exitosamente en NeonDB.");
-            carritoReserva = [];
-            actualizarVistaCarrito();
-            cambiarPestaña('informes');
-            cargarInformeAgenda();
-        }
+    /* ── Consultas cruzadas ───────────────────────────────────────────── */
+    async function consultarEmpleadosPorServicio() {
+      const id = document.getElementById('cons-serv').value;
+      if (!id) { toast('Selecciona un servicio', 'error'); return; }
+      try {
+        const rows = await apiFetch(`/api/consultas/empleados-por-servicio/${id}`);
+        const tb = document.getElementById('tbody-consulta');
+        tb.innerHTML = rows.length
+          ? rows.map(r => `<tr><td><b>${r.nombre}</b></td>
+              <td>${r.cargo || '—'}</td><td>C.I ${r.cedula}</td></tr>`).join('')
+          : '<tr class="empty-row"><td colspan="3">Sin resultados.</td></tr>';
+      } catch (e) { toast(e.message, 'error'); }
+    }
+    async function consultarServiciosPorEmpleado() {
+      const id = document.getElementById('cons-emp').value;
+      if (!id) { toast('Selecciona un empleado', 'error'); return; }
+      try {
+        const rows = await apiFetch(`/api/consultas/servicios-por-empleado/${id}`);
+        const tb = document.getElementById('tbody-consulta');
+        tb.innerHTML = rows.length
+          ? rows.map(r => `<tr><td>${r.nom_servicio}</td>
+              <td>${r.estilo || '—'}</td><td>$${Number(r.precio).toFixed(2)}</td></tr>`).join('')
+          : '<tr class="empty-row"><td colspan="3">Sin resultados.</td></tr>';
+      } catch (e) { toast(e.message, 'error'); }
+    }
 
-        function cargarInformeAgenda() {
-            const tbody = document.getElementById('informe-body');
-            tbody.innerHTML = `
-                <tr><td style="text-align:center;"><span style="color:#4ade80;">☑ Atendida</span></td><td>09:00</td><td>RESERVADO</td><td>Corte Ejecutivo Degradado</td><td>Carlos Mendoza</td><td>Soraida Suárez</td><td>$15.00</td></tr>
-            `;
-            document.getElementById('informe-total').textContent = "Sumatoria Total: $15.00";
+    /* ── Boot ─────────────────────────────────────────────────────────── */
+    (async function boot() {
+      if (window.lucide) lucide.createIcons();
+      if (TOKEN) {
+        try { await iniciarApp(); }
+        catch (e) {
+          localStorage.removeItem('alefdoor_token');
+          window.location.href = '../../index.html';
         }
-
-        function registrarServicio(event) {
-            event.preventDefault();
-            alert("Servicio registrado en NeonDB.");
-        }
-
-        function registrarEmpleado(event) {
-            event.preventDefault();
-            alert("Empleado registrado en NeonDB.");
-        }
-
-        function guardarGaleria(event) {
-            event.preventDefault();
-            alert("Fotografías de galería guardadas exitosamente en la base de datos.");
-        }
-
-        function consultarEmpleadosPorServicio() {
-            const tbody = document.getElementById('tabla-resultados-consulta');
-            tbody.innerHTML = `<tr><td>Carlos Mendoza</td><td>BARBERO(A)</td><td>C.I: 12345678</td></tr>`;
-        }
-
-        function consultarServiciosPorEmpleado() {
-            const tbody = document.getElementById('tabla-resultados-consulta');
-            tbody.innerHTML = `<tr><td>Corte Ejecutivo Degradado</td><td>Fade Clásico</td><td>$15.00</td></tr>`;
-        }
-
-        function cargarVisorGaleria() {
-            document.getElementById('visor-info-header').textContent = "ÁREA: OPERATIVA | SERVICIO: Corte Ejecutivo Degradado";
-            document.getElementById('visor-frente').innerHTML = "<span style='color:#4ade80;'>[ Foto Frente Cargada ]</span>";
-            document.getElementById('visor-lado').innerHTML = "<span style='color:#4ade80;'>[ Foto Lado Cargada ]</span>";
-            document.getElementById('visor-atras').innerHTML = "<span style='color:#4ade80;'>[ Foto Atrás Cargada ]</span>";
-            document.getElementById('visor-descripcion').textContent = "Descripción: Estilo moderno con acabado impecable en navaja.";
-        }
-    </script>
+      }
+    })();
+  </script>
 </body>
 </html>

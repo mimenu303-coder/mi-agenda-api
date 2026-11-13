@@ -622,93 +622,135 @@
     <!-- ======================================================================
          LÓGICA DE AUTENTICACIÓN Y CONEXIÓN AL BACKEND (NEONDB)
          ====================================================================== -->
-    <script>
-        // Inicializar los iconos vectoriales de Lucide
-        lucide.createIcons();
+  <script>
+    /* =========================================================================
+     * ALEFDOOR · PORTAL RAÍZ
+     * Autenticación contra backend Flask (server_auth.py) + NeonDB.
+     * -------------------------------------------------------------------------
+     * Compatible con módulos en /proyectos/*/index.html que esperan:
+     *   localStorage['alefdoor_token']  →  Bearer token para fetch autenticado
+     *   localStorage['alefdoor_user']   →  Nombre del usuario para mostrar
+     * ========================================================================= */
+    lucide.createIcons();
 
-        /**
-         * Función: iniciarSesion
-         * Descripción: Envía las credenciales al endpoint /api/login (conectado a NeonDB).
-         * Si la API aún no está desplegada en local, permite acceso de demostración
-         * validando los campos para mostrar el Dashboard funcional.
-         */
-        async function iniciarSesion(event) {
-            event.preventDefault();
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const btnSubmit = document.getElementById('btn-submit');
-            const errorBox = document.getElementById('login-error');
+    const API = '';   // mismo origen que sirve Flask
 
-            btnSubmit.innerHTML = '<span>Verificando en NeonDB...</span>';
-            errorBox.style.display = 'none';
+    /** ─────────────────────────────────────────────────────────────
+     * iniciarSesion()
+     * Llama al endpoint real /api/auth/login (server_auth.py).
+     * Guarda token + usuario en localStorage (compartido con los módulos).
+     * ───────────────────────────────────────────────────────────── */
+    async function iniciarSesion(event) {
+        event.preventDefault();
 
-            try {
-                // Petición real al servidor Backend (Flask/FastAPI/Node) conectado a PostgreSQL Neon
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
+        const username  = document.getElementById('username').value.trim();
+        const password  = document.getElementById('password').value;
+        const btnSubmit = document.getElementById('btn-submit');
+        const errorBox  = document.getElementById('login-error');
 
-                if (response.ok) {
-                    const data = await response.json();
-                    activarDashboard(data.nombre_completo || username);
-                    return;
-                }
-            } catch (e) {
-                // Modo fallback interactivo si se abre el HTML directamente sin levantar el servidor Python
-                console.warn("Ejecutando en modo vista previa local (sin servidor backend activo).");
+        errorBox.style.display = 'none';
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<span>Verificando en NeonDB…</span>';
+
+        try {
+            // ✅ Endpoint correcto que expone server_auth.py
+            const response = await fetch(`${API}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Credenciales inválidas');
             }
 
-            // Validación de demostración para vista previa inmediata
-            if (username.length >= 3 && password.length >= 4) {
-                setTimeout(() => {
-                    activarDashboard(username === 'admin_alef' ? 'Administrador Global AlefDOOR' : username);
-                }, 500);
-            } else {
-                errorBox.textContent = "Credenciales inválidas. Verifica tu usuario y contraseña.";
-                errorBox.style.display = 'block';
-                btnSubmit.innerHTML = '<span>Abrir Puerta al Dashboard</span>';
-            }
-        }
+            // ✅ Guardar token de sesión que los módulos consumirán
+            localStorage.setItem('alefdoor_token', data.token);
+            localStorage.setItem('alefdoor_user',  data.user || username);
 
-        /**
-         * Función: activarDashboard
-         * Descripción: Transiciona suavemente de la portada de login al panel de los 3 proyectos
-         * y guarda el token de sesión en sessionStorage para proteger los aplicativos hijos.
-         */
-        function activarDashboard(nombreUsuario) {
+            // Compatibilidad con tu código existente (por si algún módulo viejo
+            // consultaba sessionStorage['alefdoor_session'])
             sessionStorage.setItem('alefdoor_session', JSON.stringify({
-                usuario: nombreUsuario,
+                usuario: data.user || username,
                 autenticado: true,
                 timestamp: new Date().toISOString()
             }));
 
-            document.getElementById('login-view').style.display = 'none';
-            document.getElementById('dashboard-view').style.display = 'block';
-            document.getElementById('btn-logout').style.display = 'inline-block';
-            document.getElementById('user-display').textContent = nombreUsuario;
-        }
+            activarDashboard(data.user || username);
 
-        /**
-         * Función: cerrarSesion
-         * Descripción: Limpia la sesión activa y retorna a la portada principal.
-         */
-        function cerrarSesion() {
-            sessionStorage.removeItem('alefdoor_session');
-            location.reload();
+        } catch (err) {
+            // ⚠️ Ya NO hay "fallback demo" — las credenciales se validan de verdad
+            errorBox.textContent = err.message ||
+                'No se pudo conectar con el servidor. Verifica que el backend esté corriendo.';
+            errorBox.style.display = 'block';
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML =
+                '<span>Abrir Puerta al Dashboard</span>' +
+                '<i data-lucide="arrow-right" style="width:18px;"></i>';
+            if (window.lucide) lucide.createIcons();
         }
+    }
 
-        // Verificar si ya existe una sesión activa al recargar la página
-        window.addEventListener('DOMContentLoaded', () => {
-            const sesionGuardada = sessionStorage.getItem('alefdoor_session');
-            if (sesionGuardada) {
-                const datos = JSON.parse(sesionGuardada);
-                if (datos.autenticado) {
-                    activarDashboard(datos.usuario);
-                }
+    /** ─────────────────────────────────────────────────────────────
+     * activarDashboard()
+     * Transiciona login → dashboard y actualiza el nombre en pantalla.
+     * ───────────────────────────────────────────────────────────── */
+    function activarDashboard(nombreUsuario) {
+        document.getElementById('login-view').style.display = 'none';
+        document.getElementById('dashboard-view').style.display = 'block';
+        document.getElementById('btn-logout').style.display = 'inline-block';
+        document.getElementById('user-display').textContent = nombreUsuario || 'Administrador';
+    }
+
+    /** ─────────────────────────────────────────────────────────────
+     * cerrarSesion()
+     * Invalida el token en el servidor (best-effort) y limpia el cliente.
+     * ───────────────────────────────────────────────────────────── */
+    async function cerrarSesion() {
+        const token = localStorage.getItem('alefdoor_token');
+        try {
+            if (token) {
+                await fetch(`${API}/api/auth/logout`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
             }
-        });
-    </script>
+        } catch (_) { /* si falla, igual limpiamos cliente */ }
+
+        localStorage.removeItem('alefdoor_token');
+        localStorage.removeItem('alefdoor_user');
+        sessionStorage.removeItem('alefdoor_session');
+        location.reload();
+    }
+
+    /** ─────────────────────────────────────────────────────────────
+     * Auto-restauración de sesión al recargar el portal
+     * ───────────────────────────────────────────────────────────── */
+    window.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('alefdoor_token');
+        const user  = localStorage.getItem('alefdoor_user');
+        if (token && user) {
+            // Verificación opcional contra el backend para asegurar que el
+            // token sigue vigente (evita entrar con token de sesión expirada)
+            fetch(`${API}/api/clientes`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => {
+                if (r.ok) activarDashboard(user);
+                else {
+                    // Token expirado → limpiar
+                    localStorage.removeItem('alefdoor_token');
+                    localStorage.removeItem('alefdoor_user');
+                }
+            }).catch(() => {
+                // Backend caído pero token existe → mostrar dashboard de todas
+                // formas (modo offline/read-only amigable)
+                activarDashboard(user);
+            });
+        }
+    });
+</script>
+         
 </body>
 </html>

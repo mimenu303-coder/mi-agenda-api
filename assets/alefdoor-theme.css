@@ -1,156 +1,290 @@
 /* ============================================================================
-   ALEFDOOR-THEME.CSS - Estilo Moderno, Llamativo y Glassmorphism Avanzado
-   ============================================================================
-   Inspirado en los mejores componentes de código abierto en GitHub.
-   Diseñado para unificar la estética de la portada con los aplicativos:
-   - PROYECTO BAR SAP
-   - MODELO TRIPIA
-   - TRIAJE - AGENDA DE ASISTENCIAS
-   ============================================================================ */
+   ALEFDOOR — TEMA GLOBAL COMPARTIDO (Glassmorphism + Puerta Luminosa)
+   Uso en cualquier módulo:
+   <link rel="stylesheet" href="../../assets/css/alefdoor-theme.css">
+   ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
-
+/* ─── VARIABLES ─────────────────────────────────────────────────────────── */
 :root {
-    --alef-bg-void: #030302;
-    --alef-surface: rgba(18, 15, 12, 0.75);
-    --alef-surface-hover: rgba(28, 23, 18, 0.88);
-    --alef-amber: #f59e0b;
-    --alef-amber-glow: rgba(245, 158, 11, 0.4);
-    --alef-gold: #fde68a;
-    --alef-border: rgba(245, 158, 11, 0.22);
-    --alef-border-hover: rgba(245, 158, 11, 0.6);
-    --alef-text-main: #f8fafc;
-    --alef-text-muted: #a8a29e;
-    --transition-smooth: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  --alef-gold:         #f59e0b;
+  --alef-gold-light:   #fde68a;
+  --alef-gold-dark:    #b45309;
+  --alef-bg-deep:      #0a0806;
+  --alef-bg-card:      rgba(20, 16, 12, 0.72);
+  --alef-bg-card-hi:   rgba(28, 22, 16, 0.88);
+  --alef-text:         #f8fafc;
+  --alef-text-muted:   #a8a29e;
+  --alef-border:       rgba(245, 158, 11, 0.25);
+  --alef-border-hi:    rgba(245, 158, 11, 0.55);
+  --alef-success:      #22c55e;
+  --alef-danger:       #ef4444;
+  --alef-info:         #3b82f6;
+  --alef-radius:       14px;
+  --alef-radius-lg:    22px;
+  --alef-blur:         22px;
+  --alef-shadow:       0 25px 50px -12px rgba(0, 0, 0, 0.85);
+  --alef-glow:         0 0 40px rgba(245, 158, 11, 0.18);
+  --alef-ease:         cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ============================================================================
-   1. FONDO ATMOSFÉRICO CON EFECTO DE PROFUNDIDAD Y VIÑETA
-   ============================================================================ */
+/* ─── RESET / BASE ──────────────────────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 body {
-    background-color: var(--alef-bg-void) !important;
-    background-image: 
-        radial-gradient(circle at 50% 15%, rgba(245, 158, 11, 0.18) 0%, rgba(3, 3, 2, 0.96) 70%),
-        url('../img/IMG-20260612-WA0006.jpg') !important;
-    background-attachment: fixed !important;
-    background-size: cover !important;
-    background-position: center !important;
-    color: var(--alef-text-main) !important;
-    font-family: 'Outfit', sans-serif !important;
-    min-height: 100vh;
-    overflow-x: hidden;
+  font-family: 'Outfit', system-ui, sans-serif;
+  background: var(--alef-bg-deep);
+  color: var(--alef-text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 700; }
+a { color: var(--alef-gold-light); text-decoration: none; }
+button, input, select, textarea { font-family: inherit; font-size: inherit; }
+::selection { background: rgba(245, 158, 11, 0.35); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.4); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--alef-gold), var(--alef-gold-dark));
+  border-radius: 10px;
 }
 
-/* ============================================================================
-   2. BARRA DE NAVEGACIÓN MODERNA (Glassmorphism de Alta Nitidez)
-   ============================================================================ */
+/* ─── FONDO "PUERTA LUMINOSA" + VIÑETA ──────────────────────────────────── */
+.alef-bg-stage {
+  position: fixed; inset: 0; z-index: -2; overflow: hidden;
+  background: radial-gradient(ellipse at 50% 0%,
+              rgba(30, 20, 10, 0.9) 0%, #060403 70%),
+              linear-gradient(180deg, #0a0806, #050302);
+}
+.alef-bg-stage::before {  /* halo vertical dorado (la puerta) */
+  content: ""; position: absolute;
+  top: -8%; left: 50%; transform: translateX(-50%);
+  width: 520px; height: 90vh;
+  background: linear-gradient(180deg,
+    rgba(245, 158, 11, 0.55) 0%,
+    rgba(245, 158, 11, 0.15) 40%,
+    transparent 80%);
+  border-radius: 260px 260px 0 0;
+  filter: blur(70px);
+  animation: alef-door-pulse 8s ease-in-out infinite;
+}
+.alef-bg-stage::after {   /* viñeta atmosférica */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at center,
+    transparent 30%, rgba(0, 0, 0, 0.55) 75%, rgba(0, 0, 0, 0.92) 100%);
+}
+@keyframes alef-door-pulse {
+  0%,100% { opacity:.55; transform: translateX(-50%) scaleY(1); }
+  50%     { opacity:.85; transform: translateX(-50%) scaleY(1.04); }
+}
+
+/* ─── NAVBAR DE MÓDULO ──────────────────────────────────────────────────── */
 .alef-module-navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.95rem 1.8rem;
-    margin: 1rem 1.5rem 1.5rem 1.5rem;
-    background: rgba(12, 10, 8, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--alef-border);
-    border-radius: 20px;
-    box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.7);
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.85rem 1.3rem;
+  background: var(--alef-bg-card);
+  backdrop-filter: blur(var(--alef-blur));
+  -webkit-backdrop-filter: blur(var(--alef-blur));
+  border: 1px solid var(--alef-border);
+  border-radius: var(--alef-radius);
+  margin-bottom: 1.5rem;
+  box-shadow: var(--alef-shadow);
 }
-
 .alef-module-navbar a {
-    color: var(--alef-gold);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.92rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: var(--transition-smooth);
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  color: var(--alef-gold-light); font-weight: 500;
+  transition: color 0.25s var(--alef-ease);
+}
+.alef-module-navbar a:hover { color: #fff; }
+
+/* ─── TARJETAS GLASSMORPHISM ────────────────────────────────────────────── */
+.alef-card {
+  background: var(--alef-bg-card);
+  backdrop-filter: blur(var(--alef-blur));
+  -webkit-backdrop-filter: blur(var(--alef-blur));
+  border: 1px solid var(--alef-border);
+  border-radius: var(--alef-radius-lg);
+  padding: 1.8rem;
+  box-shadow: var(--alef-shadow);
+  transition: all 0.35s var(--alef-ease);
+  position: relative; overflow: hidden;
+}
+.alef-card::before {
+  content: ""; position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--alef-gold), transparent);
+  opacity: 0.6;
+}
+.alef-card:hover {
+  border-color: var(--alef-border-hi);
+  box-shadow: var(--alef-shadow), var(--alef-glow);
+  transform: translateY(-2px);
+}
+.alef-card h3 {
+  color: var(--alef-gold-light);
+  font-size: 1.3rem;
+  display: flex; align-items: center; gap: 0.6rem;
+  margin-bottom: 1.3rem; font-style: italic;
 }
 
-.alef-module-navbar a:hover {
-    color: #ffffff;
-    text-shadow: 0 0 12px var(--alef-amber);
-    transform: translateX(-3px);
+/* ─── FORMULARIOS ───────────────────────────────────────────────────────── */
+.form-control {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(245, 158, 11, 0.18);
+  color: var(--alef-text);
+  border-radius: 10px;
+  transition: all 0.25s var(--alef-ease);
+  outline: none;
+}
+.form-control:focus {
+  border-color: var(--alef-gold);
+  background: rgba(0, 0, 0, 0.55);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+.form-control::placeholder { color: #57534e; }
+select.form-control {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  background-size: 18px;
+  padding-right: 2.5rem;
+}
+textarea.form-control { resize: vertical; min-height: 80px; }
+.field { margin-bottom: 1rem; }
+.field label {
+  display: block; font-size: 0.82rem; font-weight: 500;
+  color: var(--alef-text-muted); margin-bottom: 0.45rem;
+  text-transform: uppercase; letter-spacing: 0.05em;
 }
 
-/* ============================================================================
-   3. TARJETAS, PANELES Y TABLAS (Efecto Elevación y Brillo Ambiental)
-   ============================================================================ */
-.card, .panel, .container-box, table {
-    background: var(--alef-surface) !important;
-    backdrop-filter: blur(24px) !important;
-    -webkit-backdrop-filter: blur(24px) !important;
-    border: 1px solid var(--alef-border) !important;
-    border-radius: 22px !important;
-    color: var(--alef-text-main) !important;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85) !important;
-    transition: var(--transition-smooth) !important;
+/* ─── BOTONES ───────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+  padding: 0.75rem 1.4rem;
+  border-radius: 10px;
+  border: none; cursor: pointer;
+  font-weight: 600; font-size: 0.9rem;
+  transition: all 0.25s var(--alef-ease);
+  white-space: nowrap;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--alef-gold), var(--alef-gold-dark));
+  color: #0a0806;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.55);
+}
+.btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+.btn-success {
+  background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+}
+.btn-success:hover { transform: translateY(-1px); }
+.btn-ghost {
+  background: transparent; color: var(--alef-gold-light);
+  border: 1px solid var(--alef-border);
+}
+.btn-ghost:hover {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: var(--alef-border-hi);
+}
+.btn-block { width: 100%; }
+.btn-sm    { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+
+/* ─── TABLAS ────────────────────────────────────────────────────────────── */
+.table-wrapper {
+  overflow: auto;
+  border-radius: var(--alef-radius);
+  border: 1px solid var(--alef-border);
+  background: rgba(0, 0, 0, 0.45);
+  max-height: 480px;
+}
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+table th {
+  position: sticky; top: 0;
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--alef-gold-light);
+  padding: 0.85rem 1rem;
+  text-align: left; font-weight: 600;
+  border-bottom: 1px solid var(--alef-border);
+  backdrop-filter: blur(8px);
+  z-index: 1;
+}
+table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: middle;
+}
+table tr:hover td { background: rgba(245, 158, 11, 0.06); }
+table .empty-row td {
+  text-align: center; color: var(--alef-text-muted);
+  padding: 2rem; font-style: italic;
 }
 
-.card:hover, .panel:hover {
-    border-color: var(--alef-border-hover) !important;
-    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.9), 0 0 25px var(--alef-amber-glow) !important;
-    transform: translateY(-3px);
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem; border-radius: 999px;
+  font-size: 0.75rem; font-weight: 600;
+}
+.badge-yes {
+  background: rgba(34, 197, 94, 0.18);
+  color: #86efac; border: 1px solid rgba(34, 197, 94, 0.4);
+}
+.badge-no  {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--alef-gold-light);
+  border: 1px solid var(--alef-border);
 }
 
-/* ============================================================================
-   4. TIPOGRAFÍA INSTITUCIONAL CON TENDENCIA "EDITORIAL LUXURY"
-   ============================================================================ */
-h1, h2, .module-title {
-    font-family: 'Playfair Display', serif !important;
-    color: var(--alef-gold) !important;
-    letter-spacing: -0.01em;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+/* ─── TOASTS ────────────────────────────────────────────────────────────── */
+#toast-container {
+  position: fixed; top: 1.2rem; right: 1.2rem; z-index: 300;
+  display: flex; flex-direction: column; gap: 0.6rem;
+  pointer-events: none;
 }
+.toast {
+  min-width: 260px; max-width: 380px;
+  padding: 0.85rem 1.1rem;
+  background: var(--alef-bg-card);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--alef-border);
+  border-left: 4px solid var(--alef-gold);
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  display: flex; align-items: center; gap: 0.6rem;
+  font-size: 0.88rem;
+  animation: alef-slide-in 0.35s var(--alef-ease);
+  pointer-events: auto;
+}
+.toast.success { border-left-color: var(--alef-success); }
+.toast.error   { border-left-color: var(--alef-danger); }
+.toast.info    { border-left-color: var(--alef-info); }
+.toast i { flex-shrink: 0; }
+@keyframes alef-slide-in  { from { transform: translateX(120%); opacity: 0; }
+                            to   { transform: translateX(0);    opacity: 1; } }
+@keyframes alef-slide-out { to { transform: translateX(120%); opacity: 0; } }
 
-/* ============================================================================
-   5. ENTRADAS DE TEXTO Y SELECTORES (Estilo Neón Interactivo)
-   ============================================================================ */
-input, select, textarea {
-    background: rgba(0, 0, 0, 0.55) !important;
-    border: 1px solid rgba(255, 255, 255, 0.14) !important;
-    color: #ffffff !important;
-    border-radius: 12px !important;
-    padding: 0.75rem 1rem !important;
-    font-family: 'Outfit', sans-serif !important;
-    transition: var(--transition-smooth) !important;
+/* ─── LOADER ────────────────────────────────────────────────────────────── */
+.loader {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid rgba(245, 158, 11, 0.3);
+  border-top-color: var(--alef-gold);
+  border-radius: 50%;
+  animation: alef-spin 0.8s linear infinite;
 }
+@keyframes alef-spin { to { transform: rotate(360deg); } }
 
-input:hover, select:hover, textarea:hover {
-    border-color: rgba(245, 158, 11, 0.4) !important;
-}
-
-input:focus, select:focus, textarea:focus {
-    border-color: var(--alef-amber) !important;
-    outline: none !important;
-    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.22), inset 0 0 10px rgba(245, 158, 11, 0.08) !important;
-    background: rgba(0, 0, 0, 0.75) !important;
-}
-
-/* ============================================================================
-   6. BOTONES DE ACCIÓN PRINCIPALES (Degradado Ámbar con Efecto Glow)
-   ============================================================================ */
-button, .btn, input[type="submit"] {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-    color: #030302 !important;
-    font-weight: 700 !important;
-    font-family: 'Outfit', sans-serif !important;
-    border: none !important;
-    border-radius: 12px !important;
-    padding: 0.75rem 1.4rem !important;
-    cursor: pointer !important;
-    box-shadow: 0 8px 20px -4px rgba(245, 158, 11, 0.4) !important;
-    transition: var(--transition-smooth) !important;
-}
-
-button:hover, .btn:hover, input[type="submit"]:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 14px 30px -4px rgba(245, 158, 11, 0.65) !important;
-    filter: brightness(1.1);
-}
-
-button:active, .btn:active {
-    transform: translateY(-1px) scale(0.99);
-}
+/* ─── UTILIDADES ────────────────────────────────────────────────────────── */
+.row     { display: flex; gap: 1rem; flex-wrap: wrap; }
+.row > * { flex: 1 1 0; min-width: 0; }
+.text-muted  { color: var(--alef-text-muted); }
+.text-center { text-align: center; }
+.text-right  { text-align: right; }
+.hidden      { display: none !important; }
+.mt-1 { margin-top: 0.5rem; }  .mt-2 { margin-top: 1rem; }  .mt-3 { margin-top: 1.5rem; }
+.mb-1 { margin-bottom: 0.5rem; } .mb-2 { margin-bottom: 1rem; } .mb-3 { margin-bottom: 1.5rem; }
