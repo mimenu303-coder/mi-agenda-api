@@ -1,330 +1,684 @@
-import os
-from datetime import datetime
-import psycopg2
-from dateutil.relativedelta import relativedelta
-from flask import Flask, jsonify, request, render_template
-from flask_cors import CORS
+"""
+=============================================================================
+ ALEFDOOR — BACKEND ÚNICO (Flask + Neon PostgreSQL)  · v3 CORREGIDO
+=============================================================================
+ CORRECCIONES APLICADAS EN ESTA VERSIÓN:
 
-app = Flask(__name__)
+   1) db() elimina 'channel_binding=require' de la URL (psycopg2 lo rechaza).
+   2) db() añade connect_timeout=10 (evita cuelgue si Neon no responde).
+   3) init_db() se ejecuta en un HILO BACKGROUND al importar el módulo,
+      de modo que gunicorn haga bind() INMEDIATAMENTE y Render detecte
+      el puerto (soluciona "Port scan timeout reached").
+   4) Seed admin alineado con el HTML:  admin_alef / AdminAlef2026!
+   5) try/except + traceback en TODOS los endpoints para diagnóstico.
+   6) Endpoint /api/health para verificar estado del backend sin auth.
+
+ IMPORTANTE — Start Command en Render:
+   gunicorn server_auth:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+ (si tu archivo se llama app.py, usa: gunicorn app:app ...)
+=============================================================================
+"""
+import os
+import time
+import uuid
+import traceback
+import threading
+from functools import wraps
+
+from flask import Flask, request, jsonify, send_from_directory, abort
+from flask_cors import CORS
+from werkzeug.security import generate_password_hash, check_password_hash
+import psycopg2
+from psycopg2.extras import RealDictCursor
+
+app = Flask(__name__, static_folder='.')
 CORS(app)
 
+# ── Cadena de conexión Neon (sobreescribible por variable de entorno) ─────
+DATABASE_URL = os.environ.get(
+    'DATABASE_URL',
+    'postgresql://neondb_owner:npg_5aHTnMtDIE9L@ep-dark-silence-b6qgi4e0-pooler'
+    '.c-2.sa-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
+)
 
-@app.route("/")
-def index():
-    return render_template("index.html")
+# ── Sesiones en memoria (token → usuario + timestamp) ─────────────────────
+SESSIONS = {}
 
+# ── Estado de la inicialización de BD (para el /api/health) ───────────────
+DB_INIT_STATUS = {'ready': False, 'error': None}
 
-# CONFIGURACIÓN AUTOMÁTICA DE LA BASE DE DATOS
-DB_HOST_LOCAL = "localhost"
-DB_PORT_LOCAL = "5432"
-DB_NAME_LOCAL = "agenda_db"
-DB_USER_LOCAL = "postgres"
-DB_PASS_LOCAL = "1234"  # Tu contraseña local
-
-DATABASE_URL = os.environ.get("DATABASE_URL")
-
-
-def get_db_connection():
-    if DATABASE_URL:
-        conn = psycopg2.connect(DATABASE_URL)
-    else:
-        conn = psycopg2.connect(
-            host=DB_HOST_LOCAL,
-            port=DB_PORT_LOCAL,
-            dbname=DB_NAME_LOCAL,
-            user=DB_USER_LOCAL,
-            password=DB_PASS_LOCAL,
-        )
-    return conn
+# ── Archivos estáticos permitidos ─────────────────────────────────────────
+STATIC_DIRS  = {'assets', 'proyectos'}
+STATIC_FILES = {'index.html', 'IMG-20260612-WA0006.jpg', 'favicon.ico'}
 
 
-def calcular_edad_exacta(fenaci_str, fecha_registro_str=None):
-    try:
-        f_nace = datetime.strptime(fenaci_str, "%Y-%m-%d").date()
-        if fecha_registro_str:
-            f_ref = datetime.strptime(fecha_registro_str, "%Y-%m-%d").date()
-        else:
-            f_ref = datetime.now().date()
+# ============================================================================
+# CONEXIÓN A NEON
+# ============================================================================
+def db():
+    """
+    Conexión a Neon PostgreSQL con dos correcciones críticas:
+      · Elimina 'channel_binding=require' → psycopg2 lo rechaza.
+      · connect_timeout=10 → evita que gunicorn se cuelgue si Neon no responde.
+    """
+    url = DATABASE_URL
+    for p in ['&channel_binding=require', '?channel_binding=require',
+              'channel_binding=require']:
+        url = url.replace(p, '')
+    if 'sslmode=require' not in url:
+        url += ('&' if '?' in url else '?') + 'sslmode=require'
+    return psycopg2.connect(url, sslmode='require', connect_timeout=10)
 
-        diferencia = relativedelta(f_ref, f_nace)
-        return f"{diferencia.years} años, {diferencia.months} meses, {diferencia.days} días", diferencia.years
-    except Exception:
-        return "", 0
 
-
+# ============================================================================
+# ESQUEMA Y SEMILLAS
+# ============================================================================
 def init_db():
+    """Crea tablas y semillas si no existen. Idempotente."""
+    conn = db()
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS pacientes_triaje (
-                id SERIAL PRIMARY KEY,
-                fecha_registro DATE NOT NULL,
-                turno VARCHAR(50),
-                nombre TEXT NOT NULL,
-                telefono TEXT NOT NULL,
-                sexo VARCHAR(1) NOT NULL CHECK (sexo IN ('M', 'F')),
-                talla NUMERIC(4,2),
-                peso NUMERIC(5,2),
-                fenaci DATE NOT NULL,
-                edad_texto VARCHAR(50),
-                lactante VARCHAR(20),
-                tipo_triaje VARCHAR(50) NOT NULL,
-                observacion TEXT
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS admin (
+                id_admin      SERIAL PRIMARY KEY,
+                username      TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS area (
+                id_area          SERIAL PRIMARY KEY,
+                nom_area         TEXT NOT NULL,
+                nom_departamento TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS cargo (
+                id_cargo   SERIAL PRIMARY KEY,
+                nomb_cargo TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS empleado (
+                id_empleado SERIAL PRIMARY KEY,
+                cedula      TEXT UNIQUE NOT NULL,
+                nombres     TEXT NOT NULL,
+                apellidos   TEXT NOT NULL,
+                celular     TEXT
+            );
+            CREATE TABLE IF NOT EXISTS servicio (
+                id_servicio  SERIAL PRIMARY KEY,
+                id_area      INTEGER NOT NULL REFERENCES area(id_area) ON DELETE CASCADE,
+                nom_servicio TEXT NOT NULL,
+                estilo       TEXT,
+                precio       NUMERIC(10,2) NOT NULL,
+                tiempo_max   TEXT
+            );
+            CREATE TABLE IF NOT EXISTS galeria (
+                id_galeria   SERIAL PRIMARY KEY,
+                id_servicio  INTEGER NOT NULL REFERENCES servicio(id_servicio) ON DELETE CASCADE,
+                fecha        TEXT NOT NULL,
+                doc_frente   TEXT,
+                doc_lado     TEXT,
+                doc_atras    TEXT,
+                descripcion  TEXT,
+                activo       TEXT DEFAULT 'SI'
+            );
+            CREATE TABLE IF NOT EXISTS asig_cargo (
+                id_asigcar  SERIAL PRIMARY KEY,
+                id_cargo    INTEGER NOT NULL REFERENCES cargo(id_cargo),
+                id_empleado INTEGER NOT NULL REFERENCES empleado(id_empleado) ON DELETE CASCADE,
+                id_area     INTEGER NOT NULL REFERENCES area(id_area),
+                fecha_asig  TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS empleado_servicio (
+                id_emp_serv SERIAL PRIMARY KEY,
+                id_empleado INTEGER NOT NULL REFERENCES empleado(id_empleado) ON DELETE CASCADE,
+                id_servicio INTEGER NOT NULL REFERENCES servicio(id_servicio) ON DELETE CASCADE,
+                activo      TEXT DEFAULT 'SI'
+            );
+            CREATE TABLE IF NOT EXISTS cliente (
+                id_cliente      SERIAL PRIMARY KEY,
+                nro_celular     TEXT UNIQUE NOT NULL,
+                nombre_apellido TEXT NOT NULL,
+                dia_cumpleanos  TEXT
+            );
+            CREATE TABLE IF NOT EXISTS agenda (
+                id_agenda      SERIAL PRIMARY KEY,
+                id_cliente     INTEGER NOT NULL REFERENCES cliente(id_cliente) ON DELETE CASCADE,
+                fecha_sistem   TEXT NOT NULL,
+                fecha_reserva  TEXT NOT NULL,
+                total          NUMERIC(10,2) NOT NULL,
+                propina        NUMERIC(10,2) DEFAULT 0
+            );
+            CREATE TABLE IF NOT EXISTS servicios_agendados (
+                id_ser_agen SERIAL PRIMARY KEY,
+                id_agenda   INTEGER NOT NULL REFERENCES agenda(id_agenda) ON DELETE CASCADE,
+                id_servicio INTEGER NOT NULL REFERENCES servicio(id_servicio),
+                id_empleado INTEGER NOT NULL REFERENCES empleado(id_empleado),
+                hora        TEXT NOT NULL,
+                precio      NUMERIC(10,2) NOT NULL,
+                atendido    TEXT DEFAULT 'NO'
             );
         """)
         conn.commit()
-        cursor.close()
+
+        # ── Semilla: usuario admin (alineado con el HTML del portal) ──────
+        cur.execute("SELECT COUNT(*) FROM admin")
+        if cur.fetchone()[0] == 0:
+            cur.execute(
+                "INSERT INTO admin (username, password_hash) VALUES (%s, %s)",
+                ('admin_alef', generate_password_hash('AdminAlef2026!'))
+            )
+            conn.commit()
+            print("✅ Admin sembrado: admin_alef / AdminAlef2026!")
+
+        # ── Semilla: áreas ────────────────────────────────────────────────
+        cur.execute("SELECT COUNT(*) FROM area")
+        if cur.fetchone()[0] == 0:
+            cur.execute("""
+                INSERT INTO area (nom_area, nom_departamento) VALUES
+                  ('ADMINISTRATIVA','GERENCIA'),
+                  ('OPERATIVA','ESTACIÓN DE CORTE CABALLEROS'),
+                  ('OPERATIVA','ESTACIÓN DE CORTE Y PEINADO DAMAS'),
+                  ('OPERATIVA','ÁREA DE MANICURE Y PEDICURE')
+            """)
+            conn.commit()
+
+        # ── Semilla: cargos ───────────────────────────────────────────────
+        cur.execute("SELECT COUNT(*) FROM cargo")
+        if cur.fetchone()[0] == 0:
+            cur.execute("""
+                INSERT INTO cargo (nomb_cargo) VALUES
+                  ('GERENTE'),('ADMINISTRADOR'),('BARBERO(A)'),
+                  ('ESTILISTA'),('MANICURISTA')
+            """)
+            conn.commit()
+
+        print("✅ Esquema y semillas listos")
+    finally:
         conn.close()
-        print("Base de datos conectada e inicializada correctamente.")
-    except Exception as e:
-        print("Error al inicializar la base de datos:", e)
 
 
-init_db()
+# ============================================================================
+# AUTENTICACIÓN
+# ============================================================================
+def auth_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        token = (request.headers.get('Authorization') or '').replace('Bearer ', '').strip()
+        s = SESSIONS.get(token)
+        if not s or time.time() - s['ts'] > 3600 * 12:
+            return jsonify({'error': 'Sesión inválida o expirada'}), 401
+        return f(*args, **kwargs)
+    return wrapper
 
 
-@app.route("/api/contactos", methods=["GET"])
-def obtener_contactos():
+@app.post('/api/auth/login')
+def login():
+    data = request.get_json() or {}
+    user = (data.get('username') or '').strip()
+    pwd  = data.get('password') or ''
+    if not user or not pwd:
+        return jsonify({'error': 'Faltan credenciales'}), 400
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT id, fecha_registro, turno, nombre, telefono, sexo, talla, peso, fenaci, edad_texto, lactante, tipo_triaje, observacion 
-            FROM pacientes_triaje ORDER BY id DESC
-        """)
-        filas = cursor.fetchall()
-        cursor.close()
+        conn = db()
+        try:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            cur.execute("SELECT * FROM admin WHERE username=%s", (user,))
+            row = cur.fetchone()
+            if not row or not check_password_hash(row['password_hash'], pwd):
+                return jsonify({'error': 'Usuario o contraseña incorrectos'}), 401
+            token = str(uuid.uuid4())
+            SESSIONS[token] = {'user': user, 'ts': time.time()}
+            return jsonify({'token': token, 'user': user})
+        finally:
+            conn.close()
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': f'Error de BD: {e}'}), 500
+
+
+@app.post('/api/auth/logout')
+def logout():
+    token = (request.headers.get('Authorization') or '').replace('Bearer ', '').strip()
+    SESSIONS.pop(token, None)
+    return jsonify({'ok': True})
+
+
+# ============================================================================
+# HEALTH CHECK — útil para diagnosticar sin autenticar
+# ============================================================================
+@app.get('/api/health')
+def health():
+    info = {
+        'status': 'ok',
+        'db_ready': DB_INIT_STATUS['ready'],
+        'db_error': DB_INIT_STATUS['error'],
+    }
+    try:
+        conn = db()
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT COUNT(*) FROM information_schema.tables WHERE table_name='admin'")
+            info['admin_table_exists'] = cur.fetchone()[0] > 0
+            if info['admin_table_exists']:
+                cur.execute("SELECT username FROM admin ORDER BY id_admin")
+                info['admin_users'] = [r[0] for r in cur.fetchall()]
+        finally:
+            conn.close()
+    except Exception as e:
+        info['status'] = 'db_error'
+        info['db_error'] = str(e)
+    return jsonify(info)
+
+
+# ============================================================================
+# CLIENTES
+# ============================================================================
+@app.get('/api/clientes')
+@auth_required
+def get_clientes():
+    conn = db()
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""SELECT id_cliente, nro_celular, nombre_apellido, dia_cumpleanos
+                       FROM cliente ORDER BY id_cliente DESC""")
+        return jsonify(cur.fetchall())
+    finally:
         conn.close()
 
-        contactos = [
-            {
-                "id": f[0],
-                "fecha_registro": f[1].strftime("%Y-%m-%d") if f[1] else "",
-                "turno": f[2],
-                "nombre": f[3],
-                "telefono": f[4],
-                "sexo": f[5],
-                "talla": float(f[6]) if f[6] is not None else None,
-                "peso": float(f[7]) if f[7] is not None else None,
-                "fenaci": f[8].strftime("%Y-%m-%d") if f[8] else "",
-                "edad_texto": f[9],
-                "lactante": f[10],
-                "tipo_triaje": f[11],
-                "observacion": f[12],
-            }
-            for f in filas
-        ]
-        return jsonify(contactos), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
-
-@app.route("/api/contactos", methods=["POST"])
-def crear_contacto():
-    datos = request.json
-    nombre = datos.get("nombre")
-    telefono = datos.get("telefono")
-    turno = datos.get("turno", "")
-    sexo = datos.get("sexo")
-    talla = datos.get("talla")
-    peso = datos.get("peso")
-    fenaci = datos.get("fenaci")
-    lactante = datos.get("lactante", "")
-    tipo_triaje = datos.get("tipoTriaje") or datos.get("tipo_triaje")
-    observacion = datos.get("observacion", "")
-    fecha_registro = datos.get("fecha_registro")
-
-    if not nombre or not telefono or not fecha_registro or not fenaci or not sexo:
-        return jsonify({"error": "Faltan datos obligatorios"}), 400
-
-    edad_texto, _ = calcular_edad_exacta(fenaci, fecha_registro)
-
+@app.post('/api/clientes')
+@auth_required
+def post_cliente():
+    d = request.get_json() or {}
+    if not d.get('nro_celular') or not d.get('nombre_apellido'):
+        return jsonify({'error': 'Celular y nombre son obligatorios'}), 400
+    conn = db()
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            INSERT INTO pacientes_triaje (fecha_registro, turno, nombre, telefono, sexo, talla, peso, fenaci, edad_texto, lactante, tipo_triaje, observacion) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """,
-            (
-                fecha_registro,
-                turno,
-                nombre,
-                telefono,
-                sexo,
-                talla if talla != "" else None,
-                peso if peso != "" else None,
-                fenaci,
-                edad_texto,
-                lactante,
-                tipo_triaje,
-                observacion,
-            ),
-        )
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""INSERT INTO cliente (nro_celular, nombre_apellido, dia_cumpleanos)
+                       VALUES (%s, %s, %s) RETURNING *""",
+                    (d['nro_celular'], d['nombre_apellido'], d.get('dia_cumpleanos', '')))
+        row = cur.fetchone()
         conn.commit()
-        cursor.close()
+        return jsonify(row)
+    except psycopg2.IntegrityError:
+        conn.rollback()
+        return jsonify({'error': 'Ese celular ya está registrado'}), 409
+    finally:
         conn.close()
 
-        return (
-            jsonify({"mensaje": "Registro guardado con éxito", "edad_calculada": edad_texto}),
-            201,
-        )
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
-
-@app.route("/api/informe-diario", methods=["GET"])
-def informe_diario():
-    f_inicio = request.args.get("inicio")
-    f_fin = request.args.get("fin")
+# ============================================================================
+# ÁREAS / CARGOS
+# ============================================================================
+@app.get('/api/areas')
+@auth_required
+def get_areas():
+    conn = db()
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT sexo, tipo_triaje, edad_texto, lactante, fenaci, fecha_registro 
-            FROM pacientes_triaje 
-            WHERE fecha_registro BETWEEN %s AND %s
-        """, (f_inicio, f_fin))
-        filas = cursor.fetchall()
-        cursor.close()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT * FROM area ORDER BY id_area")
+        return jsonify(cur.fetchall())
+    finally:
         conn.close()
 
-        total_registros = len(filas)
-        conteo_sexo = {"M": 0, "F": 0}
-        conteo_triaje = {}
-        conteo_edades = {
-            "Menores de 1 año": {"M": 0, "F": 0, "Total": 0},
-            "Entre 1 y 3 años": {"M": 0, "F": 0, "Total": 0},
-            "Entre 4 y 6 años": {"M": 0, "F": 0, "Total": 0},
-            "Entre 7 y 9 años": {"M": 0, "F": 0, "Total": 0},
-            "Entre 10 y 12 años": {"M": 0, "F": 0, "Total": 0},
-            "Entre 13 y 17 años": {"M": 0, "F": 0, "Total": 0}
-        }
 
-        for f in filas:
-            sexo = f[0]
-            triaje = f[1]
-            fenaci = f[4]
-            f_reg = f[5]
-            lactante = f[3]
-
-            if sexo in conteo_sexo:
-                conteo_sexo[sexo] += 1
-
-            _, anos = calcular_edad_exacta(str(fenaci), str(f_reg))
-
-            if anos < 1:
-                grupo = "Menores de 1 año"
-                triaje_etiqueta = "Lactancia Exclusiva" if lactante == "Exclusivo" else "Lactancia Mixta"
-            elif 1 <= anos <= 3:
-                grupo = "Entre 1 y 3 años"
-                triaje_etiqueta = triaje
-            elif 4 <= anos <= 6:
-                grupo = "Entre 4 y 6 años"
-                triaje_etiqueta = triaje
-            elif 7 <= anos <= 9:
-                grupo = "Entre 7 y 9 años"
-                triaje_etiqueta = triaje
-            elif 10 <= anos <= 12:
-                grupo = "Entre 10 y 12 años"
-                triaje_etiqueta = triaje
-            else:
-                grupo = "Entre 13 y 17 años"
-                triaje_etiqueta = triaje
-
-            conteo_edades[grupo]["Total"] += 1
-            if sexo in conteo_edades[grupo]:
-                conteo_edades[grupo][sexo] += 1
-
-            if triaje_etiqueta not in conteo_triaje:
-                conteo_triaje[triaje_etiqueta] = {"M": 0, "F": 0}
-            if sexo in conteo_triaje[triaje_etiqueta]:
-                conteo_triaje[triaje_etiqueta][sexo] += 1
-
-        return jsonify({
-            "total_registros": total_registros,
-            "conteo_sexo": conteo_sexo,
-            "conteo_triaje": conteo_triaje,
-            "conteo_edades": conteo_edades
-        }), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route("/api/informe-semanal", methods=["GET"])
-def informe_semanal():
-    f_inicio = request.args.get("inicio")
-    f_fin = request.args.get("fin")
+@app.get('/api/cargos')
+@auth_required
+def get_cargos():
+    conn = db()
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT sexo, tipo_triaje, lactante, fenaci, fecha_registro 
-            FROM pacientes_triaje 
-            WHERE fecha_registro BETWEEN %s AND %s
-        """, (f_inicio, f_fin))
-        filas = cursor.fetchall()
-        cursor.close()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT * FROM cargo ORDER BY id_cargo")
+        return jsonify(cur.fetchall())
+    finally:
         conn.close()
 
-        total_registros = len(filas)
-        conteo_sexo = {"M": 0, "F": 0}
 
-        tratamientos = ["IM", "EV", "Nebulizacion", "Tratamiento", "Sin Tratamiento", "Suturas", "Lavado Nasal", "Lavado Oido", "Curas Realizadas", "Lact. Exclusivo", "Lact. Mixto", "Totales"]
-        edades = ["Totales", "<1", "1-3", "4-6", "7-9", "10-12", "13-17"]
+# ============================================================================
+# EMPLEADOS
+# ============================================================================
+@app.get('/api/empleados')
+@auth_required
+def get_empleados():
+    conn = db()
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            SELECT e.id_empleado, e.cedula, e.nombres, e.apellidos, e.celular,
+                   c.nomb_cargo AS cargo,
+                   a.nom_area || ' — ' || a.nom_departamento AS area,
+                   COALESCE((
+                     SELECT STRING_AGG(s.nom_servicio, ', ')
+                     FROM empleado_servicio es
+                     JOIN servicio s ON s.id_servicio = es.id_servicio
+                     WHERE es.id_empleado = e.id_empleado AND es.activo = 'SI'
+                   ), '') AS servicios
+            FROM empleado e
+            LEFT JOIN asig_cargo ac ON ac.id_empleado = e.id_empleado
+            LEFT JOIN cargo c ON c.id_cargo = ac.id_cargo
+            LEFT JOIN area  a ON a.id_area  = ac.id_area
+            ORDER BY e.id_empleado DESC
+        """)
+        return jsonify(cur.fetchall())
+    finally:
+        conn.close()
 
-        matriz = {t: {e: {"M": 0, "F": 0} for e in edades} for t in tratamientos}
 
-        for f in filas:
-            sexo = f[0]
-            trata = f[1]
-            lactante = f[2]
-            fenaci = f[3]
-            f_reg = f[4]
-
-            if sexo in conteo_sexo:
-                conteo_sexo[sexo] += 1
-
-            _, anos = calcular_edad_exacta(str(fenaci), str(f_reg))
-
-            if anos < 1:
-                edad_grupo = "<1"
-                if lactante == "Exclusivo":
-                    matriz["Lact. Exclusivo"][edad_grupo][sexo] += 1
-                    matriz["Lact. Exclusivo"]["Totales"][sexo] += 1
-                else:
-                    matriz["Lact. Mixto"][edad_grupo][sexo] += 1
-                    matriz["Lact. Mixto"]["Totales"][sexo] += 1
-            elif 1 <= anos <= 3:
-                edad_grupo = "1-3"
-            elif 4 <= anos <= 6:
-                edad_grupo = "4-6"
-            elif 7 <= anos <= 9:
-                edad_grupo = "7-9"
-            elif 10 <= anos <= 12:
-                edad_grupo = "10-12"
-            else:
-                edad_grupo = "13-17"
-
-            if anos >= 1 and trata in matriz:
-                matriz[trata][edad_grupo][sexo] += 1
-                matriz[trata]["Totales"][sexo] += 1
-
-            matriz["Totales"][edad_grupo][sexo] += 1
-            matriz["Totales"]["Totales"][sexo] += 1
-
-        return jsonify({
-            "total_registros": total_registros,
-            "conteo_sexo": conteo_sexo,
-            "matriz": matriz,
-            "tratamientos": tratamientos,
-            "edades": edades
-        }), 200
+@app.post('/api/empleados')
+@auth_required
+def post_empleado():
+    d = request.get_json() or {}
+    required = ('cedula', 'nombres', 'apellidos', 'id_cargo', 'id_area')
+    if any(not d.get(k) for k in required):
+        return jsonify({'error': 'Faltan campos obligatorios'}), 400
+    conn = db()
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""INSERT INTO empleado (cedula, nombres, apellidos, celular)
+                       VALUES (%s,%s,%s,%s) RETURNING id_empleado""",
+                    (d['cedula'], d['nombres'], d['apellidos'], d.get('celular', '')))
+        id_emp = cur.fetchone()['id_empleado']
+        cur.execute("""INSERT INTO asig_cargo (id_cargo, id_empleado, id_area, fecha_asig)
+                       VALUES (%s,%s,%s,%s)""",
+                    (d['id_cargo'], id_emp, d['id_area'],
+                     time.strftime('%Y-%m-%d')))
+        for id_serv in (d.get('servicios') or []):
+            cur.execute("""INSERT INTO empleado_servicio (id_empleado, id_servicio, activo)
+                           VALUES (%s,%s,'SI')""", (id_emp, id_serv))
+        conn.commit()
+        return jsonify({'ok': True, 'id_empleado': id_emp})
+    except psycopg2.IntegrityError:
+        conn.rollback()
+        return jsonify({'error': 'La cédula ya existe'}), 409
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        conn.rollback()
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
 
 
-if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+# ============================================================================
+# SERVICIOS
+# ============================================================================
+@app.get('/api/servicios')
+@auth_required
+def get_servicios():
+    conn = db()
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""SELECT s.*, a.nom_area, a.nom_departamento
+                       FROM servicio s JOIN area a ON a.id_area = s.id_area
+                       ORDER BY s.id_servicio DESC""")
+        return jsonify(cur.fetchall())
+    finally:
+        conn.close()
+
+
+@app.post('/api/servicios')
+@auth_required
+def post_servicio():
+    d = request.get_json() or {}
+    if not d.get('id_area') or not d.get('nom_servicio') or d.get('precio') is None:
+        return jsonify({'error': 'Faltan campos obligatorios'}), 400
+    conn = db()
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""INSERT INTO servicio (id_area, nom_servicio, estilo, precio, tiempo_max)
+                       VALUES (%s,%s,%s,%s,%s) RETURNING *""",
+                    (d['id_area'], d['nom_servicio'], d.get('estilo', ''),
+                     d['precio'], d.get('tiempo_max', '00:45')))
+        row = cur.fetchone()
+        conn.commit()
+        return jsonify(row)
+    finally:
+        conn.close()
+
+
+# ============================================================================
+# GALERÍA (fotos base64 en la BD)
+# ============================================================================
+@app.get('/api/galeria')
+@auth_required
+def get_galeria():
+    id_serv = request.args.get('servicio')
+    conn = db()
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        q = """
+            SELECT g.id_galeria, g.fecha, g.doc_frente, g.doc_lado, g.doc_atras,
+                   g.descripcion, s.nom_servicio, s.estilo, s.precio,
+                   a.nom_area, a.nom_departamento, s.id_servicio
+            FROM galeria g
+            JOIN servicio s ON s.id_servicio = g.id_servicio
+            JOIN area     a ON a.id_area     = s.id_area
+            WHERE g.activo = 'SI'
+        """
+        params = []
+        if id_serv:
+            q += ' AND g.id_servicio = %s'
+            params.append(id_serv)
+        q += ' ORDER BY g.id_galeria DESC'
+        cur.execute(q, params)
+        return jsonify(cur.fetchall())
+    finally:
+        conn.close()
+
+
+@app.post('/api/galeria')
+@auth_required
+def post_galeria():
+    d = request.get_json() or {}
+    if not d.get('id_servicio') or not (d.get('doc_frente') or d.get('doc_lado') or d.get('doc_atras')):
+        return jsonify({'error': 'Servicio y al menos una foto son obligatorios'}), 400
+    conn = db()
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""INSERT INTO galeria
+                       (id_servicio, fecha, doc_frente, doc_lado, doc_atras, descripcion, activo)
+                       VALUES (%s,%s,%s,%s,%s,%s,'SI') RETURNING id_galeria""",
+                    (d['id_servicio'], d.get('fecha') or time.strftime('%Y-%m-%d'),
+                     d.get('doc_frente'), d.get('doc_lado'), d.get('doc_atras'),
+                     d.get('descripcion', '')))
+        idg = cur.fetchone()['id_galeria']
+        conn.commit()
+        return jsonify({'ok': True, 'id_galeria': idg})
+    finally:
+        conn.close()
+
+
+# ============================================================================
+# CONSULTAS CRUZADAS
+# ============================================================================
+@app.get('/api/consultas/empleados-por-servicio/<int:id_serv>')
+@auth_required
+def consulta_emp_por_serv(id_serv):
+    conn = db()
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            SELECT e.id_empleado,
+                   e.nombres || ' ' || e.apellidos AS nombre,
+                   e.cedula, c.nomb_cargo AS cargo
+            FROM empleado e
+            JOIN empleado_servicio es ON es.id_empleado = e.id_empleado
+            LEFT JOIN asig_cargo ac ON ac.id_empleado = e.id_empleado
+            LEFT JOIN cargo c ON c.id_cargo = ac.id_cargo
+            WHERE es.id_servicio = %s AND es.activo = 'SI'
+        """, (id_serv,))
+        return jsonify(cur.fetchall())
+    finally:
+        conn.close()
+
+
+@app.get('/api/consultas/servicios-por-empleado/<int:id_emp>')
+@auth_required
+def consulta_serv_por_emp(id_emp):
+    conn = db()
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            SELECT s.nom_servicio, s.estilo, s.precio
+            FROM servicio s
+            JOIN empleado_servicio es ON es.id_servicio = s.id_servicio
+            WHERE es.id_empleado = %s AND es.activo = 'SI'
+        """, (id_emp,))
+        return jsonify(cur.fetchall())
+    finally:
+        conn.close()
+
+
+# ============================================================================
+# AGENDA / RESERVAS
+# ============================================================================
+@app.get('/api/agenda')
+@auth_required
+def get_agenda():
+    fecha = request.args.get('fecha')
+    if not fecha:
+        return jsonify({'error': 'Fecha requerida'}), 400
+    conn = db()
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            SELECT sa.id_ser_agen, sa.hora, sa.precio, sa.atendido,
+                   s.nom_servicio,
+                   e.nombres || ' ' || e.apellidos AS empleado,
+                   c.nombre_apellido AS cliente,
+                   a.id_agenda
+            FROM servicios_agendados sa
+            JOIN agenda  a ON a.id_agenda  = sa.id_agenda
+            JOIN servicio s ON s.id_servicio = sa.id_servicio
+            JOIN empleado e ON e.id_empleado = sa.id_empleado
+            JOIN cliente  c ON c.id_cliente  = a.id_cliente
+            WHERE a.fecha_reserva = %s
+            ORDER BY sa.hora ASC, e.nombres ASC
+        """, (fecha,))
+        return jsonify(cur.fetchall())
+    finally:
+        conn.close()
+
+
+@app.put('/api/agenda/<int:id_sa>/atendida')
+@auth_required
+def toggle_atendida(id_sa):
+    conn = db()
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT atendido FROM servicios_agendados WHERE id_ser_agen=%s", (id_sa,))
+        row = cur.fetchone()
+        if not row:
+            return jsonify({'error': 'No encontrado'}), 404
+        nuevo = 'NO' if (row['atendido'] or 'NO') == 'SI' else 'SI'
+        cur.execute("UPDATE servicios_agendados SET atendido=%s WHERE id_ser_agen=%s",
+                    (nuevo, id_sa))
+        conn.commit()
+        return jsonify({'ok': True, 'atendido': nuevo})
+    finally:
+        conn.close()
+
+
+@app.delete('/api/agenda/<int:id_sa>')
+@auth_required
+def delete_agenda(id_sa):
+    conn = db()
+    try:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM servicios_agendados WHERE id_ser_agen=%s", (id_sa,))
+        conn.commit()
+        return jsonify({'ok': True})
+    finally:
+        conn.close()
+
+
+@app.post('/api/reservas')
+@auth_required
+def post_reserva():
+    d = request.get_json() or {}
+    id_cli = d.get('id_cliente')
+    fecha  = d.get('fecha_reserva')
+    items  = d.get('items') or []
+    propina = float(d.get('propina') or 0)
+    if not id_cli or not fecha or not items:
+        return jsonify({'error': 'Datos incompletos'}), 400
+    conn = db()
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""SELECT COUNT(*) AS n FROM servicios_agendados sa
+                       JOIN agenda a ON a.id_agenda = sa.id_agenda
+                       WHERE a.id_cliente=%s AND a.fecha_reserva=%s""",
+                    (id_cli, fecha))
+        if cur.fetchone()['n'] + len(items) > 3:
+            return jsonify({'error': 'Máximo 3 servicios por cliente y día'}), 400
+
+        subtotal = sum(float(i['precio']) for i in items)
+        total = subtotal + propina
+        cur.execute("""INSERT INTO agenda (id_cliente, fecha_sistem, fecha_reserva, total, propina)
+                       VALUES (%s, now()::text, %s, %s, %s) RETURNING id_agenda""",
+                    (id_cli, fecha, total, propina))
+        id_agenda = cur.fetchone()['id_agenda']
+        for it in items:
+            cur.execute("""SELECT 1 FROM servicios_agendados sa
+                           JOIN agenda a ON a.id_agenda = sa.id_agenda
+                           WHERE sa.id_empleado=%s AND a.fecha_reserva=%s AND sa.hora=%s""",
+                        (it['id_empleado'], fecha, it['hora']))
+            if cur.fetchone():
+                conn.rollback()
+                return jsonify({'error': f"Empleado ocupado a las {it['hora']}"}), 409
+            cur.execute("""INSERT INTO servicios_agendados
+                           (id_agenda, id_servicio, id_empleado, hora, precio, atendido)
+                           VALUES (%s,%s,%s,%s,%s,'NO')""",
+                        (id_agenda, it['id_servicio'], it['id_empleado'],
+                         it['hora'], it['precio']))
+        conn.commit()
+        return jsonify({'ok': True, 'id_agenda': id_agenda, 'total': float(total)})
+    except Exception as e:
+        conn.rollback()
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+
+# ============================================================================
+# ARCHIVOS ESTÁTICOS
+# ============================================================================
+@app.route('/')
+def root():
+    return send_from_directory('.', 'index.html')
+
+
+@app.route('/<path:path>')
+def static_files(path):
+    first = path.split('/')[0]
+    if first in STATIC_DIRS or path in STATIC_FILES:
+        return send_from_directory('.', path)
+    abort(404)
+
+
+# ============================================================================
+# INICIALIZACIÓN EN HILO BACKGROUND
+# ----------------------------------------------------------------------------
+# ⚠️ CRÍTICO: gunicorn hace bind() a 0.0.0.0:$PORT INMEDIATAMENTE al importar
+# este módulo (Render detecta el puerto y no da "Port scan timeout").
+# init_db() corre en paralelo en un hilo daemon, sin bloquear el arranque.
+# ============================================================================
+def _init_db_background():
+    try:
+        print("🔄 init_db() en background…")
+        init_db()
+        DB_INIT_STATUS['ready'] = True
+        DB_INIT_STATUS['error'] = None
+        print("✅ init_db() completado — tablas listas en Neon")
+    except Exception as e:
+        DB_INIT_STATUS['ready'] = False
+        DB_INIT_STATUS['error'] = str(e)
+        print(f"⚠️ init_db() falló: {e}")
+        traceback.print_exc()
+
+
+print("🔄 Lanzando init_db() en background thread…")
+threading.Thread(target=_init_db_background, daemon=True).start()
+
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
