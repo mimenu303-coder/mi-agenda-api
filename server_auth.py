@@ -1,20 +1,30 @@
 """
 =============================================================================
- ALEFDOOR — BACKEND ÚNICO (Flask + Neon PostgreSQL)  · v2 CORREGIDO
+ ALEFDOOR — BACKEND ÚNICO (Flask + Neon PostgreSQL)  · v3 CORREGIDO
 =============================================================================
- CAMBIOS v2:
-   1) db(): elimina 'channel_binding=require' de la URL (psycopg2 lo rechaza)
-   2) init_db(): se ejecuta al IMPORTAR el módulo (gunicorn lo llama siempre,
-      no dentro de if __name__ == '__main__', que gunicorn NO ejecuta)
-   3) Seed admin alineado con el HTML:  admin_alef / AdminAlef2026!
-   4) try/except + traceback para ver errores reales en los logs de Render
+ CORRECCIONES APLICADAS EN ESTA VERSIÓN:
+
+   1) db() elimina 'channel_binding=require' de la URL (psycopg2 lo rechaza).
+   2) db() añade connect_timeout=10 (evita cuelgue si Neon no responde).
+   3) init_db() se ejecuta en un HILO BACKGROUND al importar el módulo,
+      de modo que gunicorn haga bind() INMEDIATAMENTE y Render detecte
+      el puerto (soluciona "Port scan timeout reached").
+   4) Seed admin alineado con el HTML:  admin_alef / AdminAlef2026!
+   5) try/except + traceback en TODOS los endpoints para diagnóstico.
+   6) Endpoint /api/health para verificar estado del backend sin auth.
+
+ IMPORTANTE — Start Command en Render:
+   gunicorn server_auth:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+ (si tu archivo se llama app.py, usa: gunicorn app:app ...)
 =============================================================================
 """
 import os
 import time
 import uuid
 import traceback
+import threading
 from functools import wraps
+
 from flask import Flask, request, jsonify, send_from_directory, abort
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -34,30 +44,35 @@ DATABASE_URL = os.environ.get(
 # ── Sesiones en memoria (token → usuario + timestamp) ─────────────────────
 SESSIONS = {}
 
+# ── Estado de la inicialización de BD (para el /api/health) ───────────────
+DB_INIT_STATUS = {'ready': False, 'error': None}
+
 # ── Archivos estáticos permitidos ─────────────────────────────────────────
 STATIC_DIRS  = {'assets', 'proyectos'}
 STATIC_FILES = {'index.html', 'IMG-20260612-WA0006.jpg', 'favicon.ico'}
 
 
 # ============================================================================
-# CONEXIÓN Y ESQUEMA
+# CONEXIÓN A NEON
 # ============================================================================
 def db():
     """
-    Conexión a Neon PostgreSQL.
-    ⚠️ IMPORTANTE: psycopg2 NO reconoce el parámetro 'channel_binding'
-    (lo añade el driver moderno de Neon). Lo eliminamos de la URL.
+    Conexión a Neon PostgreSQL con dos correcciones críticas:
+      · Elimina 'channel_binding=require' → psycopg2 lo rechaza.
+      · connect_timeout=10 → evita que gunicorn se cuelgue si Neon no responde.
     """
     url = DATABASE_URL
     for p in ['&channel_binding=require', '?channel_binding=require',
               'channel_binding=require']:
         url = url.replace(p, '')
-    # Aseguramos sslmode=require
     if 'sslmode=require' not in url:
         url += ('&' if '?' in url else '?') + 'sslmode=require'
-    return psycopg2.connect(url, sslmode='require')
+    return psycopg2.connect(url, sslmode='require', connect_timeout=10)
 
 
+# ============================================================================
+# ESQUEMA Y SEMILLAS
+# ============================================================================
 def init_db():
     """Crea tablas y semillas si no existen. Idempotente."""
     conn = db()
@@ -142,7 +157,7 @@ def init_db():
         """)
         conn.commit()
 
-        # ── Semilla: usuario admin (alineado con el HTML) ─────────────────
+        # ── Semilla: usuario admin (alineado con el HTML del portal) ──────
         cur.execute("SELECT COUNT(*) FROM admin")
         if cur.fetchone()[0] == 0:
             cur.execute(
@@ -223,6 +238,33 @@ def logout():
     token = (request.headers.get('Authorization') or '').replace('Bearer ', '').strip()
     SESSIONS.pop(token, None)
     return jsonify({'ok': True})
+
+
+# ============================================================================
+# HEALTH CHECK — útil para diagnosticar sin autenticar
+# ============================================================================
+@app.get('/api/health')
+def health():
+    info = {
+        'status': 'ok',
+        'db_ready': DB_INIT_STATUS['ready'],
+        'db_error': DB_INIT_STATUS['error'],
+    }
+    try:
+        conn = db()
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT COUNT(*) FROM information_schema.tables WHERE table_name='admin'")
+            info['admin_table_exists'] = cur.fetchone()[0] > 0
+            if info['admin_table_exists']:
+                cur.execute("SELECT username FROM admin ORDER BY id_admin")
+                info['admin_users'] = [r[0] for r in cur.fetchall()]
+        finally:
+            conn.close()
+    except Exception as e:
+        info['status'] = 'db_error'
+        info['db_error'] = str(e)
+    return jsonify(info)
 
 
 # ============================================================================
@@ -348,6 +390,7 @@ def post_empleado():
         return jsonify({'error': 'La cédula ya existe'}), 409
     except Exception as e:
         conn.rollback()
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
     finally:
         conn.close()
@@ -589,6 +632,7 @@ def post_reserva():
         return jsonify({'ok': True, 'id_agenda': id_agenda, 'total': float(total)})
     except Exception as e:
         conn.rollback()
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
     finally:
         conn.close()
@@ -611,22 +655,29 @@ def static_files(path):
 
 
 # ============================================================================
-# INICIALIZACIÓN AL IMPORTAR EL MÓDULO
+# INICIALIZACIÓN EN HILO BACKGROUND
 # ----------------------------------------------------------------------------
-# ⚠️ CRÍTICO: gunicorn hace `import server_auth` pero NO ejecuta
-# `if __name__ == '__main__'`. Por eso init_db() DEBE estar aquí, al nivel
-# del módulo, para que se ejecute en cada arranque del worker en Render.
+# ⚠️ CRÍTICO: gunicorn hace bind() a 0.0.0.0:$PORT INMEDIATAMENTE al importar
+# este módulo (Render detecta el puerto y no da "Port scan timeout").
+# init_db() corre en paralelo en un hilo daemon, sin bloquear el arranque.
 # ============================================================================
-try:
-    print("🔄 Ejecutando init_db() al importar el módulo…")
-    init_db()
-    print("✅ init_db() completado — tablas listas en Neon")
-except Exception as e:
-    print(f"⚠️ init_db() falló: {e}")
-    traceback.print_exc()
-    # No relanzamos: dejamos que la app arranque para que puedas ver el
-    # error real en los logs de Render. Los endpoints fallarán con 500 hasta
-    # que la BD esté accesible.
+def _init_db_background():
+    try:
+        print("🔄 init_db() en background…")
+        init_db()
+        DB_INIT_STATUS['ready'] = True
+        DB_INIT_STATUS['error'] = None
+        print("✅ init_db() completado — tablas listas en Neon")
+    except Exception as e:
+        DB_INIT_STATUS['ready'] = False
+        DB_INIT_STATUS['error'] = str(e)
+        print(f"⚠️ init_db() falló: {e}")
+        traceback.print_exc()
+
+
+print("🔄 Lanzando init_db() en background thread…")
+threading.Thread(target=_init_db_background, daemon=True).start()
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
