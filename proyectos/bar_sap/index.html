@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión Barbería & Spa | AlefDOOR Ecosistema</title>
+    
+    <!-- Google Fonts: Outfit (UI moderna) + Playfair Display (Títulos de lujo) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    
+    <!-- Iconos Lucide (Open Source) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Enlace al tema unificado de AlefDOOR (Asegúrate de tener alefdoor-theme.css en la ruta indicada) -->
+    <link rel="stylesheet" href="../../assets/css/alefdoor-theme.css">
+
+    <style>
+        /* Estilos específicos complementarios para la aplicación web de Peluquería */
+        .app-container {
+            max-width: 1350px;
+            margin: 0 auto;
+            padding: 0 1.5rem 3rem 1.5rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+            padding-bottom: 1rem;
+        }
+
+        .tab-btn {
+            background: rgba(20, 17, 14, 0.6);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: #d6d3d1;
+            padding: 0.65rem 1.2rem;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.25s ease;
+        }
+
+        .tab-btn:hover, .tab-btn.active {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #030302;
+            border-color: #f59e0b;
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .panel-box {
+            background: var(--alef-surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--alef-border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.8);
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        table.modern-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        table.modern-table th {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--alef-gold);
+            padding: 0.85rem 1rem;
+            font-weight: 600;
+        }
+
+        table.modern-table td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            color: #f8fafc;
+        }
+
+        table.modern-table tr:hover td {
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .badge-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-atendido { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); }
+        .badge-pendiente { background: rgba(245, 158, 11, 0.2); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.4); }
+
+        @media(max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Guardia de seguridad de sesión AlefDOOR -->
+    <script>
+        (function() {
+            const sesion = sessionStorage.getItem('alefdoor_session');
+            if (!sesion || !JSON.parse(sesion).autenticado) {
+                window.location.href = '../../index.html';
+            }
+        })();
+    </script>
+
+    <!-- Barra de navegación superior con opción de retorno al index.html -->
+    <nav class="alef-module-navbar">
+        <a href="../../index.html">
+            <i data-lucide="arrow-left" style="width:18px;"></i>
+            <span>Volver al Dashboard Principal (index.html)</span>
+        </a>
+        <span style="font-size: 0.85rem; color: var(--alef-gold); font-weight: 600; letter-spacing: 0.08em;">
+            MÓDULO DE GESTIÓN: BARBERÍA & SPA
+        </span>
+    </nav>
+
+    <div class="app-container">
+        
+        <header style="margin-bottom: 2rem;">
+            <h1 style="font-size: 2.2rem; margin-bottom: 0.3rem;">Sistema Integral de Citas y Empleados</h1>
+            <p style="color: var(--alef-muted); font-size: 0.95rem;">Administra clientes, reservas en tiempo real, asignaciones de personal y galerías de servicios.</p>
+        </header>
+
+        <!-- Pestañas de Navegación Web -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab(event, 'tab-clientes')">
+                <i data-lucide="users" style="width:16px;"></i> Clientes
+            </button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-reservas')">
+                <i data-lucide="calendar-plus" style="width:16px;"></i> Agendar Reserva
+            </button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-informes')">
+                <i data-lucide="clipboard-list" style="width:16px;"></i> Informe de Agenda
+            </button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-servicios')">
+                <i data-lucide="scissors" style="width:16px;"></i> Gestión Servicios
+            </button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-empleados')">
+                <i data-lucide="user-check" style="width:16px;"></i> Empleados y Cargos
+            </button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-galeria')">
+                <i data-lucide="image" style="width:16px;"></i> Galería Pro
+            </button>
+        </div>
+
+        <!-- ================= PESTAÑA 1: CLIENTES ================= -->
+        <div id="tab-clientes" class="tab-pane active">
+            <div class="grid-2">
+                <div class="panel-box">
+                    <h2 style="font-size: 1.4rem; margin-bottom: 1.2rem;">Registrar Nuevo Cliente</h2>
+                    <form onsubmit="registrarCliente(event)">
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Número de Celular</label>
+                            <input type="text" id="cli-celular" placeholder="+58 412-0000000" style="width:100%;" required>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Nombre y Apellido</label>
+                            <input type="text" id="cli-nombre" placeholder="Ej. Carlos Mendoza" style="width:100%;" required>
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Día de Cumpleaños</label>
+                            <input type="text" id="cli-cumple" placeholder="Ej. 15 de Mayo" style="width:100%;">
+                        </div>
+                        <button type="submit" style="width:100%;">Guardar Cliente</button>
+                    </form>
+                </div>
+                <div class="panel-box">
+                    <h2 style="font-size: 1.4rem; margin-bottom: 1.2rem;">Directorio de Clientes</h2>
+                    <div class="table-wrapper">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Celular</th>
+                                    <th>Nombre</th>
+                                    <th>Cumpleaños</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-clientes-body">
+                                <!-- Datos inyectados por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 2: AGENDAR RESERVA ================= -->
+        <div id="tab-reservas" class="tab-pane">
+            <div class="panel-box" style="margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.4rem; margin-bottom: 1.2rem;">1. Seleccionar Cliente y Fecha</h2>
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Cliente Registrado</label>
+                        <select id="res-cliente" style="width:100%;">
+                            <option value="">-- Seleccione Cliente --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Fecha de Reserva</label>
+                        <input type="date" id="res-fecha" style="width:100%;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-box">
+                <h2 style="font-size: 1.4rem; margin-bottom: 1.2rem;">2. Agregar Servicio al Carrito (Máx. 3 por día)</h2>
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem; align-items: flex-end;">
+                    <div>
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Servicio Disponible</label>
+                        <select id="res-servicio" style="width:100%;">
+                            <option value="">-- Seleccione Servicio --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Hora (HH:MM)</label>
+                        <input type="time" id="res-hora" value="10:00" style="width:100%;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Propina ($)</label>
+                        <input type="number" id="res-propina" value="0" step="0.5" style="width:100%;">
+                    </div>
+                    <button type="button" onclick="agregarAlCarrito()">Agregar</button>
+                </div>
+
+                <div class="table-wrapper" style="margin-top: 1.5rem;">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Servicio</th>
+                                <th>Hora</th>
+                                <th>Precio</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-carrito-body">
+                            <!-- Carrito -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; align-items: center; gap: 1.5rem; margin-top: 1.5rem;">
+                    <span id="carrito-total" style="font-size: 1.1rem; font-weight: 700; color: var(--alef-gold);">Total: $0.00</span>
+                    <button type="button" onclick="procesarReservaFinal()">Confirmar y Emitir Recibo</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 3: INFORME DE AGENDA ================= -->
+        <div id="tab-informes" class="tab-pane">
+            <div class="panel-box">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <h2 style="font-size: 1.4rem;">Parrilla de Citas Programadas</h2>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <input type="date" id="inf-fecha" onchange="cargarInformeAgenda()">
+                        <button type="button" onclick="cargarInformeAgenda()">Actualizar Informe</button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Estado</th>
+                                <th>Hora</th>
+                                <th>Servicio</th>
+                                <th>Cliente</th>
+                                <th>Precio</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-informe-body">
+                            <!-- Informe -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 4: GESTIÓN SERVICIOS ================= -->
+        <div id="tab-servicios" class="tab-pane">
+            <div class="panel-box" style="max-width: 700px; margin: 0 auto;">
+                <h2 style="font-size: 1.4rem; margin-bottom: 1.2rem;">Registrar Nuevo Servicio</h2>
+                <form onsubmit="registrarServicio(event)">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Área / Departamento</label>
+                        <select id="serv-area" style="width:100%;" required>
+                            <option value="1">Estación de Corte Caballeros</option>
+                            <option value="2">Estación de Corte y Peinado Damas</option>
+                            <option value="3">Área de Manicure y Pedicure</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Nombre del Servicio</label>
+                        <input type="text" id="serv-nombre" placeholder="Ej. Corte Ejecutivo Degradado" style="width:100%;" required>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Estilo o Detalle</label>
+                        <input type="text" id="serv-estilo" placeholder="Ej. Fade con Navaja" style="width:100%;">
+                    </div>
+                    <div style="margin-bottom: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Precio ($)</label>
+                            <input type="number" id="serv-precio" step="0.5" placeholder="15.00" style="width:100%;" required>
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Tiempo Máximo</label>
+                            <input type="text" id="serv-tiempo" value="00:45" style="width:100%;">
+                        </div>
+                    </div>
+                    <button type="submit" style="width:100%;">Guardar Servicio</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 5: EMPLEADOS Y CARGOS ================= -->
+        <div id="tab-empleados" class="tab-pane">
+            <div class="panel-box" style="max-width: 700px; margin: 0 auto;">
+                <h2 style="font-size: 1.4rem; margin-bottom: 1.2rem;">Registro de Personal</h2>
+                <form onsubmit="registrarEmpleado(event)">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Cédula de Identidad</label>
+                        <input type="text" id="emp-cedula" placeholder="V-12345678" style="width:100%;" required>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Nombres</label>
+                            <input type="text" id="emp-nombres" placeholder="Pedro Luis" style="width:100%;" required>
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Apellidos</label>
+                            <input type="text" id="emp-apellidos" placeholder="Pérez Gómez" style="width:100%;" required>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Cargo Asignado</label>
+                        <select id="emp-cargo" style="width:100%;">
+                            <option value="1">Barbero(a) Profesional</option>
+                            <option value="2">Estilista Senior</option>
+                            <option value="3">Manicurista</option>
+                        </select>
+                    </div>
+                    <button type="submit" style="width:100%;">Registrar Empleado</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 6: GALERÍA PRO ================= -->
+        <div id="tab-galeria" class="tab-pane">
+            <div class="panel-box" style="text-align: center; padding: 3rem;">
+                <i data-lucide="image" style="width: 48px; height: 48px; color: var(--alef-gold); margin-bottom: 1rem;"></i>
+                <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Visor Tridimensional de Servicios</h2>
+                <p style="color: var(--alef-muted); max-width: 600px; margin: 0 auto 1.5rem auto;">
+                    Explora las fotografías de frente, perfil y posterior registradas para cada corte o tratamiento estético realizado en el establecimiento.
+                </p>
+                <div style="display: flex; justify-content: center; gap: 1rem;">
+                    <select id="galeria-serv-select" style="max-width: 300px;">
+                        <option value="">-- Todos los Servicios --</option>
+                    </select>
+                    <button type="button" onclick="alert('Galería sincronizada con repositorio GitHub.')">Cargar Visor</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script de lógica de interfaz y simulación de base de datos local conectada -->
+    <script>
+        lucide.createIcons();
+
+        // Sistema de Pestañas
+        function switchTab(evt, tabId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        // Datos de simulación local sincronizados (Mock State)
+        let state = {
+            clientes: [
+                { id: 1, celular: '0412-5551234', nombre: 'Andrés Laya', cumple: '03 de Abril' },
+                { id: 2, celular: '0414-4449876', nombre: 'Mariela Lugo', cumple: '05 de Octubre' }
+            ],
+            servicios: [
+                { id: 1, nombre: 'Corte Degradado (Fade)', precio: 12.00 },
+                { id: 2, nombre: 'Peinado y Brushing', precio: 18.00 },
+                { id: 3, nombre: 'Manicure Completa', precio: 10.00 }
+            ],
+            carrito: [],
+            reservas: [
+                { id: 1, fecha: new Date().toISOString().split('T')[0], hora: '10:00', servicio: 'Corte Degradado (Fade)', cliente: 'Andrés Laya', atendido: false, precio: 12.00 }
+            ]
+        };
+
+        function initApp() {
+            renderClientes();
+            renderSelects();
+            renderCarrito();
+            document.getElementById('inf-fecha').value = new Date().toISOString().split('T')[0];
+            document.getElementById('res-fecha').value = new Date().toISOString().split('T')[0];
+            cargarInformeAgenda();
+        }
+
+        function renderClientes() {
+            const tbody = document.getElementById('tabla-clientes-body');
+            tbody.innerHTML = state.clientes.map(c => `
+                <tr>
+                    <td>${c.celular}</td>
+                    <td>${c.nombre}</td>
+                    <td>${c.cumple}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderSelects() {
+            const cliSelect = document.getElementById('res-cliente');
+            cliSelect.innerHTML = '<option value="">-- Seleccione Cliente --</option>' + 
+                state.clientes.map(c => `<option value="${c.nombre}">${c.nombre} (Cel: ${c.celular})</option>`).join('');
+
+            const servSelect = document.getElementById('res-servicio');
+            servSelect.innerHTML = '<option value="">-- Seleccione Servicio --</option>' + 
+                state.servicios.map(s => `<option value="${s.id}">${s.nombre} - $${s.precio.toFixed(2)}</option>`).join('');
+        }
+
+        function registrarCliente(e) {
+            e.preventDefault();
+            const celular = document.getElementById('cli-celular').value;
+            const nombre = document.getElementById('cli-nombre').value;
+            const cumple = document.getElementById('cli-cumple').value;
+
+            state.clientes.push({ id: Date.now(), celular, nombre, cumple });
+            renderClientes();
+            renderSelects();
+            e.target.reset();
+            alert('Cliente registrado exitosamente en la base de datos.');
+        }
+
+        function registrarServicio(e) {
+            e.preventDefault();
+            const nombre = document.getElementById('serv-nombre').value;
+            const precio = parseFloat(document.getElementById('serv-precio').value);
+
+            state.servicios.push({ id: Date.now(), nombre, precio });
+            renderSelects();
+            e.target.reset();
+            alert('Servicio agregado correctamente al catálogo.');
+        }
+
+        function registrarEmpleado(e) {
+            e.preventDefault();
+            alert('Personal registrado y vinculado al repositorio exitosamente.');
+            e.target.reset();
+        }
+
+        function agregarAlCarrito() {
+            const servId = document.getElementById('res-servicio').value;
+            const hora = document.getElementById('res-hora').value;
+            if (!servId) {
+                alert('Selecciona un servicio.');
+                return;
+            }
+            const serv = state.servicios.find(s => s.id == servId);
+            if (state.carrito.length >= 3) {
+                alert('Límite máximo de 3 servicios por reserva alcanzado.');
+                return;
+            }
+            state.carrito.push({ ...serv, hora });
+            renderCarrito();
+        }
+
+        function renderCarrito() {
+            const tbody = document.getElementById('tabla-carrito-body');
+            tbody.innerHTML = state.carrito.map((item, idx) => `
+                <tr>
+                    <td>${item.nombre}</td>
+                    <td>${item.hora}</td>
+                    <td>$${item.precio.toFixed(2)}</td>
+                    <td><button type="button" onclick="state.carrito.splice(${idx},1); renderCarrito();" style="padding:0.3rem 0.6rem; font-size:0.8rem;">Eliminar</button></td>
+                </tr>
+            `).join('');
+
+            const total = state.carrito.reduce((sum, i) => sum + i.precio, 0) + parseFloat(document.getElementById('res-propina').value || 0);
+            document.getElementById('carrito-total').textContent = `Total: $${total.toFixed(2)}`;
+        }
+
+        function procesarReservaFinal() {
+            const cliente = document.getElementById('res-cliente').value;
+            const fecha = document.getElementById('res-fecha').value;
+            if (!cliente || state.carrito.length === 0) {
+                alert('Selecciona un cliente y agrega al menos un servicio al carrito.');
+                return;
+            }
+            state.carrito.forEach(item => {
+                state.reservas.push({
+                    id: Date.now() + Math.random(),
+                    fecha,
+                    hora: item.hora,
+                    servicio: item.nombre,
+                    cliente,
+                    atendido: false,
+                    precio: item.precio
+                });
+            });
+            state.carrito = [];
+            renderCarrito();
+            cargarInformeAgenda();
+            alert('¡Reserva procesada y recibo emitido exitosamente!');
+            switchTab({ currentTarget: document.querySelectorAll('.tab-btn')[2] }, 'tab-informes');
+        }
+
+        function cargarInformeAgenda() {
+            const fechaFiltro = document.getElementById('inf-fecha').value;
+            const tbody = document.getElementById('tabla-informe-body');
+            const filtradas = state.reservas.filter(r => r.fecha === fechaFiltro);
+
+            if (filtradas.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--alef-muted);">No hay citas registradas para esta fecha.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtradas.map(r => `
+                <tr>
+                    <td><span class="badge-status ${r.atendido ? 'badge-atendido' : 'badge-pendiente'}">${r.atendido ? 'Atendido' : 'Pendiente'}</span></td>
+                    <td>${r.hora}</td>
+                    <td>${r.servicio}</td>
+                    <td>${r.cliente}</td>
+                    <td>$${r.precio.toFixed(2)}</td>
+                    <td><button type="button" onclick="toggleAtendido(${r.id})" style="padding:0.3rem 0.6rem; font-size:0.8rem;">Cambiar Estado</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function toggleAtendido(id) {
+            const res = state.reservas.find(r => r.id === id);
+            if (res) {
+                res.atendido = !res.atendido;
+                cargarInformeAgenda();
+            }
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
