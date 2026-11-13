@@ -1,102 +1,156 @@
 /* ============================================================================
-   ALEFDOOR-THEME.CSS - Hoja de Estilos Unificada para los 3 Aplicativos
+   ALEFDOOR-THEME.CSS - Estilo Moderno, Llamativo y Glassmorphism Avanzado
    ============================================================================
-   Uso: Incluir <link rel="stylesheet" href="../../assets/css/alefdoor-theme.css">
-   en el <head> de BAR SAP, MODELO TRIPIA y TRIAJE - AGENDA DE ASISTENCIAS.
+   Inspirado en los mejores componentes de código abierto en GitHub.
+   Diseñado para unificar la estética de la portada con los aplicativos:
+   - PROYECTO BAR SAP
+   - MODELO TRIPIA
+   - TRIAJE - AGENDA DE ASISTENCIAS
    ============================================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
 
 :root {
-    --alef-bg: #070605;
-    --alef-surface: rgba(20, 17, 14, 0.78);
+    --alef-bg-void: #030302;
+    --alef-surface: rgba(18, 15, 12, 0.75);
+    --alef-surface-hover: rgba(28, 23, 18, 0.88);
     --alef-amber: #f59e0b;
+    --alef-amber-glow: rgba(245, 158, 11, 0.4);
     --alef-gold: #fde68a;
-    --alef-border: rgba(245, 158, 11, 0.28);
-    --alef-text: #f8fafc;
-    --alef-muted: #a8a29e;
+    --alef-border: rgba(245, 158, 11, 0.22);
+    --alef-border-hover: rgba(245, 158, 11, 0.6);
+    --alef-text-main: #f8fafc;
+    --alef-text-muted: #a8a29e;
+    --transition-smooth: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Fondo atmosférico heredado de la portada */
+/* ============================================================================
+   1. FONDO ATMOSFÉRICO CON EFECTO DE PROFUNDIDAD Y VIÑETA
+   ============================================================================ */
 body {
-    background-color: var(--alef-bg) !important;
+    background-color: var(--alef-bg-void) !important;
     background-image: 
-        radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.16) 0%, rgba(7, 6, 5, 0.94) 65%),
+        radial-gradient(circle at 50% 15%, rgba(245, 158, 11, 0.18) 0%, rgba(3, 3, 2, 0.96) 70%),
         url('../img/IMG-20260612-WA0006.jpg') !important;
     background-attachment: fixed !important;
     background-size: cover !important;
     background-position: center !important;
-    color: var(--alef-text) !important;
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    color: var(--alef-text-main) !important;
+    font-family: 'Outfit', sans-serif !important;
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
-/* Barra de retorno rápido al Dashboard principal de AlefDOOR */
+/* ============================================================================
+   2. BARRA DE NAVEGACIÓN MODERNA (Glassmorphism de Alta Nitidez)
+   ============================================================================ */
 .alef-module-navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.85rem 1.5rem;
-    margin-bottom: 1.5rem;
-    background: rgba(12, 10, 8, 0.82);
-    backdrop-filter: blur(16px);
+    padding: 0.95rem 1.8rem;
+    margin: 1rem 1.5rem 1.5rem 1.5rem;
+    background: rgba(12, 10, 8, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--alef-border);
-    border-radius: 16px;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.7);
 }
 
 .alef-module-navbar a {
     color: var(--alef-gold);
     text-decoration: none;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
+    transition: var(--transition-smooth);
 }
 
-/* Tarjetas, contenedores y paneles de los 3 sistemas */
+.alef-module-navbar a:hover {
+    color: #ffffff;
+    text-shadow: 0 0 12px var(--alef-amber);
+    transform: translateX(-3px);
+}
+
+/* ============================================================================
+   3. TARJETAS, PANELES Y TABLAS (Efecto Elevación y Brillo Ambiental)
+   ============================================================================ */
 .card, .panel, .container-box, table {
     background: var(--alef-surface) !important;
-    backdrop-filter: blur(18px) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
     border: 1px solid var(--alef-border) !important;
-    border-radius: 18px !important;
-    color: var(--alef-text) !important;
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.8) !important;
+    border-radius: 22px !important;
+    color: var(--alef-text-main) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85) !important;
+    transition: var(--transition-smooth) !important;
 }
 
-/* Encabezados con tipografía institucional */
+.card:hover, .panel:hover {
+    border-color: var(--alef-border-hover) !important;
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.9), 0 0 25px var(--alef-amber-glow) !important;
+    transform: translateY(-3px);
+}
+
+/* ============================================================================
+   4. TIPOGRAFÍA INSTITUCIONAL CON TENDENCIA "EDITORIAL LUXURY"
+   ============================================================================ */
 h1, h2, .module-title {
     font-family: 'Playfair Display', serif !important;
     color: var(--alef-gold) !important;
+    letter-spacing: -0.01em;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
-/* Inputs y selectores uniformes */
+/* ============================================================================
+   5. ENTRADAS DE TEXTO Y SELECTORES (Estilo Neón Interactivo)
+   ============================================================================ */
 input, select, textarea {
-    background: rgba(0, 0, 0, 0.5) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    color: #fff !important;
-    border-radius: 10px !important;
-    padding: 0.65rem 0.9rem !important;
+    background: rgba(0, 0, 0, 0.55) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    color: #ffffff !important;
+    border-radius: 12px !important;
+    padding: 0.75rem 1rem !important;
+    font-family: 'Outfit', sans-serif !important;
+    transition: var(--transition-smooth) !important;
+}
+
+input:hover, select:hover, textarea:hover {
+    border-color: rgba(245, 158, 11, 0.4) !important;
 }
 
 input:focus, select:focus, textarea:focus {
     border-color: var(--alef-amber) !important;
     outline: none !important;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2) !important;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.22), inset 0 0 10px rgba(245, 158, 11, 0.08) !important;
+    background: rgba(0, 0, 0, 0.75) !important;
 }
 
-/* Botones de acción principales */
+/* ============================================================================
+   6. BOTONES DE ACCIÓN PRINCIPALES (Degradado Ámbar con Efecto Glow)
+   ============================================================================ */
 button, .btn, input[type="submit"] {
     background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-    color: #070605 !important;
+    color: #030302 !important;
     font-weight: 700 !important;
+    font-family: 'Outfit', sans-serif !important;
     border: none !important;
-    border-radius: 10px !important;
-    padding: 0.65rem 1.25rem !important;
+    border-radius: 12px !important;
+    padding: 0.75rem 1.4rem !important;
     cursor: pointer !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    box-shadow: 0 8px 20px -4px rgba(245, 158, 11, 0.4) !important;
+    transition: var(--transition-smooth) !important;
 }
 
-button:hover, .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.45) !important;
+button:hover, .btn:hover, input[type="submit"]:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 14px 30px -4px rgba(245, 158, 11, 0.65) !important;
+    filter: brightness(1.1);
+}
+
+button:active, .btn:active {
+    transform: translateY(-1px) scale(0.99);
 }
