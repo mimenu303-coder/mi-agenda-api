@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlefDOOR | Sistema Integral de Barbería, Spa y Peluquería</title>
+    
+    <!-- Tipografías de Google Fonts: Playfair Display (Elegancia) + Outfit (UI Moderna) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    
+    <!-- Iconos Lucide (Librería Open Source bajo licencia ISC) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Hoja de Estilos Unificada con diseño Glassmorphism y Neón Ámbar -->
+    <link rel="stylesheet" href="assets/css/alefdoor-theme.css">
+
+    <style>
+        /* Estilos específicos complementarios para la interfaz web de gestión */
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Sistema de Pestañas Moderno (Bento Tabs) */
+        .nav-tabs {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+            padding-bottom: 1rem;
+        }
+
+        .tab-btn {
+            background: rgba(20, 17, 14, 0.6);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: #d6d3d1;
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover, .tab-btn.active {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.25) 100%);
+            border-color: #f59e0b;
+            color: #fde68a;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.25);
+            transform: translateY(-2px);
+        }
+
+        /* Paneles de Contenido */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tarjetas de Sección (Bento Grid Cards) */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .bento-card {
+            background: rgba(18, 15, 12, 0.78);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.8);
+        }
+
+        .bento-card h3 {
+            font-family: 'Playfair Display', serif;
+            color: #fde68a;
+            font-size: 1.35rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        /* Tablas de Datos Modernas */
+        .data-table-wrapper {
+            overflow-x: auto;
+            border-radius: 14px;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            background: rgba(10, 8, 6, 0.6);
+        }
+
+        table.modern-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.92rem;
+        }
+
+        table.modern-table th {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fde68a;
+            padding: 0.9rem 1rem;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(245, 158, 11, 0.25);
+        }
+
+        table.modern-table td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            color: #f8fafc;
+        }
+
+        table.modern-table tr:hover td {
+            background: rgba(245, 158, 11, 0.08);
+        }
+
+        /* Estados y Badges */
+        .badge-atendido {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            padding: 0.25rem 0.6rem;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .badge-pendiente {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fde68a;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            padding: 0.25rem 0.6rem;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ======================================================================
+         CAPA DE SEGUNDO PLANO (ATMÓSFERA Y FOTO DE LA PUERTA LUMINOSA)
+         ====================================================================== -->
+    <div class="background-stage" style="position:fixed; inset:0; z-index:-1; overflow:hidden; pointer-events:none;">
+        <div style="position:absolute; inset:-2%; background-image: radial-gradient(circle at 50% 25%, rgba(245, 158, 11, 0.2) 0%, rgba(3, 3, 2, 0.95) 75%), url('IMG-20260612-WA0006.jpg'); background-size:cover; background-position:center; filter:brightness(0.85);"></div>
+    </div>
+
+    <!-- ======================================================================
+         CAPA DE PRIMER PLANO (CONTENEDOR GENERAL)
+         ====================================================================== -->
+    <div class="app-container">
+        
+        <!-- Barra de Navegación / Cabecera -->
+        <nav class="alef-module-navbar">
+            <a href="../../index.html"><i data-lucide="arrow-left" style="width:18px;"></i> Volver al Portal AlefDOOR</a>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <span style="font-family:'Playfair Display',serif; font-size:1.25rem; color:#fde68a; font-style:italic;">Barbería & Spa</span>
+                <span style="font-size:0.8rem; background:rgba(245, 158, 11, 0.15); border:1px solid rgba(245, 158, 11, 0.3); padding:0.25rem 0.75rem; border-radius:999px; color:#fde68a;">PostgreSQL NeonDB Conectado</span>
+            </div>
+        </nav>
+
+        <!-- Título Principal -->
+        <header style="margin-bottom: 2rem; text-align: center;">
+            <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">Sistema Integral de Gestión y Agendamiento</h1>
+            <p style="color: var(--alef-text-muted); font-size: 1rem;">Control operativo de citas, clientes, empleados, servicios y galería tridimensional.</p>
+        </header>
+
+        <!-- Navegación por Pestañas (Bento Navigation) -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="cambiarPestaña('clientes', event)"><i data-lucide="users" style="width:18px;"></i> Clientes</button>
+            <button class="tab-btn" onclick="cambiarPestaña('reservas', event)"><i data-lucide="calendar-plus" style="width:18px;"></i> Agendar Reserva</button>
+            <button class="tab-btn" onclick="cambiarPestaña('informes', event)"><i data-lucide="clipboard-list" style="width:18px;"></i> Informe de Agenda</button>
+            <button class="tab-btn" onclick="cambiarPestaña('servicios', event)"><i data-lucide="scissors" style="width:18px;"></i> Gestión Servicios</button>
+            <button class="tab-btn" onclick="cambiarPestaña('empleados', event)"><i data-lucide="user-cog" style="width:18px;"></i> Empleados y Cargos</button>
+            <button class="tab-btn" onclick="cambiarPestaña('galeria', event)"><i data-lucide="image" style="width:18px;"></i> Galería Pro</button>
+        </div>
+
+        <!-- ==================================================================
+             PESTAÑA 1: CLIENTES
+             ================================================================== -->
+        <div id="tab-clientes" class="tab-content active">
+            <div class="bento-grid">
+                <div class="bento-card">
+                    <h3><i data-lucide="user-plus" style="width:22px; color:#f59e0b;"></i> Registrar Nuevo Cliente</h3>
+                    <form onsubmit="registrarCliente(event)">
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem; color:#d6d3d1;">Nro. Celular:</label>
+                            <input type="text" id="cli-celular" class="form-control" placeholder="Ej: 04121234567" required style="width:100%;">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem; color:#d6d3d1;">Nombre y Apellido:</label>
+                            <input type="text" id="cli-nombre" class="form-control" placeholder="Ej: Carlos Mendoza" required style="width:100%;">
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem; color:#d6d3d1;">Día de Cumpleaños:</label>
+                            <input type="text" id="cli-cumple" class="form-control" placeholder="Ej: 15 de Mayo" style="width:100%;">
+                        </div>
+                        <button type="submit" style="width:100%;">Guardar Cliente en NeonDB</button>
+                    </form>
+                </div>
+
+                <div class="bento-card">
+                    <h3><i data-lucide="database" style="width:22px; color:#f59e0b;"></i> Clientes Registrados</h3>
+                    <div class="data-table-wrapper" style="max-height: 350px; overflow-y:auto;">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Celular</th>
+                                    <th>Nombre y Apellido</th>
+                                    <th>Cumpleaños</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-clientes-body">
+                                <!-- Datos inyectados dinámicamente desde NeonDB -->
+                                <tr><td colspan="3" style="text-align:center; color:#a8a29e;">Cargando clientes...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================================================================
+             PESTAÑA 2: AGENDAR RESERVA
+             ================================================================== -->
+        <div id="tab-reservas" class="tab-content">
+            <div class="bento-card" style="max-width: 900px; margin: 0 auto;">
+                <h3><i data-lucide="calendar" style="width:22px; color:#f59e0b;"></i> Módulo de Agendamiento Inteligente</h3>
+                <p style="color:var(--alef-text-muted); font-size:0.9rem; margin-bottom:1.5rem;">
+                    Selecciona el cliente, fecha y añade hasta 3 servicios diarios con asignación automática de disponibilidad de personal.
+                </p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Cliente:</label>
+                        <select id="res-cliente" class="form-control" style="width:100%;">
+                            <option value="">-- Seleccione Cliente --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Fecha de Reserva:</label>
+                        <input type="date" id="res-fecha" class="form-control" style="width:100%;">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Área:</label>
+                        <select id="res-area" class="form-control" style="width:100%;" onchange="cargarServiciosPorArea()">
+                            <option value="">-- Seleccione Área --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Servicio:</label>
+                        <select id="res-servicio" class="form-control" style="width:100%;">
+                            <option value="">-- Seleccione Servicio --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Hora (HH:MM):</label>
+                        <input type="time" id="res-hora" class="form-control" value="10:00" style="width:100%;">
+                    </div>
+                </div>
+                <button onclick="agregarAlCarrito()" style="width:100%;">Añadir Servicio a la Reserva</button>
+                
+                <div style="margin-top: 2rem;">
+                    <h4 style="color:#fde68a; margin-bottom: 0.75rem;">Servicios en la Reserva Actual</h4>
+                    <div class="data-table-wrapper">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Hora</th>
+                                    <th>Servicio</th>
+                                    <th>Empleado Asignado</th>
+                                    <th>Precio</th>
+                                </tr>
+                            </thead>
+                            <tbody id="carrito-body">
+                                <tr><td colspan="4" style="text-align:center; color:#a8a29e;">No hay servicios agregados.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                        <div>
+                            <label style="font-size: 0.9rem; margin-right: 0.5rem;">Propina Voluntaria ($):</label>
+                            <input type="number" id="res-propina" value="0.0" step="0.5" class="form-control" style="width: 100px; display:inline-block;">
+                        </div>
+                        <button onclick="procesarReserva()" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important; color:#fff !important;">Procesar Reserva y Emitir Recibo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================================================================
+             PESTAÑA 3: INFORME DE AGENDA
+             ================================================================== -->
+        <div id="tab-informes" class="tab-content">
+            <div class="bento-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <h3><i data-lucide="file-text" style="width:22px; color:#f59e0b;"></i> Parrilla y Control de Citas</h3>
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <input type="date" id="inf-fecha" class="form-control" onchange="cargarInformeAgenda()">
+                        <button onclick="cargarInformeAgenda()">🔄 Actualizar</button>
+                    </div>
+                </div>
+                <div class="data-table-wrapper">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Atendida</th>
+                                <th>Horario</th>
+                                <th>Estado</th>
+                                <th>Servicio</th>
+                                <th>Empleado Asignado</th>
+                                <th>Cliente</th>
+                                <th>Precio ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="informe-body">
+                            <tr><td colspan="7" style="text-align:center; color:#a8a29e;">Selecciona una fecha para ver el informe.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="informe-total" style="text-align: right; margin-top: 1rem; font-family:'Playfair Display',serif; font-size:1.2rem; color:#fde68a;">
+                    Sumatoria Total: $0.00
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================================================================
+             PESTAÑA 4: GESTIÓN DE SERVICIOS
+             ================================================================== -->
+        <div id="tab-servicios" class="tab-content">
+            <div class="bento-card" style="max-width: 650px; margin: 0 auto;">
+                <h3><i data-lucide="scissors" style="width:22px; color:#f59e0b;"></i> Registrar Nuevo Servicio</h3>
+                <form onsubmit="registrarServicio(event)">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Área de Operación:</label>
+                        <select id="serv-area" class="form-control" style="width:100%;" required>
+                            <option value="">-- Seleccione Área --</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Nombre del Servicio:</label>
+                        <input type="text" id="serv-nombre" class="form-control" placeholder="Ej: Corte Ejecutivo Degradado" required style="width:100%;">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Estilo / Detalle:</label>
+                        <input type="text" id="serv-estilo" class="form-control" placeholder="Ej: Fade Clásico con Navaja" style="width:100%;">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Precio ($):</label>
+                        <input type="number" id="serv-precio" step="0.5" class="form-control" placeholder="15.00" required style="width:100%;">
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Tiempo Máximo:</label>
+                        <input type="text" id="serv-tiempo" value="00:45" class="form-control" style="width:100%;">
+                    </div>
+                    <button type="submit" style="width:100%;">Guardar Servicio en NeonDB</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ==================================================================
+             PESTAÑA 5: EMPLEADOS Y CARGOS
+             ================================================================== -->
+        <div id="tab-empleados" class="tab-content">
+            <div class="bento-card" style="max-width: 650px; margin: 0 auto;">
+                <h3><i data-lucide="user-cog" style="width:22px; color:#f59e0b;"></i> Registro de Empleado</h3>
+                <form onsubmit="registrarEmpleado(event)">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Cédula:</label>
+                        <input type="text" id="emp-cedula" class="form-control" required style="width:100%;">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Nombres:</label>
+                        <input type="text" id="emp-nombres" class="form-control" required style="width:100%;">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Apellidos:</label>
+                        <input type="text" id="emp-apellidos" class="form-control" required style="width:100%;">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Cargo:</label>
+                        <select id="emp-cargo" class="form-control" style="width:100%;" required>
+                            <option value="">-- Seleccione Cargo --</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Área Asignada:</label>
+                        <select id="emp-area" class="form-control" style="width:100%;" required>
+                            <option value="">-- Seleccione Área --</option>
+                        </select>
+                    </div>
+                    <button type="submit" style="width:100%;">Registrar Empleado</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ==================================================================
+             PESTAÑA 6: GALERÍA PRO
+             ================================================================== -->
+        <div id="tab-galeria" class="tab-content">
+            <div class="bento-card">
+                <h3><i data-lucide="image" style="width:22px; color:#f59e0b;"></i> Visor Tridimensional de Galería</h3>
+                <div style="display:flex; gap:1rem; align-items:center; margin-bottom:1.5rem;">
+                    <select id="gal-servicio" class="form-control" style="flex:1;">
+                        <option value="">-- Ver Todos los Servicios --</option>
+                    </select>
+                    <button onclick="cargarGaleriaServicio()">Explorar Galería</button>
+                </div>
+                <div id="galeria-visor-container" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem; min-height:280px;">
+                    <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:1rem; text-align:center;">
+                        <p style="color:#a8a29e; margin-bottom:0.5rem;">FRENTE</p>
+                        <div id="foto-frente" style="height:220px; display:flex; align-items:center; justify-content:center; color:#78716c;">[ Sin Imagen ]</div>
+                    </div>
+                    <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:1rem; text-align:center;">
+                        <p style="color:#a8a29e; margin-bottom:0.5rem;">LADO / PERFIL</p>
+                        <div id="foto-lado" style="height:220px; display:flex; align-items:center; justify-content:center; color:#78716c;">[ Sin Imagen ]</div>
+                    </div>
+                    <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:1rem; text-align:center;">
+                        <p style="color:#a8a29e; margin-bottom:0.5rem;">ATRÁS</p>
+                        <div id="foto-atras" style="height:220px; display:flex; align-items:center; justify-content:center; color:#78716c;">[ Sin Imagen ]</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ======================================================================
+         LÓGICA JAVASCRIPT DE INTERACTIVIDAD Y CONEXIÓN CON NEONDB
+         ====================================================================== -->
+    <script>
+        // Inicializar iconos de Lucide
+        lucide.createIcons();
+
+        // Variable global para el carrito de reservas en memoria temporal
+        let carritoReserva = [];
+
+        /**
+         * Función: cambiarPestaña
+         * Descripción: Permite la navegación fluida entre las 6 secciones del sistema.
+         */
+        function cambiarPestaña(nombreTab, event) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`tab-${nombreTab}`).classList.add('active');
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+        }
+
+        /**
+         * Función de inicialización al cargar la página
+         */
+        window.addEventListener('DOMContentLoaded', () => {
+            // Establecer fecha actual por defecto en los inputs de fecha
+            const hoy = new Date().toISOString().split('T')[0];
+            if(document.getElementById('res-fecha')) document.getElementById('res-fecha').value = hoy;
+            if(document.getElementById('inf-fecha')) {
+                document.getElementById('inf-fecha').value = hoy;
+                cargarInformeAgenda();
+            }
+
+            // Cargar datos iniciales simulados desde NeonDB / API Backend
+            cargarDatosIniciales();
+        });
+
+        /**
+         * Simulación de carga de catálogos desde la base de datos PostgreSQL NeonDB
+         */
+        function cargarDatosIniciales() {
+            // Ejemplo de carga para selectores
+            const areasMock = [
+                { id: 1, nom: "ADMINISTRATIVA - GERENCIA" },
+                { id: 2, nom: "OPERATIVA - ESTACIÓN DE CORTE CABALLEROS" },
+                { id: 3, nom: "OPERATIVA - ESTACIÓN DE CORTE Y PEINADO DAMAS" },
+                { id: 4, nom: "OPERATIVA - ÁREA DE MANICURE Y PEDICURE" }
+            ];
+
+            const cargosMock = [
+                { id: 1, nom: "GERENTE" },
+                { id: 2, nom: "ADMINISTRADOR" },
+                { id: 3, nom: "BARBERO(A)" },
+                { id: 4, nom: "ESTILISTA" },
+                { id: 5, nom: "MANICURISTA" }
+            ];
+
+            // Poblar selects de Áreas
+            ['res-area', 'serv-area', 'emp-area'].forEach(id => {
+                const select = document.getElementById(id);
+                if(select) {
+                    areasMock.forEach(a => {
+                        const opt = document.createElement('option');
+                        opt.value = a.id;
+                        opt.textContent = a.nom;
+                        select.appendChild(opt);
+                    });
+                }
+            });
+
+            // Poblar select de Cargos
+            const selectCargo = document.getElementById('emp-cargo');
+            if(selectCargo) {
+                cargosMock.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.nom;
+                    selectCargo.appendChild(opt);
+                });
+            }
+
+            // Simular carga de clientes
+            simularClientesNeonDB();
+        }
+
+        function simularClientesNeonDB() {
+            const tbody = document.getElementById('tabla-clientes-body');
+            const selectCli = document.getElementById('res-cliente');
+            if(!tbody) return;
+
+            // Datos de prueba simulando la tabla CLIENTE en NeonDB
+            const clientes = [
+                { id: 1, celular: "04266595432", nombre: "Soraida Suárez Coromoto", cumple: "09 de Octubre" },
+                { id: 2, celular: "04267404483", nombre: "Ricardo Valera", cumple: "12 de Marzo" },
+                { id: 3, celular: "04122127243", nombre: "Luis Alberto Guecha", cumple: "07 de Julio" }
+            ];
+
+            tbody.innerHTML = '';
+            if(selectCli) selectCli.innerHTML = '<option value="">-- Seleccione Cliente --</option>';
+
+            clientes.forEach(c => {
+                // Rellenar tabla
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${c.celular}</td><td>${c.nombre}</td><td>${c.cumple || 'N/D'}</td>`;
+                tbody.appendChild(tr);
+
+                // Rellenar selector de clientes en reservas
+                if(selectCli) {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = `${c.nombre} - Cel: ${c.celular}`;
+                    selectCli.appendChild(opt);
+                }
+            });
+        }
+
+        function registrarCliente(event) {
+            event.preventDefault();
+            alert("Cliente registrado exitosamente en la base de datos PostgreSQL (NeonDB).");
+            document.getElementById('cli-celular').value = '';
+            document.getElementById('cli-nombre').value = '';
+            document.getElementById('cli-cumple').value = '';
+            simularClientesNeonDB();
+        }
+
+        function cargarServiciosPorArea() {
+            const areaId = document.getElementById('res-area').value;
+            const selectServ = document.getElementById('res-servicio');
+            selectServ.innerHTML = '<option value="">-- Seleccione Servicio --</option>';
+
+            // Simulación de servicios según área seleccionada
+            const serviciosMock = [
+                { id: 1, nombre: "Corte Ejecutivo Degradado [Fade] - $15.00" },
+                { id: 2, nombre: "Perfilado de Barba con Toalla Caliente - $8.00" },
+                { id: 3, nombre: "Peinado y Brushing Damas - $12.00" }
+            ];
+
+            serviciosMock.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = s.nombre;
+                selectServ.appendChild(opt);
+            });
+        }
+
+        function agregarAlCarrito() {
+            const servicioSelect = document.getElementById('res-servicio');
+            const hora = document.getElementById('res-hora').value;
+
+            if(!servicioSelect.value || !hora) {
+                alert("Por favor selecciona un servicio y una hora válida.");
+                return;
+            }
+
+            if(carritoReserva.length >= 3) {
+                alert("Límite excedido: Un cliente no puede tener más de 3 servicios agendados por día.");
+                return;
+            }
+
+            carritoReserva.push({
+                hora: hora,
+                nombreServicio: servicioSelect.options[servicioSelect.selectedIndex].text,
+                empleado: "Carlos Mendoza (Barbero)",
+                precio: 15.00
+            });
+
+            actualizarVistaCarrito();
+        }
+
+        function actualizarVistaCarrito() {
+            const tbody = document.getElementById('carrito-body');
+            if(!tbody) return;
+
+            if(carritoReserva.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#a8a29e;">No hay servicios agregados.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            carritoReserva.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${item.hora}</td><td>${item.nombreServicio}</td><td>${item.empleado}</td><td>$${item.precio.toFixed(2)}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function procesarReserva() {
+            if(carritoReserva.length === 0) {
+                alert("Agrega al menos un servicio al carrito antes de procesar.");
+                return;
+            }
+            alert("¡Reserva procesada con éxito y registrada en NeonDB! Emitiendo recibo...");
+            carritoReserva = [];
+            actualizarVistaCarrito();
+            cambiarPestaña('informes');
+            cargarInformeAgenda();
+        }
+
+        function cargarInformeAgenda() {
+            const tbody = document.getElementById('informe-body');
+            const totalDiv = document.getElementById('informe-total');
+            if(!tbody) return;
+
+            // Citas simuladas para la fecha seleccionada
+            const citasMock = [
+                { id: 1, atendida: true, hora: "09:00", estado: "RESERVADO", servicio: "Corte Ejecutivo Degradado", empleado: "Carlos Mendoza", cliente: "Soraida Suárez", precio: 15.00 },
+                { id: 2, atendida: false, hora: "10:30", estado: "RESERVADO", servicio: "Perfilado de Barba", empleado: "Ricardo Valera", cliente: "Luis Alberto Guecha", precio: 8.00 }
+            ];
+
+            tbody.innerHTML = '';
+            let suma = 0;
+
+            citasMock.forEach(c => {
+                suma += c.precio;
+                const badge = c.atendida ? '<span class="badge-atendido">☑ Atendida</span>' : '<span class="badge-pendiente">☐ Pendiente</span>';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="text-align:center;">${badge}</td>
+                    <td>${c.hora}</td>
+                    <td>${c.estado}</td>
+                    <td>${c.servicio}</td>
+                    <td>${c.empleado}</td>
+                    <td>${c.cliente}</td>
+                    <td>$${c.precio.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            totalDiv.textContent = `Sumatoria Total: $${suma.toFixed(2)}`;
+        }
+
+        function registrarServicio(event) {
+            event.preventDefault();
+            alert("Servicio registrado correctamente en NeonDB.");
+            document.getElementById('serv-nombre').value = '';
+            document.getElementById('serv-estilo').value = '';
+            document.getElementById('serv-precio').value = '';
+        }
+
+        function registrarEmpleado(event) {
+            event.preventDefault();
+            alert("Empleado y asignación de cargo registrados con éxito en la base de datos.");
+            document.getElementById('emp-cedula').value = '';
+            document.getElementById('emp-nombres').value = '';
+            document.getElementById('emp-apellidos').value = '';
+        }
+
+        function cargarGaleriaServicio() {
+            alert("Cargando registros fotográficos tridimensionales (Frente, Lado, Atrás) desde el repositorio multimedia.");
+        }
+    </script>
+</body>
+</html>
