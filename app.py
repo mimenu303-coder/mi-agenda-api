@@ -23,6 +23,7 @@ import time
 import uuid
 import traceback
 import threading
+from werkzeug.utils import secure_filename
 from functools import wraps
 
 from flask import Flask, request, jsonify, send_from_directory, abort
@@ -30,6 +31,7 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 import psycopg2
 from psycopg2.extras import RealDictCursor
+
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
@@ -48,9 +50,13 @@ SESSIONS = {}
 DB_INIT_STATUS = {'ready': False, 'error': None}
 
 # ── Archivos estáticos permitidos ─────────────────────────────────────────
-STATIC_DIRS  = {'assets', 'proyectos'}
-STATIC_FILES = {'index.html', 'IMG-20260612-WA0006.jpg', 'favicon.ico'}
+# ── Subcarpeta donde se almacenarán físicamente las imágenes ────────────────
+UPLOAD_FOLDER = 'assets/galeria'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# (Asegúrate de que 'assets' esté en tus STATIC_DIRS para que Flask pueda servirlas)
+STATIC_DIRS = {'assets', 'proyectos'}
+STATIC_FILES = {'index.html', 'IMG-20260612-WA0006.jpg', 'favicon.ico'}
 
 # ============================================================================
 # CONEXIÓN A NEON
@@ -466,24 +472,53 @@ def get_galeria():
 @app.post('/api/galeria')
 @auth_required
 def post_galeria():
-    d = request.get_json() or {}
-    if not d.get('id_servicio') or not (d.get('doc_frente') or d.get('doc_lado') or d.get('doc_atras')):
-        return jsonify({'error': 'Servicio y al menos una foto son obligatorios'}), 400
+    """
+    Recibe archivos físicos, los guarda en assets/galeria/ y almacena
+    únicamente las rutas relativas en Neon PostgreSQL.
+    """
+    id_servicio = request.form.get('id_servicio')
+    fecha = request.form.get('fecha') or time.strftime('%Y-%m-%d')
+    descripcion = request.form.get('descripcion', '')
+
+    if not id_servicio:
+        return jsonify({'error': 'El servicio es obligatorio'}), 400
+
+    rutas = {'doc_frente': None, 'doc_lado': None, 'doc_atras': None}
+
+    # Procesar cada archivo recibido en el formulario
+    for key in ['doc_frente', 'doc_lado', 'doc_atras']:
+        file = request.files.get(key)
+        if file and file.filename != '':
+            # Generar un nombre seguro y único para evitar colisiones
+            filename = secure_filename(f"{int(time.time())}_{file.filename}")
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            
+            # Guardar archivo físicamente en la subcarpeta del servidor
+            file.save(filepath)
+            
+            # Guardar la ruta relativa que se registrará en la base de datos
+            rutas[key] = filepath.replace('\\', '/') # Normalizar barras para web
+
+    if not any(rutas.values()):
+        return jsonify({'error': 'Debes adjuntar al menos una fotografía'}), 400
+
     conn = db()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         cur.execute("""INSERT INTO galeria
                        (id_servicio, fecha, doc_frente, doc_lado, doc_atras, descripcion, activo)
                        VALUES (%s,%s,%s,%s,%s,%s,'SI') RETURNING id_galeria""",
-                    (d['id_servicio'], d.get('fecha') or time.strftime('%Y-%m-%d'),
-                     d.get('doc_frente'), d.get('doc_lado'), d.get('doc_atras'),
-                     d.get('descripcion', '')))
+                    (id_servicio, fecha, rutas['doc_frente'], rutas['doc_lado'], 
+                     rutas['doc_atras'], descripcion))
         idg = cur.fetchone()['id_galeria']
         conn.commit()
         return jsonify({'ok': True, 'id_galeria': idg})
+    except Exception as e:
+        conn.rollback()
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
     finally:
         conn.close()
-
 
 # ============================================================================
 # CONSULTAS CRUZADAS

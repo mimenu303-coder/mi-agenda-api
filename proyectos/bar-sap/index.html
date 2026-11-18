@@ -684,19 +684,40 @@
         </div>
 
         <!-- ==================================================================
-             PESTAÑA 5: CARGAR GALERÍA
+             PESTAÑA 5: CARGAR GALERÍA (Archivos a Subcarpeta)
              ================================================================== -->
+
         <div id="tab-cargar-galeria" class="tab-content">
             <div class="bento-card" style="max-width: 700px; margin: 0 auto;">
-                <h3><i data-lucide="upload-cloud" style="width:20px; color:#f59e0b;"></i> Asignar Fotografías a Servicio</h3>
-                <form onsubmit="guardarGaleria(event)">
-                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Servicio Asociado:</label><select id="gal-serv-select" class="form-control" style="width:100%;" required><option value="">-- Seleccione Servicio --</option></select></div>
-                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Fecha de Registro:</label><input type="date" id="gal-fecha" class="form-control" style="width:100%;"></div>
-                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">URL / Base64 Foto Frente:</label><input type="text" id="gal-frente" class="form-control" placeholder="assets/img/corte_frente.jpg" style="width:100%;"></div>
-                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">URL / Base64 Foto Lado / Perfil:</label><input type="text" id="gal-lado" class="form-control" placeholder="assets/img/corte_lado.jpg" style="width:100%;"></div>
-                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">URL / Base64 Foto Atrás:</label><input type="text" id="gal-atras" class="form-control" placeholder="assets/img/corte_atras.jpg" style="width:100%;"></div>
-                    <div style="margin-bottom: 1.5rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Descripción del Estilo:</label><textarea id="gal-desc" class="form-control" rows="3" style="width:100%;"></textarea></div>
-                    <button type="submit" style="width:100%;">Guardar en Galería NeonDB</button>
+                <h3><i data-lucide="upload-cloud" style="width:20px; color:#f59e0b;"></i> Subir Fotografías a Subcarpeta</h3>
+                <form onsubmit="guardarGaleriaFisica(event)" id="form-galeria-fisica">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Servicio Asociado:</label>
+                        <select id="gal-serv-select" class="form-control" style="width:100%;" required>
+                            <option value="">-- Seleccione Servicio --</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Fecha de Registro:</label>
+                        <input type="date" id="gal-fecha" class="form-control" style="width:100%;">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Foto Frente (Archivo):</label>
+                        <input type="file" id="gal-frente-file" class="form-control" accept="image/*" style="width:100%;">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Foto Lado / Perfil (Archivo):</label>
+                        <input type="file" id="gal-lado-file" class="form-control" accept="image/*" style="width:100%;">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Foto Atrás / Posterior (Archivo):</label>
+                        <input type="file" id="gal-atras-file" class="form-control" accept="image/*" style="width:100%;">
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Descripción del Estilo:</label>
+                        <textarea id="gal-desc" class="form-control" rows="3" placeholder="Detalles técnicos..." style="width:100%;"></textarea>
+                    </div>
+                    <button type="submit" style="width:100%;">Subir y Registrar Referencia</button>
                 </form>
             </div>
         </div>
@@ -1100,6 +1121,50 @@
                 tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#f87171;">⚠️ ${err.message}</td></tr>`;
             }
         }
+
+        async function guardarGaleriaFisica(event) {
+            event.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('id_servicio', document.getElementById('gal-serv-select').value);
+            formData.append('fecha', document.getElementById('gal-fecha').value);
+            formData.append('descripcion', document.getElementById('gal-desc').value.trim());
+
+            // Capturar los archivos físicos seleccionados por el usuario
+            const fileFrente = document.getElementById('gal-frente-file').files[0];
+            const fileLado   = document.getElementById('gal-lado-file').files[0];
+            const fileAtras  = document.getElementById('gal-atras-file').files[0];
+
+            if (fileFrente) formData.append('doc_frente', fileFrente);
+            if (fileLado)   formData.append('doc_lado', fileLado);
+            if (fileAtras)  formData.append('doc_atras', fileAtras);
+
+            const token = localStorage.getItem('alefdoor_token') || '';
+
+            try {
+                const res = await fetch(`${API}/api/galeria`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                        // Nota: No incluir 'Content-Type' al usar FormData, fetch lo configura automáticamente con el boundary
+                    },
+                    body: formData
+                });
+
+                const data = await res.json().catch(() => ({}));
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Error al subir las imágenes');
+                }
+
+                alert('✅ Archivos guardados exitosamente en la subcarpeta y referenciados en NeonDB.');
+                document.getElementById('form-galeria-fisica').reset();
+
+            } catch (err) {
+                alert(`⚠️ Fallo en la subida: ${err.message}`);
+            }
+        }
+
 
         function renderInformePorHora(rows, mostrarPrecios, fecha) {
             const tbody = document.getElementById('informe-body');
