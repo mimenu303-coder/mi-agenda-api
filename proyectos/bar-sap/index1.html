@@ -17,10 +17,52 @@
     <link rel="stylesheet" href="assets/css/alefdoor-theme.css">
 
     <style>
+        /* ======================================================================
+           ESTILOS BASE DARK-AMBER GLASS (PORTAL ALEFDOOR)
+           ====================================================================== */
+        :root {
+            --bg-void: #070605;
+            --amber-glow: #f59e0b;
+            --amber-bright: #fde68a;
+            --glass-bg: rgba(18, 15, 12, 0.78);
+            --glass-border: rgba(245, 158, 11, 0.25);
+            --text-main: #f8fafc;
+            --text-muted: #a8a29e;
+        }
+
+        body {
+            background-color: var(--bg-void);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+        }
+
         .app-container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 1.5rem;
+        }
+
+        .alef-module-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.85rem 1.25rem;
+            background: rgba(15, 12, 10, 0.65);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-border);
+            border-radius: 999px;
+            margin-bottom: 1.5rem;
+        }
+
+        .alef-module-navbar a {
+            color: #fde68a;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-weight: 500;
+            font-size: 0.9rem;
         }
 
         .nav-tabs {
@@ -77,9 +119,9 @@
         }
 
         .bento-card {
-            background: rgba(18, 15, 12, 0.78);
+            background: var(--glass-bg);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(245, 158, 11, 0.25);
+            border: 1px solid var(--glass-border);
             border-radius: 20px;
             padding: 2rem;
             box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.8);
@@ -93,6 +135,41 @@
             display: flex;
             align-items: center;
             gap: 0.6rem;
+        }
+
+        .form-control {
+            padding: 0.65rem 0.9rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 10px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #f59e0b;
+        }
+
+        button.btn-amber, .bento-card button[type="submit"], .bento-card button:not(.btn-icon) {
+            padding: 0.65rem 1.15rem;
+            border-radius: 10px;
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(180, 83, 9, 0.35));
+            color: #fde68a;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+        }
+
+        button.btn-amber:hover, .bento-card button[type="submit"]:hover, .bento-card button:not(.btn-icon):hover {
+            background: #f59e0b;
+            color: #070605;
         }
 
         .data-table-wrapper {
@@ -118,13 +195,66 @@
         }
 
         table.modern-table td {
-            padding: 0.85rem 1rem;
+            padding: 0.8rem 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             color: #f8fafc;
         }
 
-        table.modern-table tr:hover td {
-            background: rgba(245, 158, 11, 0.08);
+        /* ======================================================================
+           ESTILOS DE PARRILLA DEL INFORME DE AGENDA (PORTADOS DE V6.PY)
+           ====================================================================== */
+        /* Reservadas NO atendidas -> Verde Oliva elegante */
+        tr.fila-reservada-par   { background-color: rgba(74, 93, 35, 0.55); }
+        tr.fila-reservada-impar { background-color: rgba(107, 142, 35, 0.45); }
+
+        /* Reservadas ATENDIDAS -> Naranja Ámbar */
+        tr.fila-atendida-par    { background-color: rgba(210, 105, 30, 0.58); }
+        tr.fila-atendida-impar  { background-color: rgba(245, 158, 11, 0.48); }
+
+        /* Libres / Disponibles -> Neutro translúcido */
+        tr.fila-libre-par       { background-color: rgba(255, 255, 255, 0.02); color: #a8a29e; }
+        tr.fila-libre-impar     { background-color: rgba(255, 255, 255, 0.05); color: #a8a29e; }
+
+        /* Fila "Agendar otra" en bloque ocupado */
+        tr.fila-agendar-otra    { background-color: rgba(34, 197, 94, 0.12); color: #86efac; font-style: italic; }
+
+        /* Encabezado de grupo por Empleado */
+        tr.fila-emp-header      { background-color: rgba(46, 64, 83, 0.85); color: #fde68a; font-weight: 700; }
+
+        tr.fila-interactiva { cursor: pointer; transition: filter 0.2s; }
+        tr.fila-interactiva:hover { filter: brightness(1.22); }
+
+        .check-atendida {
+            font-size: 1.25rem;
+            cursor: pointer;
+            user-select: none;
+            display: inline-block;
+            padding: 0.15rem 0.45rem;
+            border-radius: 6px;
+        }
+        .check-atendida:hover { background: rgba(255,255,255,0.15); }
+
+        /* Modales emergentes (Agendar rápido / Modificar cita) */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.82);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-box {
+            background: #14110e;
+            border: 1px solid #f59e0b;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 560px;
+            width: 100%;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.95);
         }
     </style>
 </head>
@@ -137,32 +267,38 @@
 
     <div class="app-container">
         
-        <!-- Barra de Navegación -->
+        <!-- Barra de Navegación Superior -->
         <nav class="alef-module-navbar">
             <a href="../../index.html"><i data-lucide="arrow-left" style="width:18px;"></i> Volver al Portal AlefDOOR</a>
             <div style="display:flex; align-items:center; gap:0.75rem;">
                 <span style="font-family:'Playfair Display',serif; font-size:1.25rem; color:#fde68a; font-style:italic;">Barbería & Spa</span>
-                <span style="font-size:0.8rem; background:rgba(245, 158, 11, 0.15); border:1px solid rgba(245, 158, 11, 0.3); padding:0.25rem 0.75rem; border-radius:999px; color:#fde68a;">NeonDB PostgreSQL</span>
+                <span id="db-badge-status" style="font-size:0.8rem; background:rgba(245, 158, 11, 0.15); border:1px solid rgba(245, 158, 11, 0.3); padding:0.25rem 0.75rem; border-radius:999px; color:#fde68a;">
+                    ● Conectando a NeonDB...
+                </span>
             </div>
         </nav>
 
         <header style="margin-bottom: 2rem; text-align: center;">
-            <h1 style="font-size: 2.3rem; margin-bottom: 0.5rem;">Sistema Integral de Barbería, Spa y Peluquería</h1>
-            <p style="color: var(--alef-text-muted); font-size: 0.95rem;">Control operativo, agendamiento inteligente, consultas y visor tridimensional de galería.</p>
+            <h1 style="font-family:'Playfair Display',serif; font-size: 2.3rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #fff, #fde68a, #f59e0b); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Sistema Integral de Barbería, Spa y Peluquería
+            </h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Control operativo, agendamiento inteligente, parrilla de informes y visor tridimensional de galería.</p>
         </header>
 
-        <!-- Navegación por Pestañas (Incluye Clientes, Reservas, Informes, Servicios, Empleados, Cargar Galería y Consultas) -->
+        <!-- Navegación por Pestañas -->
         <div class="nav-tabs">
-            <button class="tab-btn active" onclick="cambiarPestaña('clientes', event)"><i data-lucide="users" style="width:16px;"></i> Clientes</button>
-            <button class="tab-btn" onclick="cambiarPestaña('reservas', event)"><i data-lucide="calendar-plus" style="width:16px;"></i> Agendar</button>
-            <button class="tab-btn" onclick="cambiarPestaña('informes', event)"><i data-lucide="clipboard-list" style="width:16px;"></i> Informes</button>
-            <button class="tab-btn" onclick="cambiarPestaña('servicios', event)"><i data-lucide="scissors" style="width:16px;"></i> Servicios</button>
-            <button class="tab-btn" onclick="cambiarPestaña('empleados', event)"><i data-lucide="user-cog" style="width:16px;"></i> Empleados</button>
-            <button class="tab-btn" onclick="cambiarPestaña('cargar-galeria', event)"><i data-lucide="upload-cloud" style="width:16px;"></i> Cargar Galería</button>
-            <button class="tab-btn" onclick="cambiarPestaña('consultas', event)"><i data-lucide="search" style="width:16px;"></i> Consultas y Galería Pro</button>
+            <button class="tab-btn active" onclick="cambiarPestaña('clientes', event)"><i data-lucide="users" style="width:16px;"></i> 1. Clientes</button>
+            <button class="tab-btn" onclick="cambiarPestaña('reservas', event)"><i data-lucide="calendar-plus" style="width:16px;"></i> 2. Agendar Reserva</button>
+            <button class="tab-btn" onclick="cambiarPestaña('informes', event)"><i data-lucide="clipboard-list" style="width:16px;"></i> 3. Informe de Agenda</button>
+            <button class="tab-btn" onclick="cambiarPestaña('servicios', event)"><i data-lucide="scissors" style="width:16px;"></i> 4. Servicios</button>
+            <button class="tab-btn" onclick="cambiarPestaña('cargar-galeria', event)"><i data-lucide="upload-cloud" style="width:16px;"></i> 5. Cargar Galería</button>
+            <button class="tab-btn" onclick="cambiarPestaña('empleados', event)"><i data-lucide="user-cog" style="width:16px;"></i> 6. Empleados</button>
+            <button class="tab-btn" onclick="cambiarPestaña('consultas', event)"><i data-lucide="search" style="width:16px;"></i> 7. Consultas y Galería Pro</button>
         </div>
 
-        <!-- PESTAÑA 1: CLIENTES -->
+        <!-- ==================================================================
+             PESTAÑA 1: CLIENTES
+             ================================================================== -->
         <div id="tab-clientes" class="tab-content active">
             <div class="bento-grid">
                 <div class="bento-card">
@@ -171,7 +307,7 @@
                         <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Nro. Celular:</label><input type="text" id="cli-celular" class="form-control" required style="width:100%;"></div>
                         <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Nombre y Apellido:</label><input type="text" id="cli-nombre" class="form-control" required style="width:100%;"></div>
                         <div style="margin-bottom: 1.5rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Día de Cumpleaños:</label><input type="text" id="cli-cumple" class="form-control" placeholder="Ej: 15 de Mayo" style="width:100%;"></div>
-                        <button type="submit" style="width:100%;">Guardar Cliente</button>
+                        <button type="submit" style="width:100%;">Guardar Cliente en NeonDB</button>
                     </form>
                 </div>
                 <div class="bento-card">
@@ -179,14 +315,16 @@
                     <div class="data-table-wrapper" style="max-height: 320px; overflow-y:auto;">
                         <table class="modern-table">
                             <thead><tr><th>Celular</th><th>Nombre y Apellido</th><th>Cumpleaños</th></tr></thead>
-                            <tbody id="tabla-clientes-body"><tr><td colspan="3" style="text-align:center; color:#a8a29e;">Cargando...</td></tr></tbody>
+                            <tbody id="tabla-clientes-body"><tr><td colspan="3" style="text-align:center; color:#a8a29e;">Cargando desde NeonDB...</td></tr></tbody>
                         </table>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- PESTAÑA 2: AGENDAR RESERVA -->
+        <!-- ==================================================================
+             PESTAÑA 2: AGENDAR RESERVA
+             ================================================================== -->
         <div id="tab-reservas" class="tab-content">
             <div class="bento-card" style="max-width: 900px; margin: 0 auto;">
                 <h3><i data-lucide="calendar" style="width:20px; color:#f59e0b;"></i> Módulo de Agendamiento Inteligente</h3>
@@ -195,11 +333,11 @@
                     <div><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Fecha de Reserva:</label><input type="date" id="res-fecha" class="form-control" style="width:100%;"></div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
-                    <div><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Área:</label><select id="res-area" class="form-control" style="width:100%;" onchange="cargarServiciosPorArea()"><option value="">-- Seleccione Área --</option></select></div>
-                    <div><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Servicio:</label><select id="res-servicio" class="form-control" style="width:100%;"><option value="">-- Seleccione Servicio --</option></select></div>
+                    <div><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Servicio:</label><select id="res-servicio" class="form-control" style="width:100%;" onchange="cargarEmpleadosPorServicioReserva()"><option value="">-- Seleccione Servicio --</option></select></div>
+                    <div><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Empleado Disponible:</label><select id="res-empleado" class="form-control" style="width:100%;"><option value="">-- Seleccione Empleado --</option></select></div>
                     <div><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Hora (HH:MM):</label><input type="time" id="res-hora" class="form-control" value="10:00" style="width:100%;"></div>
                 </div>
-                <button onclick="agregarAlCarrito()" style="width:100%;">Añadir Servicio a la Reserva</button>
+                <button onclick="agregarAlCarrito()" style="width:100%;">Añadir Servicio a la Reserva (Máx. 3 por día)</button>
                 <div style="margin-top: 2rem;">
                     <h4 style="color:#fde68a; margin-bottom: 0.75rem;">Servicios en la Reserva Actual</h4>
                     <div class="data-table-wrapper">
@@ -208,35 +346,77 @@
                             <tbody id="carrito-body"><tr><td colspan="4" style="text-align:center; color:#a8a29e;">No hay servicios en el carrito.</td></tr></tbody>
                         </table>
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-                        <div><label style="font-size: 0.9rem; margin-right: 0.5rem;">Propina ($):</label><input type="number" id="res-propina" value="0.0" class="form-control" style="width: 90px; display:inline-block;"></div>
-                        <button onclick="procesarReserva()" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important; color:#fff !important;">Procesar y Emitir Recibo</button>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap:wrap; gap:1rem;">
+                        <div><label style="font-size: 0.9rem; margin-right: 0.5rem;">Propina ($):</label><input type="number" id="res-propina" value="0.0" step="0.5" class="form-control" style="width: 100px; display:inline-block;"></div>
+                        <button onclick="procesarReserva()" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important; color:#fff !important; border:none;">Procesar Reserva en NeonDB</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- PESTAÑA 3: INFORMES DE AGENDA -->
+        <!-- ==================================================================
+             PESTAÑA 3: INFORME DE AGENDA (PARRILLA COMPLETA DE app_peluqueriaV6.py)
+             ================================================================== -->
         <div id="tab-informes" class="tab-content">
             <div class="bento-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-                    <h3><i data-lucide="clipboard-list" style="width:20px; color:#f59e0b;"></i> Parrilla y Control de Citas</h3>
-                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                <!-- Barra de Filtros y Controles idéntica a app_peluqueriaV6.py -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                    <h3 style="margin-bottom:0;"><i data-lucide="clipboard-list" style="width:20px; color:#f59e0b;"></i> Parrilla General de Citas (08:00 - 20:00)</h3>
+                    
+                    <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap;">
                         <input type="date" id="inf-fecha" class="form-control" onchange="cargarInformeAgenda()">
-                        <button onclick="cargarInformeAgenda()">🔄 Actualizar</button>
+                        <button onclick="cargarInformeAgenda()">🔄 Generar Informe</button>
+                        
+                        <label style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.88rem; cursor:pointer; background:rgba(0,0,0,0.4); padding:0.55rem 0.85rem; border-radius:10px; border:1px solid rgba(255,255,255,0.12);">
+                            <input type="checkbox" id="chk-ver-precios" checked onchange="cargarInformeAgenda()">
+                            <span>Mostrar Precios</span>
+                        </label>
+
+                        <button id="btn-orden-informe" onclick="toggleOrdenInforme()">🔀 Ordenar: Por HORA</button>
+                        <button id="btn-ver-atendidas" onclick="toggleVerAtendidas()">👁 Ver: TODAS las reservas</button>
                     </div>
                 </div>
-                <div class="data-table-wrapper">
+
+                <!-- Leyenda / Ayuda interactiva -->
+                <div style="font-size: 0.82rem; color: #fde68a; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); padding: 0.6rem 1rem; border-radius: 10px; margin-bottom: 1.25rem;">
+                    💡 <strong>Controles:</strong> Clic en <strong>☐ / ☑</strong> para marcar cita ATENDIDA &nbsp;|&nbsp; Doble clic sobre fila <strong>RESERVADA</strong> para eliminar/cambiar estado &nbsp;|&nbsp; Doble clic sobre <strong>[ DISPONIBLE ]</strong> o <strong>[ AGENDAR OTRA ]</strong> para agendar en esa hora.
+                </div>
+
+                <!-- Tabla Parrilla de Citas -->
+                <div class="data-table-wrapper" style="max-height: 540px; overflow-y: auto;">
                     <table class="modern-table">
-                        <thead><tr><th>Atendida</th><th>Horario</th><th>Estado</th><th>Servicio</th><th>Empleado Asignado</th><th>Cliente</th><th>Precio ($)</th></tr></thead>
-                        <tbody id="informe-body"><tr><td colspan="7" style="text-align:center; color:#a8a29e;">Cargando informe...</td></tr></tbody>
+                        <thead>
+                            <tr>
+                                <th style="width:85px; text-align:center;">Atendida</th>
+                                <th style="width:90px; text-align:center;">Horario</th>
+                                <th style="width:170px; text-align:center;">Estado</th>
+                                <th>Nombre del Servicio</th>
+                                <th>Empleado Asignado</th>
+                                <th>Cliente</th>
+                                <th style="width:110px; text-align:right;">Precio ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="informe-body">
+                            <tr><td colspan="7" style="text-align:center; color:#a8a29e;">Cargando parrilla desde NeonDB...</td></tr>
+                        </tbody>
                     </table>
                 </div>
-                <div id="informe-total" style="text-align: right; margin-top: 1rem; font-family:'Playfair Display',serif; font-size:1.2rem; color:#fde68a;">Sumatoria Total: $0.00</div>
+
+                <!-- Pie de Totales y Resumen de Atendidas -->
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <div id="informe-resumen-atendidas" style="font-size: 0.95rem; color: #fb923c; font-weight: 500;">
+                        🟠 Atendidas: 0 / 0 citas | Ingresos por atendidas: $0.00
+                    </div>
+                    <div id="informe-total" style="font-family:'Playfair Display',serif; font-size:1.25rem; color:#4ade80; font-weight:700;">
+                        SUMATORIA TOTAL DE PRECIOS: $0.00
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- PESTAÑA 4: GESTIÓN DE SERVICIOS -->
+        <!-- ==================================================================
+             PESTAÑA 4: GESTIÓN DE SERVICIOS
+             ================================================================== -->
         <div id="tab-servicios" class="tab-content">
             <div class="bento-card" style="max-width: 650px; margin: 0 auto;">
                 <h3><i data-lucide="scissors" style="width:20px; color:#f59e0b;"></i> Registrar Nuevo Servicio</h3>
@@ -251,7 +431,27 @@
             </div>
         </div>
 
-        <!-- PESTAÑA 5: EMPLEADOS Y CARGOS -->
+        <!-- ==================================================================
+             PESTAÑA 5: CARGAR GALERÍA
+             ================================================================== -->
+        <div id="tab-cargar-galeria" class="tab-content">
+            <div class="bento-card" style="max-width: 700px; margin: 0 auto;">
+                <h3><i data-lucide="upload-cloud" style="width:20px; color:#f59e0b;"></i> Asignar Fotografías a Servicio</h3>
+                <form onsubmit="guardarGaleria(event)">
+                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Servicio Asociado:</label><select id="gal-serv-select" class="form-control" style="width:100%;" required><option value="">-- Seleccione Servicio --</option></select></div>
+                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Fecha de Registro:</label><input type="date" id="gal-fecha" class="form-control" style="width:100%;"></div>
+                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">URL / Base64 Foto Frente:</label><input type="text" id="gal-frente" class="form-control" placeholder="assets/img/corte_frente.jpg" style="width:100%;"></div>
+                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">URL / Base64 Foto Lado / Perfil:</label><input type="text" id="gal-lado" class="form-control" placeholder="assets/img/corte_lado.jpg" style="width:100%;"></div>
+                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">URL / Base64 Foto Atrás:</label><input type="text" id="gal-atras" class="form-control" placeholder="assets/img/corte_atras.jpg" style="width:100%;"></div>
+                    <div style="margin-bottom: 1.5rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Descripción del Estilo:</label><textarea id="gal-desc" class="form-control" rows="3" style="width:100%;"></textarea></div>
+                    <button type="submit" style="width:100%;">Guardar en Galería NeonDB</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ==================================================================
+             PESTAÑA 6: EMPLEADOS Y CARGOS
+             ================================================================== -->
         <div id="tab-empleados" class="tab-content">
             <div class="bento-card" style="max-width: 650px; margin: 0 auto;">
                 <h3><i data-lucide="user-cog" style="width:20px; color:#f59e0b;"></i> Registro de Empleado</h3>
@@ -260,57 +460,18 @@
                     <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Nombres:</label><input type="text" id="emp-nombres" class="form-control" required style="width:100%;"></div>
                     <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Apellidos:</label><input type="text" id="emp-apellidos" class="form-control" required style="width:100%;"></div>
                     <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Cargo:</label><select id="emp-cargo" class="form-control" style="width:100%;" required><option value="">-- Seleccione Cargo --</option></select></div>
-                    <div style="margin-bottom: 1.5rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Área Asignada:</label><select id="emp-area" class="form-control" style="width:100%;" required><option value="">-- Seleccione Área --</option></select></div>
+                    <div style="margin-bottom: 1rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Área Asignada:</label><select id="emp-area" class="form-control" style="width:100%;" required><option value="">-- Seleccione Área --</option></select></div>
+                    <div style="margin-bottom: 1.5rem;"><label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Servicios Habilitados (Ctrl+Clic):</label><select id="emp-servicios-multi" multiple class="form-control" style="width:100%; height:110px;"></select></div>
                     <button type="submit" style="width:100%;">Registrar Empleado</button>
                 </form>
             </div>
         </div>
 
         <!-- ==================================================================
-             PESTAÑA 6: CARGAR GALERÍA (NUEVA SECCIÓN)
-             ================================================================== -->
-        <div id="tab-cargar-galeria" class="tab-content">
-            <div class="bento-card" style="max-width: 700px; margin: 0 auto;">
-                <h3><i data-lucide="upload-cloud" style="width:20px; color:#f59e0b;"></i> Asignar Fotografías a Servicio</h3>
-                <form onsubmit="guardarGaleria(event)">
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Servicio Asociado:</label>
-                        <select id="gal-serv-select" class="form-control" style="width:100%;" required>
-                            <option value="">-- Seleccione Servicio --</option>
-                        </select>
-                    </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Fecha de Registro:</label>
-                        <input type="date" id="gal-fecha" class="form-control" style="width:100%;">
-                    </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Ruta / Archivo Foto Frente:</label>
-                        <input type="text" id="gal-frente" class="form-control" placeholder="assets/img/corte_frente.jpg" style="width:100%;">
-                    </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Ruta / Archivo Foto Lado / Perfil:</label>
-                        <input type="text" id="gal-lado" class="form-control" placeholder="assets/img/corte_lado.jpg" style="width:100%;">
-                    </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Ruta / Archivo Foto Atrás / Posterior:</label>
-                        <input type="text" id="gal-atras" class="form-control" placeholder="assets/img/corte_atras.jpg" style="width:100%;">
-                    </div>
-                    <div style="margin-bottom: 1.5rem;">
-                        <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Descripción del Estilo:</label>
-                        <textarea id="gal-desc" class="form-control" rows="3" placeholder="Detalles técnicos del corte o tratamiento..." style="width:100%;"></textarea>
-                    </div>
-                    <button type="submit" style="width:100%;">Guardar en Galería NeonDB</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- ==================================================================
-             PESTAÑA 7: CONSULTAS Y GALERÍA PRO (NUEVA SECCIÓN)
+             PESTAÑA 7: CONSULTAS Y GALERÍA PRO
              ================================================================== -->
         <div id="tab-consultas" class="tab-content">
             <div class="bento-grid" style="grid-template-columns: 1fr; gap: 2rem;">
-                
-                <!-- Sub-sección 1: Consultas de Relación Empleados / Servicios -->
                 <div class="bento-card">
                     <h3><i data-lucide="search" style="width:20px; color:#f59e0b;"></i> Consultas Cruzadas (Empleados y Servicios)</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
@@ -332,181 +493,834 @@
                     <div class="data-table-wrapper">
                         <table class="modern-table">
                             <thead><tr><th>Dato Principal</th><th>Detalle / Estilo / Cargo</th><th>Información Adicional</th></tr></thead>
-                            <tbody id="tabla-resultados-consulta">
-                                <tr><td colspan="3" style="text-align:center; color:#a8a29e;">Realiza una consulta para ver los resultados.</td></tr>
-                            </tbody>
+                            <tbody id="tabla-resultados-consulta"><tr><td colspan="3" style="text-align:center; color:#a8a29e;">Realiza una consulta para ver los resultados.</td></tr></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Sub-sección 2: Visor de Galería Tridimensional -->
                 <div class="bento-card">
-                    <h3><i data-lucide="image" style="width:20px; color:#f59e0b;"></i> Visor Tridimensional del Servicio (Frente, Lado, Atrás)</h3>
+                    <h3><i data-lucide="image" style="width:20px; color:#f59e0b;"></i> Visor Tridimensional del Servicio</h3>
                     <div style="display:flex; gap:1rem; align-items:center; margin-bottom:1.5rem;">
-                        <select id="visor-galeria-serv" class="form-control" style="flex:1;">
-                            <option value="">-- Ver Todos los Servicios --</option>
-                        </select>
+                        <select id="visor-galeria-serv" class="form-control" style="flex:1;"><option value="">-- Ver Todos los Servicios --</option></select>
                         <button onclick="cargarVisorGaleria()">Cargar Galería Pro</button>
                     </div>
-                    <div id="visor-info-header" style="font-family:'Playfair Display',serif; color:#fde68a; font-size:1.1rem; margin-bottom:1rem; text-align:center;">
-                        Selecciona un servicio para explorar sus registros gráficos.
-                    </div>
-                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem; min-height:240px; margin-bottom:1rem;">
-                        <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(245,158,11,0.2); border-radius:14px; padding:1rem; text-align:center;">
-                            <p style="color:#fde68a; font-size:0.85rem; margin-bottom:0.5rem;">1. FRENTE</p>
-                            <div id="visor-frente" style="height:180px; display:flex; align-items:center; justify-content:center; color:#78716c; font-size:0.85rem;">[ Sin Foto ]</div>
-                        </div>
-                        <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(245,158,11,0.2); border-radius:14px; padding:1rem; text-align:center;">
-                            <p style="color:#fde68a; font-size:0.85rem; margin-bottom:0.5rem;">2. LADO / PERFIL</p>
-                            <div id="visor-lado" style="height:180px; display:flex; align-items:center; justify-content:center; color:#78716c; font-size:0.85rem;">[ Sin Foto ]</div>
-                        </div>
-                        <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(245,158,11,0.2); border-radius:14px; padding:1rem; text-align:center;">
-                            <p style="color:#fde68a; font-size:0.85rem; margin-bottom:0.5rem;">3. ATRÁS</p>
-                            <div id="visor-atras" style="height:180px; display:flex; align-items:center; justify-content:center; color:#78716c; font-size:0.85rem;">[ Sin Foto ]</div>
-                        </div>
+                    <div id="visor-info-header" style="font-family:'Playfair Display',serif; color:#fde68a; font-size:1.1rem; margin-bottom:1rem; text-align:center;">Selecciona un servicio para explorar sus registros gráficos.</div>
+                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem; min-height:220px; margin-bottom:1rem;">
+                        <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(245,158,11,0.2); border-radius:14px; padding:1rem; text-align:center;"><p style="color:#fde68a; font-size:0.85rem;">1. FRENTE</p><div id="visor-frente" style="height:160px; display:flex; align-items:center; justify-content:center; color:#78716c;">[ Sin Foto ]</div></div>
+                        <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(245,158,11,0.2); border-radius:14px; padding:1rem; text-align:center;"><p style="color:#fde68a; font-size:0.85rem;">2. LADO / PERFIL</p><div id="visor-lado" style="height:160px; display:flex; align-items:center; justify-content:center; color:#78716c;">[ Sin Foto ]</div></div>
+                        <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(245,158,11,0.2); border-radius:14px; padding:1rem; text-align:center;"><p style="color:#fde68a; font-size:0.85rem;">3. ATRÁS</p><div id="visor-atras" style="height:160px; display:flex; align-items:center; justify-content:center; color:#78716c;">[ Sin Foto ]</div></div>
                     </div>
                     <div id="visor-descripcion" style="text-align:center; color:#d6d3d1; font-size:0.9rem; font-style:italic;"></div>
                 </div>
-
             </div>
         </div>
-
     </div>
 
-    <!-- Script de lógica e interactividad -->
+    <!-- ======================================================================
+         MODAL 1: AGENDAR RÁPIDO DESDE LA PARRILLA DE INFORME
+         ====================================================================== -->
+    <div id="modal-agendar-rapido" class="modal-backdrop">
+        <div class="modal-box">
+            <h3 style="font-family:'Playfair Display',serif; color:#fde68a; margin-top:0;">Agendar Cita Rápida</h3>
+            <p id="modal-agendar-subtitulo" style="color:#a8a29e; font-size:0.9rem; margin-bottom:1.25rem;"></p>
+            <input type="hidden" id="rap-fecha">
+            <input type="hidden" id="rap-hora">
+
+            <div style="margin-bottom:1rem;">
+                <label style="display:block; font-size:0.85rem; margin-bottom:0.35rem;">Cliente:</label>
+                <select id="rap-cliente" class="form-control" style="width:100%;"></select>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <label style="display:block; font-size:0.85rem; margin-bottom:0.35rem;">Servicio:</label>
+                <select id="rap-servicio" class="form-control" style="width:100%;" onchange="cargarEmpleadosModalRapido()"></select>
+            </div>
+            <div style="margin-bottom:1.5rem;">
+                <label style="display:block; font-size:0.85rem; margin-bottom:0.35rem;">Empleado Asignado:</label>
+                <select id="rap-empleado" class="form-control" style="width:100%;"></select>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+                <button class="btn-amber" onclick="cerrarModal('modal-agendar-rapido')" style="background:transparent;">Cancelar</button>
+                <button class="btn-amber" onclick="confirmarAgendamientoRapido()">Confirmar Reserva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================
+         MODAL 2: GESTIONAR / ELIMINAR CITA RESERVADA (DOBLE CLIC)
+         ====================================================================== -->
+    <div id="modal-gestionar-cita" class="modal-backdrop">
+        <div class="modal-box">
+            <h3 style="font-family:'Playfair Display',serif; color:#fde68a; margin-top:0;">Gestionar Cita Agendada</h3>
+            <div id="modal-cita-detalle" style="background:rgba(0,0,0,0.45); padding:1rem; border-radius:12px; border:1px solid rgba(255,255,255,0.1); margin-bottom:1.5rem; line-height:1.6; font-size:0.92rem;"></div>
+            <input type="hidden" id="gest-id-ser-agen">
+
+            <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
+                <button class="btn-amber" onclick="eliminarCitaDesdeModal()" style="background:rgba(220, 38, 38, 0.25); border-color:#ef4444; color:#fca5a5;">🗑️ Eliminar Cita</button>
+                <div style="display:flex; gap:0.65rem;">
+                    <button class="btn-amber" onclick="cerrarModal('modal-gestionar-cita')" style="background:transparent;">Cerrar</button>
+                    <button class="btn-amber" onclick="alternarAtendidaDesdeModal()">☑ Alternar Atendida</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================
+         LÓGICA JAVASCRIPT CONECTADA AL BACKEND FLASK + NEONDB POSTGRESQL
+         ====================================================================== -->
     <script>
         lucide.createIcons();
-        let carritoReserva = [];
 
+        // ----------------------------------------------------------------------
+        // CONFIGURACIÓN DE CONEXIÓN AL BACKEND (RENDER / LOCAL)
+        // ----------------------------------------------------------------------
+        // Si se sirve desde Flask (Render o localhost:5000), API = '' usa el mismo origen.
+        // Si abres el HTML localmente fuera de Flask, apunta a tu URL de Render:
+        const RENDER_BACKEND_URL = 'https://alefdoor.onrender.com'; // Ajusta si tu subdominio en Render es distinto
+        const API = (window.location.protocol === 'file:' || window.location.port === '5500')
+            ? RENDER_BACKEND_URL
+            : '';
+
+        // Token de sesión obtenido en el login del portal AlefDOOR
+        function getAuthHeaders() {
+            const token = localStorage.getItem('alefdoor_token') || '';
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            };
+        }
+
+        // Estado global del módulo
+        let catalogoServicios = [];
+        let catalogoClientes  = [];
+        let catalogoEmpleados = [];
+        let carritoReserva    = [];
+        let ordenInforme      = 'HORA';     // 'HORA' o 'EMPLEADO'
+        let verSoloAtendidas  = false;      // Filtro de atendidas
+
+        // ----------------------------------------------------------------------
+        // NAVEGACIÓN ENTRE PESTAÑAS
+        // ----------------------------------------------------------------------
         function cambiarPestaña(nombreTab, event) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            
+
             document.getElementById(`tab-${nombreTab}`).classList.add('active');
             if (event && event.currentTarget) {
                 event.currentTarget.classList.add('active');
             }
-        }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const hoy = new Date().toISOString().split('T')[0];
-            if(document.getElementById('res-fecha')) document.getElementById('res-fecha').value = hoy;
-            if(document.getElementById('inf-fecha')) {
-                document.getElementById('inf-fecha').value = hoy;
+            // Refrescar datos en vivo al entrar a Informes
+            if (nombreTab === 'informes') {
                 cargarInformeAgenda();
             }
-            if(document.getElementById('gal-fecha')) document.getElementById('gal-fecha').value = hoy;
+        }
 
-            cargarCatalogosSimulados();
-        });
-
-        function cargarCatalogosSimulados() {
-            const serviciosMock = [
-                { id: 1, nombre: "Corte Ejecutivo Degradado" },
-                { id: 2, nombre: "Perfilado de Barba" },
-                { id: 3, nombre: "Peinado y Brushing Damas" }
-            ];
-
-            const empleadosMock = [
-                { id: 1, nombre: "Carlos Mendoza" },
-                { id: 2, nombre: "Ricardo Valera" }
-            ];
-
-            // Poblar selects de servicios
-            ['res-servicio', 'serv-area', 'gal-serv-select', 'cons-serv', 'visor-galeria-serv'].forEach(id => {
+        // ----------------------------------------------------------------------
+        // INICIALIZACIÓN Y VERIFICACIÓN DE CONEXIÓN CON NEONDB
+        // ----------------------------------------------------------------------
+        window.addEventListener('DOMContentLoaded', async () => {
+            const hoy = new Date().toISOString().split('T')[0];
+            ['res-fecha', 'inf-fecha', 'gal-fecha'].forEach(id => {
                 const el = document.getElementById(id);
-                if(el && id !== 'serv-area') {
-                    serviciosMock.forEach(s => {
-                        const opt = document.createElement('option');
-                        opt.value = s.id;
-                        opt.textContent = s.nombre;
-                        el.appendChild(opt);
-                    });
-                }
+                if (el) el.value = hoy;
             });
 
-            // Poblar select de empleados
-            const selEmp = document.getElementById('cons-emp');
-            if(selEmp) {
-                empleadosMock.forEach(e => {
-                    const opt = document.createElement('option');
-                    opt.value = e.id;
-                    opt.textContent = e.nombre;
-                    selEmp.appendChild(opt);
-                });
+            await verificarSaludNeonDB();
+            await cargarCatalogosDesdeNeon();
+            await cargarInformeAgenda();
+        });
+
+        async function verificarSaludNeonDB() {
+            const badge = document.getElementById('db-badge-status');
+            try {
+                const res = await fetch(`${API}/api/health`);
+                const data = await res.json();
+                if (res.ok && data.status === 'ok') {
+                    badge.innerHTML = '● NeonDB PostgreSQL Conectado';
+                    badge.style.color = '#4ade80';
+                    badge.style.borderColor = 'rgba(74, 222, 128, 0.4)';
+                } else {
+                    badge.innerHTML = '⚠️ Error BD Neon';
+                    badge.style.color = '#f87171';
+                }
+            } catch (err) {
+                badge.innerHTML = '⚠️ Sin conexión al Backend';
+                badge.style.color = '#f87171';
             }
         }
 
-        function registrarCliente(event) {
+        async function cargarCatalogosDesdeNeon() {
+            try {
+                // 1. Clientes
+                const rCli = await fetch(`${API}/api/clientes`, { headers: getAuthHeaders() });
+                if (rCli.ok) {
+                    catalogoClientes = await rCli.json();
+                    renderTablaClientes();
+                    poblarSelectClientes();
+                }
+
+                // 2. Servicios
+                const rServ = await fetch(`${API}/api/servicios`, { headers: getAuthHeaders() });
+                if (rServ.ok) {
+                    catalogoServicios = await rServ.json();
+                    poblarSelectServicios();
+                }
+
+                // 3. Áreas y Cargos
+                const [rAreas, rCargos] = await Promise.all([
+                    fetch(`${API}/api/areas`, { headers: getAuthHeaders() }),
+                    fetch(`${API}/api/cargos`, { headers: getAuthHeaders() })
+                ]);
+                if (rAreas.ok) {
+                    const areas = await rAreas.json();
+                    ['serv-area', 'emp-area'].forEach(id => {
+                        const sel = document.getElementById(id);
+                        if (!sel) return;
+                        sel.innerHTML = '<option value="">-- Seleccione Área --</option>';
+                        areas.forEach(a => {
+                            sel.innerHTML += `<option value="${a.id_area}">${a.nom_area} — ${a.nom_departamento}</option>`;
+                        });
+                    });
+                }
+                if (rCargos.ok) {
+                    const cargos = await rCargos.json();
+                    const selC = document.getElementById('emp-cargo');
+                    if (selC) {
+                        selC.innerHTML = '<option value="">-- Seleccione Cargo --</option>';
+                        cargos.forEach(c => {
+                            selC.innerHTML += `<option value="${c.id_cargo}">${c.nomb_cargo}</option>`;
+                        });
+                    }
+                }
+
+                // 4. Empleados
+                const rEmp = await fetch(`${API}/api/empleados`, { headers: getAuthHeaders() });
+                if (rEmp.ok) {
+                    catalogoEmpleados = await rEmp.json();
+                    const selEmp = document.getElementById('cons-emp');
+                    if (selEmp) {
+                        selEmp.innerHTML = '<option value="">-- Seleccione Empleado --</option>';
+                        catalogoEmpleados.forEach(e => {
+                            selEmp.innerHTML += `<option value="${e.id_empleado}">${e.nombres} ${e.apellidos} (C.I: ${e.cedula})</option>`;
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error("Error cargando catálogos:", e);
+            }
+        }
+
+        function renderTablaClientes() {
+            const tbody = document.getElementById('tabla-clientes-body');
+            if (!catalogoClientes.length) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#a8a29e;">No hay clientes registrados.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = catalogoClientes.map(c => `
+                <tr>
+                    <td>${c.nro_celular}</td>
+                    <td>${c.nombre_apellido}</td>
+                    <td>${c.dia_cumpleanos || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function poblarSelectClientes() {
+            ['res-cliente', 'rap-cliente'].forEach(id => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                sel.innerHTML = '<option value="">-- Seleccione Cliente --</option>';
+                catalogoClientes.forEach(c => {
+                    sel.innerHTML += `<option value="${c.id_cliente}">${c.nombre_apellido} - Cel: ${c.nro_celular}</option>`;
+                });
+            });
+        }
+
+        function poblarSelectServicios() {
+            ['res-servicio', 'gal-serv-select', 'cons-serv', 'visor-galeria-serv', 'rap-servicio', 'emp-servicios-multi'].forEach(id => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                if (id !== 'emp-servicios-multi') {
+                    sel.innerHTML = id === 'visor-galeria-serv'
+                        ? '<option value="">-- Ver Todos los Servicios --</option>'
+                        : '<option value="">-- Seleccione Servicio --</option>';
+                } else {
+                    sel.innerHTML = '';
+                }
+                catalogoServicios.forEach(s => {
+                    sel.innerHTML += `<option value="${s.id_servicio}">${s.nom_servicio} [${s.estilo || 'Estándar'}] - $${Number(s.precio).toFixed(2)}</option>`;
+                });
+            });
+        }
+
+        // ----------------------------------------------------------------------
+        // PESTAÑA 3: INFORME DE AGENDA (LÓGICA COMPLETA PORTADA DE V6.PY)
+        // ----------------------------------------------------------------------
+        function toggleOrdenInforme() {
+            ordenInforme = (ordenInforme === 'HORA') ? 'EMPLEADO' : 'HORA';
+            document.getElementById('btn-orden-informe').textContent = `🔀 Ordenar: Por ${ordenInforme}`;
+            cargarInformeAgenda();
+        }
+
+        function toggleVerAtendidas() {
+            verSoloAtendidas = !verSoloAtendidas;
+            document.getElementById('btn-ver-atendidas').textContent = verSoloAtendidas
+                ? '👁 Ver: SOLO ATENDIDAS 🟠'
+                : '👁 Ver: TODAS las reservas';
+            cargarInformeAgenda();
+        }
+
+        async function cargarInformeAgenda() {
+            const fecha = document.getElementById('inf-fecha').value;
+            const tbody = document.getElementById('informe-body');
+            if (!fecha) return;
+
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#fde68a;">Consultando citas en NeonDB...</td></tr>';
+
+            try {
+                const res = await fetch(`${API}/api/agenda?fecha=${encodeURIComponent(fecha)}`, {
+                    headers: getAuthHeaders()
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || 'Error al obtener agenda (verifica tu sesión)');
+                }
+
+                let rows = await res.json();
+
+                // Sumatoria total del día antes del filtro visual
+                const totalSumaDia = rows.reduce((acc, r) => acc + parseFloat(r.precio || 0), 0);
+
+                // Filtro "Ver solo atendidas"
+                if (verSoloAtendidas) {
+                    rows = rows.filter(r => (r.atendido || 'NO') === 'SI');
+                }
+
+                const mostrarPrecios = document.getElementById('chk-ver-precios').checked;
+
+                if (ordenInforme === 'HORA') {
+                    renderInformePorHora(rows, mostrarPrecios, fecha);
+                } else {
+                    renderInformePorEmpleado(rows, mostrarPrecios);
+                }
+
+                // Totales y resumen de atendidas
+                const totalAtendidas = rows.filter(r => (r.atendido || 'NO') === 'SI').length;
+                const sumaAtendidas  = rows
+                    .filter(r => (r.atendido || 'NO') === 'SI')
+                    .reduce((acc, r) => acc + parseFloat(r.precio || 0), 0);
+
+                document.getElementById('informe-total').textContent = mostrarPrecios
+                    ? `SUMATORIA TOTAL DE PRECIOS (${fecha}): $${totalSumaDia.toFixed(2)}`
+                    : 'SUMATORIA TOTAL DE PRECIOS: [OCULTO POR VERIFICACIÓN]';
+
+                document.getElementById('informe-resumen-atendidas').textContent = rows.length > 0
+                    ? `🟠 Atendidas: ${totalAtendidas} / ${rows.length} citas   |   Ingresos por atendidas: $${sumaAtendidas.toFixed(2)}`
+                    : '🟠 Sin citas registradas para los filtros actuales.';
+
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#f87171;">⚠️ ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderInformePorHora(rows, mostrarPrecios, fecha) {
+            const tbody = document.getElementById('informe-body');
+            tbody.innerHTML = '';
+
+            // Agrupar citas por hora exacta
+            const citasPorHora = {};
+            rows.forEach(r => {
+                if (!citasPorHora[r.hora]) citasPorHora[r.hora] = [];
+                citasPorHora[r.hora].push(r);
+            });
+
+            // Bloques de jornada 08:00 a 20:00 (igual que en app_peluqueriaV6.py)
+            const bloques = [];
+            for (let h = 8; h <= 20; h++) {
+                bloques.push(`${String(h).padStart(2, '0')}:00`);
+            }
+
+            let resCounter = 0;
+            let libreCounter = 0;
+
+            bloques.forEach(hora => {
+                const citas = citasPorHora[hora] || [];
+
+                if (citas.length > 0) {
+                    citas.forEach((c, idx) => {
+                        const atendido  = (c.atendido || 'NO') === 'SI';
+                        const precioTxt = mostrarPrecios ? `$${parseFloat(c.precio).toFixed(2)}` : '******';
+                        const horaTxt   = (idx === 0) ? `<strong>${hora}</strong>` : '';
+                        const estadoTxt = citas.length > 1 ? `RESERVADO (${idx + 1}/${citas.length})` : 'RESERVADO';
+
+                        const claseFila = atendido
+                            ? (resCounter % 2 === 0 ? 'fila-atendida-par' : 'fila-atendida-impar')
+                            : (resCounter % 2 === 0 ? 'fila-reservada-par' : 'fila-reservada-impar');
+                        resCounter++;
+
+                        const tr = document.createElement('tr');
+                        tr.className = `${claseFila} fila-interactiva`;
+                        tr.ondblclick = () => abrirModalGestionCita(c);
+
+                        tr.innerHTML = `
+                            <td style="text-align:center;" onclick="event.stopPropagation(); toggleAtendida(${c.id_ser_agen})">
+                                <span class="check-atendida" title="Clic para marcar como Atendida">${atendido ? '☑' : '☐'}</span>
+                            </td>
+                            <td style="text-align:center;">${horaTxt}</td>
+                            <td style="text-align:center; font-weight:600;">${estadoTxt}</td>
+                            <td>${c.nom_servicio}</td>
+                            <td>${c.empleado}</td>
+                            <td>${c.cliente}</td>
+                            <td style="text-align:right; font-weight:600;">${precioTxt}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    // Fila adicional "↳ [ AGENDAR OTRA ]" en esa misma hora
+                    const trOtra = document.createElement('tr');
+                    trOtra.className = 'fila-agendar-otra fila-interactiva';
+                    trOtra.ondblclick = () => abrirModalAgendarRapido(fecha, hora);
+                    trOtra.innerHTML = `
+                        <td></td>
+                        <td></td>
+                        <td style="text-align:center;">↳ [ AGENDAR OTRA ]</td>
+                        <td>------------------</td>
+                        <td>------------------</td>
+                        <td>------------------</td>
+                        <td style="text-align:right;">${mostrarPrecios ? '$0.00' : '******'}</td>
+                    `;
+                    tbody.appendChild(trOtra);
+
+                } else {
+                    const claseLibre = (libreCounter % 2 === 0) ? 'fila-libre-par' : 'fila-libre-impar';
+                    libreCounter++;
+
+                    const trLibre = document.createElement('tr');
+                    trLibre.className = `${claseLibre} fila-interactiva`;
+                    trLibre.ondblclick = () => abrirModalAgendarRapido(fecha, hora);
+                    trLibre.innerHTML = `
+                        <td></td>
+                        <td style="text-align:center;">${hora}</td>
+                        <td style="text-align:center;">[ DISPONIBLE ]</td>
+                        <td>------------------</td>
+                        <td>------------------</td>
+                        <td>------------------</td>
+                        <td style="text-align:right;">${mostrarPrecios ? '$0.00' : '******'}</td>
+                    `;
+                    tbody.appendChild(trLibre);
+                }
+            });
+        }
+
+        function renderInformePorEmpleado(rows, mostrarPrecios) {
+            const tbody = document.getElementById('informe-body');
+            tbody.innerHTML = '';
+
+            if (!rows.length) {
+                tbody.innerHTML = `
+                    <tr class="fila-libre-par">
+                        <td style="text-align:center;">--</td>
+                        <td style="text-align:center;">--</td>
+                        <td style="text-align:center;">SIN CITAS PARA ESTA FECHA</td>
+                        <td>------------------</td>
+                        <td>------------------</td>
+                        <td>------------------</td>
+                        <td style="text-align:right;">--</td>
+                    </tr>`;
+                return;
+            }
+
+            const porEmpleado = {};
+            rows.forEach(r => {
+                if (!porEmpleado[r.empleado]) porEmpleado[r.empleado] = [];
+                porEmpleado[r.empleado].push(r);
+            });
+
+            Object.keys(porEmpleado).sort().forEach(empNombre => {
+                const citas = porEmpleado[empNombre].sort((a, b) => a.hora.localeCompare(b.hora));
+                const atendidasCount = citas.filter(c => (c.atendido || 'NO') === 'SI').length;
+
+                // Encabezado del Empleado
+                const trHdr = document.createElement('tr');
+                trHdr.className = 'fila-emp-header';
+                trHdr.innerHTML = `
+                    <td colspan="2">👤 ${empNombre}</td>
+                    <td style="text-align:center;">${citas.length} cita(s) - ${atendidasCount} atendida(s)</td>
+                    <td colspan="4"></td>
+                `;
+                tbody.appendChild(trHdr);
+
+                citas.forEach((c, idx) => {
+                    const atendido  = (c.atendido || 'NO') === 'SI';
+                    const precioTxt = mostrarPrecios ? `$${parseFloat(c.precio).toFixed(2)}` : '******';
+                    const claseFila = atendido
+                        ? (idx % 2 === 0 ? 'fila-atendida-par' : 'fila-atendida-impar')
+                        : (idx % 2 === 0 ? 'fila-reservada-par' : 'fila-reservada-impar');
+
+                    const tr = document.createElement('tr');
+                    tr.className = `${claseFila} fila-interactiva`;
+                    tr.ondblclick = () => abrirModalGestionCita(c);
+
+                    tr.innerHTML = `
+                        <td style="text-align:center;" onclick="event.stopPropagation(); toggleAtendida(${c.id_ser_agen})">
+                            <span class="check-atendida">${atendido ? '☑' : '☐'}</span>
+                        </td>
+                        <td style="text-align:center;">${c.hora}</td>
+                        <td style="text-align:center;">RESERVADO</td>
+                        <td>${c.nom_servicio}</td>
+                        <td></td>
+                        <td>${c.cliente}</td>
+                        <td style="text-align:right;">${precioTxt}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+
+        // Alternar estado ATENDIDO en NeonDB (PUT /api/agenda/<id>/atendida)
+        async function toggleAtendida(idSerAgen) {
+            try {
+                const res = await fetch(`${API}/api/agenda/${idSerAgen}/atendida`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders()
+                });
+                if (!res.ok) throw new Error('No se pudo actualizar el estado');
+                await cargarInformeAgenda();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        // ----------------------------------------------------------------------
+        // MODALES INTERACTIVOS DESDE EL INFORME DE AGENDA
+        // ----------------------------------------------------------------------
+        function cerrarModal(idModal) {
+            document.getElementById(idModal).classList.remove('open');
+        }
+
+        function abrirModalAgendarRapido(fecha, hora) {
+            document.getElementById('rap-fecha').value = fecha;
+            document.getElementById('rap-hora').value  = hora;
+            document.getElementById('modal-agendar-subtitulo').textContent = `📅 Fecha: ${fecha}   |   🕒 Hora: ${hora}`;
+            document.getElementById('rap-empleado').innerHTML = '<option value="">-- Primero seleccione servicio --</option>';
+            document.getElementById('modal-agendar-rapido').classList.add('open');
+        }
+
+        async function cargarEmpleadosModalRapido() {
+            const idServ = document.getElementById('rap-servicio').value;
+            const selEmp = document.getElementById('rap-empleado');
+            if (!idServ) return;
+
+            const res = await fetch(`${API}/api/consultas/empleados-por-servicio/${idServ}`, {
+                headers: getAuthHeaders()
+            });
+            if (res.ok) {
+                const emps = await res.json();
+                selEmp.innerHTML = emps.length
+                    ? emps.map(e => `<option value="${e.id_empleado}">${e.nombre} (${e.cargo || 'Especialista'})</option>`).join('')
+                    : '<option value="">-- Sin empleados habilitados --</option>';
+            }
+        }
+
+        async function confirmarAgendamientoRapido() {
+            const idCliente  = document.getElementById('rap-cliente').value;
+            const idServicio = document.getElementById('rap-servicio').value;
+            const idEmpleado = document.getElementById('rap-empleado').value;
+            const fecha      = document.getElementById('rap-fecha').value;
+            const hora       = document.getElementById('rap-hora').value;
+
+            if (!idCliente || !idServicio || !idEmpleado) {
+                alert('Por favor selecciona cliente, servicio y empleado.');
+                return;
+            }
+
+            const servObj = catalogoServicios.find(s => String(s.id_servicio) === String(idServicio));
+            const precio  = servObj ? parseFloat(servObj.precio) : 0;
+
+            const res = await fetch(`${API}/api/reservas`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({
+                    id_cliente: parseInt(idCliente),
+                    fecha_reserva: fecha,
+                    propina: 0,
+                    items: [{
+                        id_servicio: parseInt(idServicio),
+                        id_empleado: parseInt(idEmpleado),
+                        hora: hora,
+                        precio: precio
+                    }]
+                })
+            });
+
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                alert(`⚠️ Error al agendar: ${data.error || 'Conflicto de horario'}`);
+                return;
+            }
+
+            cerrarModal('modal-agendar-rapido');
+            await cargarInformeAgenda();
+        }
+
+        function abrirModalGestionCita(cita) {
+            document.getElementById('gest-id-ser-agen').value = cita.id_ser_agen;
+            document.getElementById('modal-cita-detalle').innerHTML = `
+                <div><strong>Cliente:</strong> ${cita.cliente}</div>
+                <div><strong>Servicio:</strong> ${cita.nom_servicio}</div>
+                <div><strong>Empleado:</strong> ${cita.empleado}</div>
+                <div><strong>Hora:</strong> ${cita.hora} &nbsp;|&nbsp; <strong>Precio:</strong> $${parseFloat(cita.precio).toFixed(2)}</div>
+                <div><strong>Estado Actual:</strong> ${cita.atendido === 'SI' ? '🟠 ATENDIDA' : '🟢 RESERVADA (Pendiente)'}</div>
+            `;
+            document.getElementById('modal-gestionar-cita').classList.add('open');
+        }
+
+        async function alternarAtendidaDesdeModal() {
+            const idSa = document.getElementById('gest-id-ser-agen').value;
+            cerrarModal('modal-gestionar-cita');
+            await toggleAtendida(idSa);
+        }
+
+        async function eliminarCitaDesdeModal() {
+            const idSa = document.getElementById('gest-id-ser-agen').value;
+            if (!confirm('¿Deseas eliminar definitivamente esta cita de NeonDB?')) return;
+
+            const res = await fetch(`${API}/api/agenda/${idSa}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+            if (res.ok) {
+                cerrarModal('modal-gestionar-cita');
+                await cargarInformeAgenda();
+            } else {
+                alert('No se pudo eliminar la cita.');
+            }
+        }
+
+        // ----------------------------------------------------------------------
+        // OPERACIONES CRUD CONECTADAS A NEONDB (CLIENTES, RESERVAS, SERVICIOS, ETC.)
+        // ----------------------------------------------------------------------
+        async function registrarCliente(event) {
             event.preventDefault();
-            alert("Cliente guardado en NeonDB.");
-            document.getElementById('cli-celular').value = '';
-            document.getElementById('cli-nombre').value = '';
-            document.getElementById('cli-cumple').value = '';
+            const res = await fetch(`${API}/api/clientes`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({
+                    nro_celular: document.getElementById('cli-celular').value.trim(),
+                    nombre_apellido: document.getElementById('cli-nombre').value.trim(),
+                    dia_cumpleanos: document.getElementById('cli-cumple').value.trim()
+                })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                alert(data.error || 'Error al registrar cliente');
+                return;
+            }
+            alert('✅ Cliente guardado en NeonDB.');
+            event.target.reset();
+            await cargarCatalogosDesdeNeon();
+        }
+
+        async function cargarEmpleadosPorServicioReserva() {
+            const idServ = document.getElementById('res-servicio').value;
+            const selEmp = document.getElementById('res-empleado');
+            if (!idServ) return;
+
+            const res = await fetch(`${API}/api/consultas/empleados-por-servicio/${idServ}`, {
+                headers: getAuthHeaders()
+            });
+            if (res.ok) {
+                const emps = await res.json();
+                selEmp.innerHTML = emps.length
+                    ? emps.map(e => `<option value="${e.id_empleado}">${e.nombre}</option>`).join('')
+                    : '<option value="">-- Ningún empleado asignado a este servicio --</option>';
+            }
         }
 
         function agregarAlCarrito() {
-            carritoReserva.push({ hora: "10:00", nombreServicio: "Corte Ejecutivo Degradado", empleado: "Carlos Mendoza", precio: 15.00 });
+            if (carritoReserva.length >= 3) {
+                alert('Máximo 3 servicios por reserva y día.');
+                return;
+            }
+            const selServ = document.getElementById('res-servicio');
+            const selEmp  = document.getElementById('res-empleado');
+            const hora    = document.getElementById('res-hora').value;
+
+            if (!selServ.value || !selEmp.value || !hora) {
+                alert('Selecciona servicio, empleado y hora.');
+                return;
+            }
+
+            const servObj = catalogoServicios.find(s => String(s.id_servicio) === String(selServ.value));
+            carritoReserva.push({
+                id_servicio: parseInt(selServ.value),
+                nombreServicio: servObj ? servObj.nom_servicio : selServ.options[selServ.selectedIndex].text,
+                id_empleado: parseInt(selEmp.value),
+                empleado: selEmp.options[selEmp.selectedIndex].text,
+                hora: hora,
+                precio: servObj ? parseFloat(servObj.precio) : 0
+            });
             actualizarVistaCarrito();
         }
 
         function actualizarVistaCarrito() {
             const tbody = document.getElementById('carrito-body');
-            tbody.innerHTML = '';
-            carritoReserva.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${item.hora}</td><td>${item.nombreServicio}</td><td>${item.empleado}</td><td>$${item.precio.toFixed(2)}</td>`;
-                tbody.appendChild(tr);
-            });
+            if (!carritoReserva.length) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#a8a29e;">No hay servicios en el carrito.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = carritoReserva.map(item => `
+                <tr>
+                    <td>${item.hora}</td>
+                    <td>${item.nombreServicio}</td>
+                    <td>${item.empleado}</td>
+                    <td>$${item.precio.toFixed(2)}</td>
+                </tr>
+            `).join('');
         }
 
-        function procesarReserva() {
-            alert("Reserva procesada exitosamente en NeonDB.");
+        async function procesarReserva() {
+            const idCliente = document.getElementById('res-cliente').value;
+            const fecha     = document.getElementById('res-fecha').value;
+            const propina   = parseFloat(document.getElementById('res-propina').value || 0);
+
+            if (!idCliente || !fecha || !carritoReserva.length) {
+                alert('Selecciona un cliente, fecha y añade al menos un servicio.');
+                return;
+            }
+
+            const res = await fetch(`${API}/api/reservas`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({
+                    id_cliente: parseInt(idCliente),
+                    fecha_reserva: fecha,
+                    propina: propina,
+                    items: carritoReserva
+                })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                alert(`⚠️ Error: ${data.error || 'No se pudo procesar la reserva'}`);
+                return;
+            }
+
+            alert(`✅ Reserva #${data.id_agenda} procesada en NeonDB. Total: $${Number(data.total).toFixed(2)}`);
             carritoReserva = [];
             actualizarVistaCarrito();
+            document.getElementById('inf-fecha').value = fecha;
             cambiarPestaña('informes');
-            cargarInformeAgenda();
         }
 
-        function cargarInformeAgenda() {
-            const tbody = document.getElementById('informe-body');
-            tbody.innerHTML = `
-                <tr><td style="text-align:center;"><span style="color:#4ade80;">☑ Atendida</span></td><td>09:00</td><td>RESERVADO</td><td>Corte Ejecutivo Degradado</td><td>Carlos Mendoza</td><td>Soraida Suárez</td><td>$15.00</td></tr>
-            `;
-            document.getElementById('informe-total').textContent = "Sumatoria Total: $15.00";
-        }
-
-        function registrarServicio(event) {
+        async function registrarServicio(event) {
             event.preventDefault();
-            alert("Servicio registrado en NeonDB.");
+            const res = await fetch(`${API}/api/servicios`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({
+                    id_area: parseInt(document.getElementById('serv-area').value),
+                    nom_servicio: document.getElementById('serv-nombre').value.trim(),
+                    estilo: document.getElementById('serv-estilo').value.trim(),
+                    precio: parseFloat(document.getElementById('serv-precio').value),
+                    tiempo_max: document.getElementById('serv-tiempo').value.trim()
+                })
+            });
+            if (res.ok) {
+                alert('✅ Servicio registrado en NeonDB.');
+                event.target.reset();
+                await cargarCatalogosDesdeNeon();
+            } else {
+                alert('Error al guardar el servicio.');
+            }
         }
 
-        function registrarEmpleado(event) {
+        async function registrarEmpleado(event) {
             event.preventDefault();
-            alert("Empleado registrado en NeonDB.");
+            const multi = document.getElementById('emp-servicios-multi');
+            const serviciosSel = Array.from(multi.selectedOptions).map(o => parseInt(o.value));
+
+            const res = await fetch(`${API}/api/empleados`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({
+                    cedula: document.getElementById('emp-cedula').value.trim(),
+                    nombres: document.getElementById('emp-nombres').value.trim(),
+                    apellidos: document.getElementById('emp-apellidos').value.trim(),
+                    id_cargo: parseInt(document.getElementById('emp-cargo').value),
+                    id_area: parseInt(document.getElementById('emp-area').value),
+                    servicios: serviciosSel
+                })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) {
+                alert('✅ Empleado registrado en NeonDB.');
+                event.target.reset();
+                await cargarCatalogosDesdeNeon();
+            } else {
+                alert(data.error || 'Error al registrar empleado.');
+            }
         }
 
-        function guardarGaleria(event) {
+        async function guardarGaleria(event) {
             event.preventDefault();
-            alert("Fotografías de galería guardadas exitosamente en la base de datos.");
+            const res = await fetch(`${API}/api/galeria`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({
+                    id_servicio: parseInt(document.getElementById('gal-serv-select').value),
+                    fecha: document.getElementById('gal-fecha').value,
+                    doc_frente: document.getElementById('gal-frente').value.trim(),
+                    doc_lado: document.getElementById('gal-lado').value.trim(),
+                    doc_atras: document.getElementById('gal-atras').value.trim(),
+                    descripcion: document.getElementById('gal-desc').value.trim()
+                })
+            });
+            if (res.ok) {
+                alert('✅ Fotografías guardadas en NeonDB.');
+                event.target.reset();
+            } else {
+                alert('Error al guardar galería.');
+            }
         }
 
-        function consultarEmpleadosPorServicio() {
+        async function consultarEmpleadosPorServicio() {
+            const idServ = document.getElementById('cons-serv').value;
+            if (!idServ) return;
+            const res = await fetch(`${API}/api/consultas/empleados-por-servicio/${idServ}`, { headers: getAuthHeaders() });
+            const datos = await res.json();
             const tbody = document.getElementById('tabla-resultados-consulta');
-            tbody.innerHTML = `<tr><td>Carlos Mendoza</td><td>BARBERO(A)</td><td>C.I: 12345678</td></tr>`;
+            tbody.innerHTML = datos.length
+                ? datos.map(d => `<tr><td>${d.nombre}</td><td>${d.cargo || 'Sin Cargo'}</td><td>C.I: ${d.cedula}</td></tr>`).join('')
+                : '<tr><td colspan="3" style="text-align:center;">Sin empleados asignados.</td></tr>';
         }
 
-        function consultarServiciosPorEmpleado() {
+        async function consultarServiciosPorEmpleado() {
+            const idEmp = document.getElementById('cons-emp').value;
+            if (!idEmp) return;
+            const res = await fetch(`${API}/api/consultas/servicios-por-empleado/${idEmp}`, { headers: getAuthHeaders() });
+            const datos = await res.json();
             const tbody = document.getElementById('tabla-resultados-consulta');
-            tbody.innerHTML = `<tr><td>Corte Ejecutivo Degradado</td><td>Fade Clásico</td><td>$15.00</td></tr>`;
+            tbody.innerHTML = datos.length
+                ? datos.map(d => `<tr><td>${d.nom_servicio}</td><td>${d.estilo || '-'}</td><td>$${Number(d.precio).toFixed(2)}</td></tr>`).join('')
+                : '<tr><td colspan="3" style="text-align:center;">Sin servicios asignados.</td></tr>';
         }
 
-        function cargarVisorGaleria() {
-            document.getElementById('visor-info-header').textContent = "ÁREA: OPERATIVA | SERVICIO: Corte Ejecutivo Degradado";
-            document.getElementById('visor-frente').innerHTML = "<span style='color:#4ade80;'>[ Foto Frente Cargada ]</span>";
-            document.getElementById('visor-lado').innerHTML = "<span style='color:#4ade80;'>[ Foto Lado Cargada ]</span>";
-            document.getElementById('visor-atras').innerHTML = "<span style='color:#4ade80;'>[ Foto Atrás Cargada ]</span>";
-            document.getElementById('visor-descripcion').textContent = "Descripción: Estilo moderno con acabado impecable en navaja.";
+        async function cargarVisorGaleria() {
+            const idServ = document.getElementById('visor-galeria-serv').value;
+            const url = idServ ? `${API}/api/galeria?servicio=${idServ}` : `${API}/api/galeria`;
+            const res = await fetch(url, { headers: getAuthHeaders() });
+            const items = await res.json();
+            if (!items.length) {
+                alert('No hay fotografías registradas para este filtro.');
+                return;
+            }
+            const item = items[0];
+            document.getElementById('visor-info-header').textContent = `ÁREA: ${item.nom_area} | SERVICIO: ${item.nom_servicio} [${item.estilo || ''}]`;
+            document.getElementById('visor-frente').innerHTML = item.doc_frente ? `<img src="${item.doc_frente}" style="max-height:150px; border-radius:8px;">` : '[ Sin Foto ]';
+            document.getElementById('visor-lado').innerHTML   = item.doc_lado   ? `<img src="${item.doc_lado}" style="max-height:150px; border-radius:8px;">` : '[ Sin Foto ]';
+            document.getElementById('visor-atras').innerHTML  = item.doc_atras  ? `<img src="${item.doc_atras}" style="max-height:150px; border-radius:8px;">` : '[ Sin Foto ]';
+            document.getElementById('visor-descripcion').textContent = `Descripción: ${item.descripcion || 'Sin descripción'} | Fecha: ${item.fecha}`;
         }
     </script>
 </body>
