@@ -23,15 +23,19 @@ import time
 import uuid
 import traceback
 import threading
+import base64
+import mimetypes
+import psycopg2
+
 from werkzeug.utils import secure_filename
 from functools import wraps
 
 from flask import Flask, request, jsonify, send_from_directory, abort
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
-import psycopg2
 from psycopg2.extras import RealDictCursor
 
+MAX_BASE64_CHARS = 800_000  # ~600 KB aprox. por foto para evitar inflar NeonDB
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
@@ -520,6 +524,91 @@ def post_galeria():
     finally:
         conn.close()
 
+
+def _normalizar_base64_imagen(valor):
+    """Valida y normaliza un string data:image/...;base64,..."""
+    if not valor or not isinstance(valor, str):
+        return None
+    val = valor.strip()
+    if not val:
+        return None
+    if len(val) > MAX_BASE64_CHARS:
+        raise ValueError("Una de las imágenes excede el tamaño máximo permitido.")
+    if val.startswith("data:image/"):
+        return val
+    return f"data:image/jpeg;base64,{val}"
+
+
+def _archivo_a_base64(file_storage):
+    """Convierte un FileStorage de request.files a data URL Base64."""
+    raw = file_storage.read()
+    if not raw:
+        return None
+    if len(raw) > 450_000:
+        raise ValueError("El archivo adjunto es demasiado pesado; comprímelo antes de subir.")
+    mime = file_storage.mimetype or mimetypes.guess_type(file_storage.filename or "")[0] or "image/jpeg"
+    b64 = base64.b64encode(raw).decode("ascii")
+    return f"data:{mime};base64,{b64}"
+
+
+@app.post('/api/galeria')
+@auth_required
+def post_galeria():
+    """Guarda imágenes en formato Base64 en las columnas doc_frente, doc_lado y doc_atras."""
+    try:
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            id_servicio = request.form.get('id_servicio')
+            fecha = request.form.get('fecha') or time.strftime('%Y-%m-%d')
+            descripcion = request.form.get('descripcion', '')
+            fotos = {}
+            for campo in ('doc_frente', 'doc_lado', 'doc_atras'):
+                f = request.files.get(campo)
+                fotos[campo] = _archivo_a_base64(f) if (f and f.filename) else None
+        else:
+            d = request.get_json() or {}
+            id_servicio = d.get('id_servicio')
+            fecha = d.get('fecha') or time.strftime('%Y-%m-%d')
+            descripcion = d.get('descripcion', '')
+            fotos = {
+                'doc_frente': _normalizar_base64_imagen(d.get('doc_frente')),
+                'doc_lado': _normalizar_base64_imagen(d.get('doc_lado')),
+                'doc_atras': _normalizar_base64_imagen(d.get('doc_atras')),
+            }
+
+        if not id_servicio or not any(fotos.values()):
+            return jsonify({'error': 'Servicio y al menos una foto son obligatorios'}), 400
+
+        conn = db()
+        try:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            cur.execute(
+                """
+                INSERT INTO galeria
+                    (id_servicio, fecha, doc_frente, doc_lado, doc_atras, descripcion, activo)
+                VALUES (%s, %s, %s, %s, %s, %s, 'SI')
+                RETURNING id_galeria
+                """,
+                (
+                    int(id_servicio),
+                    fecha,
+                    fotos['doc_frente'],
+                    fotos['doc_lado'],
+                    fotos['doc_atras'],
+                    descripcion,
+                ),
+            )
+            idg = cur.fetchone()['id_galeria']
+            conn.commit()
+            return jsonify({'ok': True, 'id_galeria': idg})
+        finally:
+            conn.close()
+
+    except ValueError as ve:
+        return jsonify({'error': str(ve)}), 400
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': f'Error al guardar galería: {e}'}), 500
+    
 # ============================================================================
 # CONSULTAS CRUZADAS
 # ============================================================================
