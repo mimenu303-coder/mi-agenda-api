@@ -560,12 +560,7 @@ def post_galeria():
 @app.get('/api/agenda/resumen-horarios')
 @auth_required
 def get_resumen_horarios():
-    """
-    Devuelve la agenda del día estructurada por franjas horarias (08:00 a 20:00),
-    indicando para cada hora el estado global y la lista de empleados con sus
-    asignaciones (ATENDIDA, RESERVADO) o estado DISPONIBLE.
-    """
-    fecha = request.args.get('fecha')
+    fecha = (request.args.get('fecha') or '').strip()
     if not fecha:
         return jsonify({'error': 'Fecha requerida'}), 400
 
@@ -573,10 +568,9 @@ def get_resumen_horarios():
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
 
-        # 1. Obtener todos los empleados registrados con su cargo/área
         cur.execute("""
             SELECT e.id_empleado,
-                   e.nombres || ' ' || e.apellidos AS nombre,
+                   TRIM(e.nombres || ' ' || e.apellidos) AS nombre,
                    COALESCE(c.nomb_cargo, 'Especialista') AS cargo
             FROM empleado e
             LEFT JOIN asig_cargo ac ON ac.id_empleado = e.id_empleado
@@ -585,24 +579,28 @@ def get_resumen_horarios():
         """)
         empleados = cur.fetchall()
 
-        # 2. Obtener todas las citas agendadas para esa fecha
         cur.execute("""
-            SELECT sa.id_ser_agen, sa.hora, sa.precio, sa.atendido,
-                   sa.id_empleado, s.nom_servicio,
+            SELECT sa.id_ser_agen,
+                   SUBSTRING(TRIM(sa.hora) FROM 1 FOR 5) AS hora_corta,
+                   sa.hora,
+                   sa.precio,
+                   COALESCE(sa.atendido, 'NO') AS atendido,
+                   sa.id_empleado,
+                   s.nom_servicio,
                    c.nombre_apellido AS cliente
             FROM servicios_agendados sa
             JOIN agenda a ON a.id_agenda = sa.id_agenda
             JOIN servicio s ON s.id_servicio = sa.id_servicio
             JOIN cliente c ON c.id_cliente = a.id_cliente
-            WHERE a.fecha_reserva = %s
-            ORDER BY sa.hora ASC
-        """, (fecha,))
+            WHERE a.fecha_reserva::text LIKE %s
+            ORDER BY sa.hora ASC, sa.id_ser_agen ASC
+        """, (f"{fecha}%",))
         citas = cur.fetchall()
 
-        # Indexar citas por (hora, id_empleado)
         citas_map = {}
         for ct in citas:
-            clave = (ct['hora'], ct['id_empleado'])
+            h_key = (ct['hora_corta'] or '').strip()
+            clave = (h_key, ct['id_empleado'])
             citas_map.setdefault(clave, []).append(ct)
 
         bloques = [f"{h:02d}:00" for h in range(8, 21)]
@@ -610,27 +608,20 @@ def get_resumen_horarios():
 
         for hora in bloques:
             detalle_empleados = []
-            atendidos_cnt = 0
-            reservados_cnt = 0
+            reservados_o_atendidos_cnt = 0
             disponibles_cnt = 0
 
             for emp in empleados:
                 asignaciones = citas_map.get((hora, emp['id_empleado']), [])
                 if asignaciones:
                     for asig in asignaciones:
-                        es_atendida = (asig['atendido'] or 'NO') == 'SI'
-                        if es_atendida:
-                            atendidos_cnt += 1
-                            estado_emp = 'ATENDIDA'
-                        else:
-                            reservados_cnt += 1
-                            estado_emp = 'RESERVADO'
-
+                        es_atendida = (asig['atendido'] or 'NO').upper() == 'SI'
+                        reservados_o_atendidos_cnt += 1
                         detalle_empleados.append({
                             'id_empleado': emp['id_empleado'],
                             'empleado': emp['nombre'],
                             'cargo': emp['cargo'],
-                            'estado': estado_emp,
+                            'estado': 'ATENDIDA' if es_atendida else 'RESERVADA',
                             'id_ser_agen': asig['id_ser_agen'],
                             'servicio': asig['nom_servicio'],
                             'cliente': asig['cliente'],
@@ -644,35 +635,21 @@ def get_resumen_horarios():
                         'cargo': emp['cargo'],
                         'estado': 'DISPONIBLE',
                         'id_ser_agen': None,
-                        'servicio': 'Sin asignación en este bloque',
+                        'servicio': 'Disponible en este horario',
                         'cliente': '—',
                         'precio': 0.0
                     })
 
-            total_emp = len(empleados)
-            if total_emp == 0:
-                estado_hora = 'SIN EMPLEADOS'
-            elif disponibles_cnt == total_emp:
-                estado_hora = 'DISPONIBLE'
-            elif disponibles_cnt == 0:
-                estado_hora = 'COMPLETO'
-            else:
-                estado_hora = 'PARCIAL'
-
             resultado.append({
                 'hora': hora,
-                'estado': estado_hora,
-                'atendidos': atendidos_cnt,
-                'reservados': reservados_cnt,
-                'disponibles': disponibles_cnt,
-                'total_empleados': total_emp,
+                'reservados_total': reservados_o_atendidos_cnt,
+                'disponibles_total': disponibles_cnt,
                 'empleados': detalle_empleados
             })
 
         return jsonify(resultado)
     finally:
         conn.close()
-
 
 # ============================================================================
 # CONSULTAS CRUZADAS
