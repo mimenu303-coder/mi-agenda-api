@@ -288,3 +288,124 @@ table .empty-row td {
 .hidden      { display: none !important; }
 .mt-1 { margin-top: 0.5rem; }  .mt-2 { margin-top: 1rem; }  .mt-3 { margin-top: 1.5rem; }
 .mb-1 { margin-bottom: 0.5rem; } .mb-2 { margin-bottom: 1rem; } .mb-3 { margin-bottom: 1.5rem; }
+
+
+/* ======================================================================
+   NUEVO INFORME INTERACTIVO: AGENDA DEL DÍA (2 NIVELES + CLICK OUTSIDE)
+   ====================================================================== */
+.agenda-shell {
+    position: relative;
+    min-height: 62vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0.5rem;
+}
+
+.agenda-frame {
+    width: 100%;
+    max-width: 1080px;
+    background: linear-gradient(160deg, rgba(22, 18, 14, 0.92) 0%, rgba(10, 8, 6, 0.95) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.42);
+    border-radius: 24px;
+    padding: 1.75rem 2rem;
+    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.88), 0 0 35px rgba(245, 158, 11, 0.14);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.agenda-breadcrumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #fde68a;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+}
+
+/* Grid de horarios (Nivel 1) */
+.horarios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.horario-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.1rem 1.2rem;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: cardPopIn 0.38s ease backwards;
+}
+
+.horario-card:hover {
+    transform: translateY(-4px) scale(1.015);
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.65), 0 0 18px rgba(245, 158, 11, 0.22);
+}
+
+.horario-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+}
+
+.horario-card.estado-DISPONIBLE::before { background: #22c55e; }
+.horario-card.estado-PARCIAL::before    { background: #f59e0b; }
+.horario-card.estado-COMPLETO::before   { background: #ef4444; }
+
+.pill-estado {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 0.22rem 0.65rem;
+    border-radius: 999px;
+}
+.pill-DISPONIBLE { background: rgba(34, 197, 94, 0.18); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); }
+.pill-PARCIAL    { background: rgba(245, 158, 11, 0.2); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.45); }
+.pill-COMPLETO   { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.45); }
+
+/* Lista de Empleados dentro del Horario (Nivel 2) */
+.empleados-list-panel {
+    animation: slideReveal 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.empleado-row-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    padding: 1rem 1.25rem;
+    border-radius: 14px;
+    margin-bottom: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.empleado-row-card:hover { transform: translateX(4px); }
+
+.empleado-row-card.emp-ATENDIDA   { background: rgba(234, 88, 12, 0.18); border-color: rgba(249, 115, 22, 0.45); }
+.empleado-row-card.emp-RESERVADO  { background: rgba(101, 163, 13, 0.16); border-color: rgba(132, 204, 22, 0.4); }
+.empleado-row-card.emp-DISPONIBLE { background: rgba(34, 197, 94, 0.10); border-color: rgba(34, 197, 94, 0.32); }
+
+@keyframes cardPopIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes slideReveal {
+    from { opacity: 0; transform: translateX(18px); }
+    to   { opacity: 1; transform: translateX(0); }
+}

@@ -546,6 +546,7 @@
             <button class="tab-btn active" onclick="cambiarPestaña('clientes', event)"><i data-lucide="users" style="width:16px;"></i> 1. Clientes</button>
             <button class="tab-btn" onclick="cambiarPestaña('reservas', event)"><i data-lucide="calendar-plus" style="width:16px;"></i> 2. Agendar Reserva</button>
             <button class="tab-btn" onclick="cambiarPestaña('informes', event)"><i data-lucide="clipboard-list" style="width:16px;"></i> 3. Informe de Agenda</button>
+            <button class="tab-btn" onclick="cambiarPestaña('agenda-dia', event)"><i data-lucide="clock" style="width:16px;"></i> 3A. Agenda Interactiva del Día</button>
             <button class="tab-btn" onclick="cambiarPestaña('servicios', event)"><i data-lucide="scissors" style="width:16px;"></i> 4. Servicios</button>
             <button class="tab-btn" onclick="cambiarPestaña('cargar-galeria', event)"><i data-lucide="upload-cloud" style="width:16px;"></i> 5. Cargar Galería</button>
             <button class="tab-btn" onclick="cambiarPestaña('empleados', event)"><i data-lucide="user-cog" style="width:16px;"></i> 6. Empleados</button>
@@ -665,6 +666,45 @@
                 </div>
             </div>
         </div>
+
+        <!-- ==================================================================
+            PESTAÑA 3B: AGENDA INTERACTIVA DEL DÍA (HORARIOS -> EMPLEADOS)
+            ================================================================== -->
+        <div id="tab-agenda-dia" class="tab-content">
+            <div id="agenda-dia-backdrop" class="agenda-shell" onclick="manejarClickFueraAgenda(event)">
+                <div id="agenda-dia-recuadro" class="agenda-frame" onclick="event.stopPropagation()">
+                    
+                    <!-- Encabezado y Ruta de Navegación -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; border-bottom:1px solid rgba(245,158,11,0.2); padding-bottom:1rem; margin-bottom:1rem;">
+                        <div>
+                            <div id="agenda-ruta-nivel" class="agenda-breadcrumb">
+                                Menú Principal ➔ Agenda del Día (Horarios)
+                            </div>
+                            <h3 style="font-family:'Playfair Display',serif; color:#fde68a; font-size:1.5rem; margin:0;">
+                                Control Diario por Franja Horaria
+                            </h3>
+                        </div>
+
+                        <div style="display:flex; gap:0.65rem; align-items:center;">
+                            <input type="date" id="agenda-dia-fecha" class="form-control" onchange="cargarAgendaDiaHorarios()">
+                            <button class="btn-amber" onclick="cargarAgendaDiaHorarios()">🔄 Actualizar</button>
+                        </div>
+                    </div>
+
+                    <p id="agenda-ayuda-texto" style="font-size:0.84rem; color:#a8a29e; margin-bottom:1rem;">
+                        💡 Haz clic sobre cualquier <strong>Horario</strong> para desplegar sus empleados atendidos y disponibles. Haz clic <strong>fuera de este recuadro</strong> para retroceder al nivel anterior.
+                    </p>
+
+                    <!-- NIVEL 1: Listado Inicial de Horarios y Estados -->
+                    <div id="vista-nivel-horarios" class="horarios-grid"></div>
+
+                    <!-- NIVEL 2: Listado de Empleados del Horario Seleccionado -->
+                    <div id="vista-nivel-empleados" class="empleados-list-panel" style="display:none;"></div>
+
+                </div>
+            </div>
+        </div>
+
 
         <!-- ==================================================================
              PESTAÑA 4: GESTIÓN DE SERVICIOS
@@ -1719,6 +1759,184 @@
             document.getElementById('visor-atras').innerHTML  = item.doc_atras  ? `<img src="${item.doc_atras}" style="max-height:150px; max-width:100%; border-radius:8px;">` : '[ Sin Foto ]';
             document.getElementById('visor-descripcion').textContent = `Descripción: ${item.descripcion || 'Sin descripción'} | Fecha: ${item.fecha}`;
         }
+
+
+        // ======================================================================
+        // LÓGICA DEL INFORME INTERACTIVO MULTINIVEL (HORARIOS -> EMPLEADOS)
+        // ======================================================================
+        let datosAgendaDia = [];
+        let nivelAgendaActual = 1; // 1 = Listado Horarios, 2 = Empleados del Horario
+        let horaSeleccionadaActual = null;
+
+        // Inicializar fecha del nuevo informe al cargar la página
+        window.addEventListener('DOMContentLoaded', () => {
+            const elFecha = document.getElementById('agenda-dia-fecha');
+            if (elFecha && !elFecha.value) {
+                elFecha.value = new Date().toISOString().split('T')[0];
+            }
+        });
+
+        // Integración con cambiarPestaña: si entra a 'agenda-dia', carga el Nivel 1
+        const _cambiarPestañaOriginal = cambiarPestaña;
+        cambiarPestaña = function(nombreTab, event) {
+            _cambiarPestañaOriginal(nombreTab, event);
+            if (nombreTab === 'agenda-dia') {
+                nivelAgendaActual = 1;
+                horaSeleccionadaActual = null;
+                cargarAgendaDiaHorarios();
+            }
+        };
+
+        async function cargarAgendaDiaHorarios() {
+            const fecha = document.getElementById('agenda-dia-fecha').value;
+            if (!fecha) return;
+
+            const grid = document.getElementById('vista-nivel-horarios');
+            grid.innerHTML = '<p style="color:#fde68a; grid-column:1/-1; text-align:center;">Cargando disponibilidad horaria desde NeonDB...</p>';
+
+            try {
+                const res = await fetch(`${API}/api/agenda/resumen-horarios?fecha=${encodeURIComponent(fecha)}`, {
+                    headers: getAuthHeaders()
+                });
+                if (!res.ok) throw new Error('No se pudo cargar la agenda del día');
+                datosAgendaDia = await res.json();
+
+                if (nivelAgendaActual === 2 && horaSeleccionadaActual) {
+                    mostrarEmpleadosDeHorario(horaSeleccionadaActual);
+                } else {
+                    renderNivelHorarios();
+                }
+            } catch (err) {
+                grid.innerHTML = `<p style="color:#f87171; grid-column:1/-1; text-align:center;">⚠️ ${err.message}</p>`;
+            }
+        }
+
+        function renderNivelHorarios() {
+            nivelAgendaActual = 1;
+            horaSeleccionadaActual = null;
+
+            const fecha = document.getElementById('agenda-dia-fecha').value;
+            document.getElementById('agenda-ruta-nivel').textContent = `Menú Principal ➔ Agenda del Día (${fecha})`;
+            document.getElementById('agenda-ayuda-texto').innerHTML =
+                '💡 Selecciona un <strong>Horario</strong> para desplegar los empleados atendidos y disponibles. Haz clic <strong>fuera del recuadro</strong> para volver al menú principal.';
+
+            const grid = document.getElementById('vista-nivel-horarios');
+            const panelEmp = document.getElementById('vista-nivel-empleados');
+            panelEmp.style.display = 'none';
+            grid.style.display = 'grid';
+
+            grid.innerHTML = datosAgendaDia.map((bloque, idx) => `
+                <div class="horario-card estado-${bloque.estado}" style="animation-delay:${idx * 0.03}s;"
+                    onclick="mostrarEmpleadosDeHorario('${bloque.hora}')">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.65rem;">
+                        <span style="font-size:1.35rem; font-weight:700; color:#fff;">🕒 ${bloque.hora}</span>
+                        <span class="pill-estado pill-${bloque.estado}">${bloque.estado}</span>
+                    </div>
+                    <div style="font-size:0.82rem; color:#d6d3d1; display:flex; flex-direction:column; gap:0.25rem;">
+                        <span>🟠 Atendidas: <strong>${bloque.atendidos}</strong></span>
+                        <span>🟢 Reservadas: <strong>${bloque.reservados}</strong></span>
+                        <span>✨ Disponibles: <strong style="color:#4ade80;">${bloque.disponibles}</strong> / ${bloque.total_empleados}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function mostrarEmpleadosDeHorario(hora) {
+            const bloque = datosAgendaDia.find(b => b.hora === hora);
+            if (!bloque) return;
+
+            nivelAgendaActual = 2;
+            horaSeleccionadaActual = hora;
+
+            const fecha = document.getElementById('agenda-dia-fecha').value;
+            document.getElementById('agenda-ruta-nivel').textContent =
+                `Menú Principal ➔ Agenda (${fecha}) ➔ Horario ${hora}`;
+            document.getElementById('agenda-ayuda-texto').innerHTML =
+                `📋 Mostrando asignaciones para las <strong>${hora}</strong>. Haz clic <strong>fuera de este recuadro</strong> para volver al listado de horarios.`;
+
+            const grid = document.getElementById('vista-nivel-horarios');
+            const panelEmp = document.getElementById('vista-nivel-empleados');
+            grid.style.display = 'none';
+            panelEmp.style.display = 'block';
+
+            if (!bloque.empleados.length) {
+                panelEmp.innerHTML = '<p style="text-align:center; color:#a8a29e;">No hay empleados registrados en el sistema.</p>';
+                return;
+            }
+
+            const filasHTML = bloque.empleados.map(emp => {
+                let badgeColor = '#4ade80';
+                let icono = '✨';
+                let accionBtn = `<button class="btn-amber" style="padding:0.4rem 0.85rem; font-size:0.8rem;" onclick="abrirModalAgendarRapido('${fecha}', '${hora}')">+ Asignar Cita</button>`;
+
+                if (emp.estado === 'ATENDIDA') {
+                    badgeColor = '#fb923c';
+                    icono = '🟠';
+                    accionBtn = `<span style="font-weight:700; color:#fb923c;">$${emp.precio.toFixed(2)} · ATENDIDA</span>`;
+                } else if (emp.estado === 'RESERVADO') {
+                    badgeColor = '#a3e635';
+                    icono = '🟢';
+                    accionBtn = `<button class="btn-amber" style="padding:0.4rem 0.85rem; font-size:0.8rem;" onclick="marcarAtendidaYRefrescar(${emp.id_ser_agen})">☑ Marcar Atendida ($${emp.precio.toFixed(2)})</button>`;
+                }
+
+                return `
+                    <div class="empleado-row-card emp-${emp.estado}">
+                        <div>
+                            <div style="font-size:1.05rem; font-weight:700; color:#fff;">
+                                ${icono} ${emp.empleado} <span style="font-size:0.8rem; font-weight:400; color:#a8a29e;">(${emp.cargo})</span>
+                            </div>
+                            <div style="font-size:0.86rem; color:#d6d3d1; margin-top:0.2rem;">
+                                <strong>Servicio:</strong> ${emp.servicio} &nbsp;|&nbsp; <strong>Cliente:</strong> ${emp.cliente}
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <span style="font-size:0.78rem; font-weight:700; color:${badgeColor}; letter-spacing:0.05em;">${emp.estado}</span>
+                            ${accionBtn}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            panelEmp.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <h4 style="color:#fde68a; margin:0; font-size:1.1rem;">Empleados en el bloque de las ${hora}</h4>
+                    <button class="btn-amber" style="padding:0.4rem 0.9rem; font-size:0.82rem;" onclick="renderNivelHorarios()">⬅ Volver a Horarios</button>
+                </div>
+                ${filasHTML}
+            `;
+        }
+
+        async function marcarAtendidaYRefrescar(idSerAgen) {
+            await toggleAtendida(idSerAgen);
+            await cargarAgendaDiaHorarios();
+        }
+
+        // ======================================================================
+        // NAVEGACIÓN EN CASCADA AL HACER CLIC FUERA DEL RECUADRO (O TECLA ESC)
+        // ======================================================================
+        function manejarClickFueraAgenda(event) {
+            // Solo actúa si el clic fue en el fondo exterior (fuera de #agenda-dia-recuadro)
+            if (event.target.id !== 'agenda-dia-backdrop') return;
+            retrocederNivelAgenda();
+        }
+
+        function retrocederNivelAgenda() {
+            if (nivelAgendaActual === 2) {
+                // Nivel 2 (Empleados) -> Nivel 1 (Listado de Horarios)
+                renderNivelHorarios();
+            } else if (nivelAgendaActual === 1) {
+                // Nivel 1 (Horarios) -> Opción del Menú Principal (Pestaña 1)
+                const primerTab = document.querySelector('.nav-tabs .tab-btn');
+                if (primerTab) primerTab.click();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            const tabActivo = document.getElementById('tab-agenda-dia');
+            if (e.key === 'Escape' && tabActivo && tabActivo.classList.contains('active')) {
+                retrocederNivelAgenda();
+            }
+        });
     </script>
 </body>
 </html>
