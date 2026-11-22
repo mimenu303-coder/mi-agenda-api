@@ -5,34 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AlefDOOR | Sistema Integral de Barbería, Spa y Peluquería</title>
 
-    <!-- Tipografías del sistema de diseño AlefDOOR -->
+    <!-- Tipografías y librerías de interfaz -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-
-    <!-- Librería de íconos Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- Hoja de estilos compartida del portal (si existe en la ruta relativa) -->
     <link rel="stylesheet" href="../../assets/css/alefdoor-theme.css">
 
     <style>
-        /* ======================================================================
-           1. VARIABLES Y ESTILOS BASE (DARK-AMBER GLASS)
-           ====================================================================== */
         :root {
             --bg-void: #070605;
             --amber-glow: #f59e0b;
             --amber-bright: #fde68a;
-            --glass-bg: rgba(18, 15, 12, 0.78);
+            --glass-bg: rgba(18, 15, 12, 0.80);
             --glass-border: rgba(245, 158, 11, 0.25);
             --text-main: #f8fafc;
             --text-muted: #a8a29e;
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             background-color: var(--bg-void);
@@ -43,7 +34,6 @@
             overflow-x: hidden;
         }
 
-        /* Fondo atmosférico fijo detrás de la aplicación */
         .background-stage {
             position: fixed;
             inset: 0;
@@ -66,22 +56,21 @@
         .app-container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 1.5rem;
+            padding: 1.4rem;
         }
 
-        /* Barra superior de navegación hacia el portal raíz */
         .alef-module-navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 0.75rem;
-            padding: 0.85rem 1.25rem;
+            padding: 0.8rem 1.2rem;
             background: rgba(15, 12, 10, 0.72);
             backdrop-filter: blur(14px);
             border: 1px solid var(--glass-border);
             border-radius: 999px;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.4rem;
         }
 
         .alef-module-navbar a {
@@ -94,29 +83,26 @@
             font-size: 0.9rem;
         }
 
-        /* ======================================================================
-           2. NAVEGACIÓN POR PESTAÑAS Y TARJETAS BENTO
-           ====================================================================== */
         .nav-tabs {
             display: flex;
-            gap: 0.6rem;
+            gap: 0.55rem;
             flex-wrap: wrap;
-            margin-bottom: 2rem;
+            margin-bottom: 1.75rem;
             border-bottom: 1px solid rgba(245, 158, 11, 0.2);
-            padding-bottom: 1rem;
+            padding-bottom: 0.95rem;
         }
 
         .tab-btn {
             background: rgba(20, 17, 14, 0.65);
             border: 1px solid rgba(245, 158, 11, 0.22);
             color: #d6d3d1;
-            padding: 0.65rem 1.05rem;
+            padding: 0.6rem 1rem;
             border-radius: 12px;
             font-family: 'Outfit', sans-serif;
             font-weight: 500;
             font-size: 0.88rem;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.22s ease;
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
@@ -127,13 +113,12 @@
             background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.25) 100%);
             border-color: var(--amber-glow);
             color: var(--amber-bright);
-            box-shadow: 0 0 20px rgba(245, 158, 11, 0.25);
-            transform: translateY(-2px);
+            box-shadow: 0 0 18px rgba(245, 158, 11, 0.22);
         }
 
         .tab-content {
             display: none;
-            animation: fadeIn 0.35s ease forwards;
+            animation: fadeIn 0.3s ease forwards;
         }
 
         .tab-content.active {
@@ -141,14 +126,14 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
+            from { opacity: 0; transform: translateY(6px); }
             to   { opacity: 1; transform: translateY(0); }
         }
 
         .bento-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-            gap: 1.5rem;
+            gap: 1.4rem;
         }
 
         .bento-card {
@@ -156,24 +141,24 @@
             backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
-            padding: 1.75rem;
+            padding: 1.6rem;
             box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.85);
         }
 
         .bento-card h3 {
             font-family: 'Playfair Display', serif;
             color: var(--amber-bright);
-            font-size: 1.3rem;
+            font-size: 1.28rem;
             margin-top: 0;
-            margin-bottom: 1.15rem;
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
-            gap: 0.55rem;
+            gap: 0.5rem;
         }
 
         .form-control {
-            padding: 0.65rem 0.9rem;
-            background: rgba(0, 0, 0, 0.52);
+            padding: 0.62rem 0.85rem;
+            background: rgba(0, 0, 0, 0.55);
             border: 1px solid rgba(255, 255, 255, 0.14);
             border-radius: 10px;
             color: #fff;
@@ -188,15 +173,15 @@
 
         button.btn-amber,
         .bento-card button[type="submit"],
-        .bento-card button:not(.btn-icon) {
-            padding: 0.65rem 1.1rem;
+        .bento-card button:not(.acordeon-hora-header) {
+            padding: 0.62rem 1.05rem;
             border-radius: 10px;
             border: 1px solid rgba(245, 158, 11, 0.45);
             background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(180, 83, 9, 0.35));
             color: var(--amber-bright);
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.22s ease;
+            transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -205,14 +190,12 @@
 
         button.btn-amber:hover,
         .bento-card button[type="submit"]:hover,
-        .bento-card button:not(.btn-icon):hover {
+        .bento-card button:not(.acordeon-hora-header):hover {
             background: var(--amber-glow);
             color: #070605;
         }
 
-        /* ======================================================================
-           3. TABLAS Y ESTILOS DEL INFORME GENERAL DE AGENDA (08:00 - 20:00)
-           ====================================================================== */
+        /* Tablas generales y de informe */
         .data-table-wrapper {
             overflow-x: auto;
             border-radius: 14px;
@@ -230,13 +213,13 @@
         table.modern-table th {
             background: rgba(245, 158, 11, 0.16);
             color: var(--amber-bright);
-            padding: 0.85rem 0.9rem;
+            padding: 0.8rem 0.85rem;
             font-weight: 600;
             border-bottom: 1px solid rgba(245, 158, 11, 0.25);
         }
 
         table.modern-table td {
-            padding: 0.75rem 0.9rem;
+            padding: 0.72rem 0.85rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
 
@@ -248,97 +231,118 @@
         tr.fila-libre-impar     { background-color: rgba(255, 255, 255, 0.05); color: #a8a29e; }
         tr.fila-agendar-otra    { background-color: rgba(34, 197, 94, 0.12); color: #86efac; font-style: italic; }
         tr.fila-emp-header      { background-color: rgba(46, 64, 83, 0.85); color: var(--amber-bright); font-weight: 700; }
-
-        tr.fila-interactiva {
-            cursor: pointer;
-            transition: filter 0.2s ease;
-        }
-
-        tr.fila-interactiva:hover {
-            filter: brightness(1.2);
-        }
+        tr.fila-interactiva     { cursor: pointer; transition: filter 0.2s ease; }
+        tr.fila-interactiva:hover { filter: brightness(1.18); }
 
         .check-atendida {
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             cursor: pointer;
             user-select: none;
             display: inline-block;
-            padding: 0.1rem 0.4rem;
+            padding: 0.1rem 0.35rem;
             border-radius: 6px;
         }
 
-        .check-atendida:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        /* ======================================================================
-           4. INFORME DE 3 COLUMNAS CON RECUADRO CENTRAL E INTERNO
-           ====================================================================== */
-        .zona-externa-informe {
-            min-height: 65vh;
-            padding: 0.75rem;
+        /* Acordeón compacto de agenda diaria por horario */
+        .acordeon-agenda-lista {
             display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            flex-direction: column;
+            gap: 0.55rem;
         }
 
-        .recuadro-central {
+        .acordeon-bloque {
+            border: 1px solid rgba(245, 158, 11, 0.28);
+            border-radius: 14px;
+            background: rgba(16, 13, 10, 0.88);
+            overflow: hidden;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .acordeon-bloque.abierto {
+            border-color: var(--amber-glow);
+            box-shadow: 0 0 22px rgba(245, 158, 11, 0.16);
+        }
+
+        .acordeon-hora-header {
             width: 100%;
-            max-width: 980px;
-            background: rgba(18, 15, 12, 0.92);
-            border: 1.5px solid rgba(245, 158, 11, 0.55);
-            border-radius: 22px;
-            padding: 1.5rem;
-            box-shadow: 0 24px 50px rgba(0, 0, 0, 0.88), 0 0 28px rgba(245, 158, 11, 0.14);
-        }
-
-        .recuadro-interno {
-            margin-top: 1.25rem;
-            background: rgba(30, 23, 16, 0.97);
-            border: 1.5px solid var(--amber-glow);
-            border-radius: 18px;
-            padding: 1.35rem;
-            box-shadow: 0 0 28px rgba(245, 158, 11, 0.22);
-            animation: popInterno 0.24s ease-out;
-        }
-
-        @keyframes popInterno {
-            from { opacity: 0; transform: scale(0.98); }
-            to   { opacity: 1; transform: scale(1); }
-        }
-
-        .tabla-3col {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-
-        .tabla-3col th {
-            background: rgba(245, 158, 11, 0.18);
-            color: var(--amber-bright);
-            padding: 0.85rem 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid rgba(245, 158, 11, 0.28);
-        }
-
-        .tabla-3col td {
-            padding: 0.8rem 0.75rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            word-break: break-word;
-        }
-
-        .fila-3col-click {
+            background: rgba(245, 158, 11, 0.08);
+            border: none;
+            color: #fff;
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.6rem;
             cursor: pointer;
+            text-align: left;
+            font-family: inherit;
             transition: background 0.2s ease;
         }
 
-        .fila-3col-click:hover {
-            background: rgba(245, 158, 11, 0.15);
+        .acordeon-hora-header:hover {
+            background: rgba(245, 158, 11, 0.18);
         }
 
-        /* ======================================================================
-           5. MODALES EMERGENTES Y ADAPTACIÓN MÓVIL (CELULAR)
-           ====================================================================== */
+        .acordeon-panel {
+            display: none;
+            padding: 0.85rem 1rem 1rem 1rem;
+            border-top: 1px solid rgba(245, 158, 11, 0.18);
+            background: rgba(8, 6, 5, 0.78);
+        }
+
+        .acordeon-bloque.abierto .acordeon-panel {
+            display: block;
+            animation: fadeAcordeon 0.2s ease-out;
+        }
+
+        @keyframes fadeAcordeon {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .grupo-estado-titulo {
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin: 0.65rem 0 0.35rem 0;
+        }
+
+        .item-empleado-acordeon {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.55rem 0.75rem;
+            border-radius: 10px;
+            margin-bottom: 0.35rem;
+            font-size: 0.88rem;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .item-emp-disponible {
+            background: rgba(34, 197, 94, 0.12);
+            border-color: rgba(34, 197, 94, 0.35);
+            cursor: pointer;
+        }
+
+        .item-emp-disponible:hover {
+            background: rgba(34, 197, 94, 0.24);
+        }
+
+        .item-emp-ocupado {
+            background: rgba(132, 204, 22, 0.12);
+            border-color: rgba(132, 204, 22, 0.3);
+        }
+
+        .item-emp-atendido {
+            background: rgba(249, 115, 22, 0.14);
+            border-color: rgba(249, 115, 22, 0.35);
+        }
+
+        /* Modales */
         .modal-backdrop {
             display: none;
             position: fixed;
@@ -359,16 +363,14 @@
             background: #14110e;
             border: 1px solid var(--amber-glow);
             border-radius: 20px;
-            padding: 1.75rem;
+            padding: 1.65rem;
             max-width: 560px;
             width: 100%;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.95);
         }
 
         @media (max-width: 768px) {
-            .app-container {
-                padding: 0.75rem;
-            }
+            .app-container { padding: 0.75rem; }
             .nav-tabs {
                 flex-wrap: nowrap;
                 overflow-x: auto;
@@ -381,24 +383,19 @@
                 font-size: 0.8rem;
                 padding: 0.55rem 0.85rem;
             }
-            .bento-card,
-            .recuadro-central,
-            .recuadro-interno {
-                padding: 1rem;
-            }
+            .bento-card, .modal-box { padding: 1rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Fondo visual de la aplicación -->
     <div class="background-stage">
         <div class="background-image"></div>
     </div>
 
     <div class="app-container">
 
-        <!-- Barra superior con acceso al portal principal y estado de NeonDB -->
+        <!-- Barra superior de navegación -->
         <nav class="alef-module-navbar">
             <a href="../../index.html">
                 <i data-lucide="arrow-left" style="width:18px;"></i> Volver al Portal AlefDOOR
@@ -413,17 +410,16 @@
             </div>
         </nav>
 
-        <!-- Encabezado principal del módulo -->
-        <header style="margin-bottom: 1.75rem; text-align: center;">
-            <h1 style="font-family:'Playfair Display',serif; font-size: clamp(1.75rem, 3.5vw, 2.4rem); margin-bottom: 0.4rem; background: linear-gradient(135deg, #fff, #fde68a, #f59e0b); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        <header style="margin-bottom: 1.6rem; text-align: center;">
+            <h1 style="font-family:'Playfair Display',serif; font-size: clamp(1.7rem, 3.5vw, 2.35rem); margin-bottom: 0.35rem; background: linear-gradient(135deg, #fff, #fde68a, #f59e0b); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                 Sistema Integral de Barbería, Spa y Peluquería
             </h1>
             <p style="color: var(--text-muted); font-size: 0.92rem; margin: 0;">
-                Gestión de clientes, reservas, informes de agenda, servicios, empleados y galería visual.
+                Gestión de clientes, reservas, acordeón de agenda diaria, servicios, empleados y galería.
             </p>
         </header>
 
-        <!-- Menú de pestañas (desplazable horizontalmente en celular) -->
+        <!-- Pestañas principales -->
         <div class="nav-tabs" id="menu-pestanas">
             <button type="button" class="tab-btn active" onclick="cambiarPestaña('clientes', this)">
                 <i data-lucide="users" style="width:16px;"></i> 1. Clientes
@@ -435,7 +431,7 @@
                 <i data-lucide="clipboard-list" style="width:16px;"></i> 3. Informe de Agenda
             </button>
             <button type="button" class="tab-btn" onclick="cambiarPestaña('agenda-dia', this)">
-                <i data-lucide="clock" style="width:16px;"></i> 3B. Informe 3 Col.
+                <i data-lucide="clock" style="width:16px;"></i> 3B. Acordeón Diario
             </button>
             <button type="button" class="tab-btn" onclick="cambiarPestaña('servicios', this)">
                 <i data-lucide="scissors" style="width:16px;"></i> 4. Servicios
@@ -451,9 +447,7 @@
             </button>
         </div>
 
-        <!-- ==================================================================
-             PESTAÑA 1: CLIENTES
-             ================================================================== -->
+        <!-- PESTAÑA 1: CLIENTES -->
         <div id="tab-clientes" class="tab-content active">
             <div class="bento-grid">
                 <div class="bento-card">
@@ -467,7 +461,7 @@
                             <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Nombre y Apellido:</label>
                             <input type="text" id="cli-nombre" class="form-control" required style="width:100%;">
                         </div>
-                        <div style="margin-bottom: 1.5rem;">
+                        <div style="margin-bottom: 1.4rem;">
                             <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Día de Cumpleaños:</label>
                             <input type="text" id="cli-cumple" class="form-control" placeholder="Ej: 15 de Mayo" style="width:100%;">
                         </div>
@@ -495,9 +489,7 @@
             </div>
         </div>
 
-        <!-- ==================================================================
-             PESTAÑA 2: AGENDAR RESERVA
-             ================================================================== -->
+        <!-- PESTAÑA 2: AGENDAR RESERVA -->
         <div id="tab-reservas" class="tab-content">
             <div class="bento-card" style="max-width: 900px; margin: 0 auto;">
                 <h3><i data-lucide="calendar" style="width:20px; color:#f59e0b;"></i> Módulo de Agendamiento</h3>
@@ -515,7 +507,7 @@
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.2rem;">
                     <div>
                         <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Servicio:</label>
                         <select id="res-servicio" class="form-control" style="width:100%;" onchange="cargarEmpleadosPorServicioReserva()">
@@ -538,8 +530,8 @@
                     Añadir Servicio a la Reserva (Máx. 3 por día)
                 </button>
 
-                <div style="margin-top: 1.75rem;">
-                    <h4 style="color:var(--amber-bright); margin-bottom: 0.75rem;">Servicios en la Reserva Actual</h4>
+                <div style="margin-top: 1.6rem;">
+                    <h4 style="color:var(--amber-bright); margin-bottom: 0.7rem;">Servicios en la Reserva Actual</h4>
                     <div class="data-table-wrapper">
                         <table class="modern-table">
                             <thead>
@@ -569,9 +561,7 @@
             </div>
         </div>
 
-        <!-- ==================================================================
-             PESTAÑA 3: INFORME GENERAL DE AGENDA (08:00 - 20:00)
-             ================================================================== -->
+        <!-- PESTAÑA 3: INFORME GENERAL DE AGENDA -->
         <div id="tab-informes" class="tab-content">
             <div class="bento-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.65rem;">
@@ -591,7 +581,7 @@
                     </div>
                 </div>
 
-                <div style="font-size: 0.82rem; color: var(--amber-bright); background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); padding: 0.6rem 1rem; border-radius: 10px; margin-bottom: 1.15rem;">
+                <div style="font-size: 0.82rem; color: var(--amber-bright); background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); padding: 0.6rem 1rem; border-radius: 10px; margin-bottom: 1rem;">
                     💡 <strong>Controles:</strong> Clic en <strong>☐ / ☑</strong> para alternar ATENDIDA · Doble clic en <strong>RESERVADO</strong> para gestionar/eliminar · Doble clic en <strong>[ DISPONIBLE ]</strong> o <strong>[ AGENDAR OTRA ]</strong> para agendar.
                 </div>
 
@@ -614,7 +604,7 @@
                     </table>
                 </div>
 
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-top: 1.15rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-top: 1.1rem; padding-top: 0.9rem; border-top: 1px solid rgba(255,255,255,0.1);">
                     <div id="informe-resumen-atendidas" style="font-size: 0.92rem; color: #fb923c; font-weight: 500;">
                         🟠 Atendidas: 0 / 0 citas | Ingresos por atendidas: $0.00
                     </div>
@@ -625,54 +615,29 @@
             </div>
         </div>
 
-        <!-- ==================================================================
-             PESTAÑA 3B: INFORME DE 3 COLUMNAS (RECUADRO CENTRAL E INTERNO)
-             ================================================================== -->
+        <!-- PESTAÑA 3B: ACORDEÓN DE AGENDA DIARIA POR HORARIO -->
         <div id="tab-agenda-dia" class="tab-content">
-            <!-- Clic fuera del recuadro central vuelve al menú principal -->
-            <div id="zona-externa-agenda" class="zona-externa-informe" onclick="clickFueraRecuadroCentral(event)">
-
-                <!-- Recuadro central: muestra el Nivel 1 en 3 columnas -->
-                <div id="recuadro-central-agenda" class="recuadro-central" onclick="clickFueraRecuadroInterno(event)">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem;">
-                        <div>
-                            <div id="ruta-nav-3col" style="font-size:0.78rem; color:var(--amber-bright); margin-bottom:0.25rem;">
-                                Menú Principal ➔ Recuadro Central (Nivel 1)
-                            </div>
-                            <h3 style="margin:0; font-family:'Playfair Display',serif; color:var(--amber-bright);">
-                                Agenda del Día por Empleado
-                            </h3>
-                        </div>
-                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
-                            <input type="date" id="dia-3col-fecha" class="form-control" onchange="cargarDatos3Columnas()">
-                            <select id="dia-3col-hora" class="form-control" onchange="renderNivel1TresColumnas()"></select>
-                        </div>
+            <div class="bento-card" style="max-width: 1020px; margin: 0 auto;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem;">
+                    <h3 style="margin:0;">
+                        <i data-lucide="clock" style="width:20px; color:#f59e0b;"></i>
+                        Agenda Completa del Día (Acordeón por Horario)
+                    </h3>
+                    <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                        <input type="date" id="acordeon-fecha" class="form-control" onchange="cargarAcordeonAgenda()">
+                        <button type="button" class="btn-amber" onclick="cargarAcordeonAgenda()">🔄 Actualizar</button>
                     </div>
-
-                    <!-- Nivel 1: 1. Empleado | 2. Estado (Reservada / Disponible) | 3. Horario -->
-                    <div class="data-table-wrapper">
-                        <table class="tabla-3col">
-                            <thead>
-                                <tr>
-                                    <th style="width:38%;">1. Empleado</th>
-                                    <th style="width:32%;">2. Estado</th>
-                                    <th style="width:30%;">3. Horario</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbody-nivel1-3col"></tbody>
-                        </table>
-                    </div>
-
-                    <!-- Recuadro interno: Nivel 2 al pulsar una fila del Nivel 1 -->
-                    <div id="recuadro-interno-agenda" class="recuadro-interno" style="display:none;"></div>
                 </div>
 
+                <p style="font-size:0.82rem; color:#a8a29e; margin-top:0; margin-bottom:0.9rem;">
+                    💡 Pulsa un <strong>horario</strong> para desplegar o cerrar su acordeón. Pulsa un empleado <strong>DISPONIBLE</strong> para abrir la reserva con su nombre y los servicios que presta.
+                </p>
+
+                <div id="contenedor-acordeon-horas" class="acordeon-agenda-lista"></div>
             </div>
         </div>
 
-        <!-- ==================================================================
-             PESTAÑA 4: SERVICIOS
-             ================================================================== -->
+        <!-- PESTAÑA 4: SERVICIOS -->
         <div id="tab-servicios" class="tab-content">
             <div class="bento-card" style="max-width: 650px; margin: 0 auto;">
                 <h3><i data-lucide="scissors" style="width:20px; color:#f59e0b;"></i> Registrar Nuevo Servicio</h3>
@@ -695,7 +660,7 @@
                         <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Precio ($):</label>
                         <input type="number" id="serv-precio" step="0.5" class="form-control" required style="width:100%;">
                     </div>
-                    <div style="margin-bottom: 1.5rem;">
+                    <div style="margin-bottom: 1.4rem;">
                         <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Tiempo Máximo:</label>
                         <input type="text" id="serv-tiempo" value="00:45" class="form-control" style="width:100%;">
                     </div>
@@ -704,9 +669,7 @@
             </div>
         </div>
 
-        <!-- ==================================================================
-             PESTAÑA 5: CARGAR GALERÍA (COMPRESIÓN A BASE64 PARA NEONDB)
-             ================================================================== -->
+        <!-- PESTAÑA 5: CARGAR GALERÍA (BASE64) -->
         <div id="tab-cargar-galeria" class="tab-content">
             <div class="bento-card" style="max-width: 700px; margin: 0 auto;">
                 <h3><i data-lucide="upload-cloud" style="width:20px; color:#f59e0b;"></i> Subir Fotografías (Comprimidas en Base64)</h3>
@@ -733,7 +696,7 @@
                         <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Foto Atrás (JPEG / PNG):</label>
                         <input type="file" id="gal-atras-file" class="form-control" accept="image/jpeg,image/png,image/webp" style="width:100%;">
                     </div>
-                    <div style="margin-bottom: 1.5rem;">
+                    <div style="margin-bottom: 1.4rem;">
                         <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Descripción del Estilo:</label>
                         <textarea id="gal-desc" class="form-control" rows="3" style="width:100%;"></textarea>
                     </div>
@@ -742,9 +705,7 @@
             </div>
         </div>
 
-        <!-- ==================================================================
-             PESTAÑA 6: EMPLEADOS
-             ================================================================== -->
+        <!-- PESTAÑA 6: EMPLEADOS -->
         <div id="tab-empleados" class="tab-content">
             <div class="bento-card" style="max-width: 650px; margin: 0 auto;">
                 <h3><i data-lucide="user-cog" style="width:20px; color:#f59e0b;"></i> Registro de Empleado</h3>
@@ -773,7 +734,7 @@
                             <option value="">-- Seleccione Área --</option>
                         </select>
                     </div>
-                    <div style="margin-bottom: 1.5rem;">
+                    <div style="margin-bottom: 1.4rem;">
                         <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Servicios Habilitados (Ctrl+Clic):</label>
                         <select id="emp-servicios-multi" multiple class="form-control" style="width:100%; height:110px;"></select>
                     </div>
@@ -782,14 +743,12 @@
             </div>
         </div>
 
-        <!-- ==================================================================
-             PESTAÑA 7: CONSULTAS CRUZADAS Y CARRUSEL DE GALERÍA
-             ================================================================== -->
+        <!-- PESTAÑA 7: CONSULTAS CRUZADAS Y CARRUSEL DE GALERÍA -->
         <div id="tab-consultas" class="tab-content">
-            <div class="bento-grid" style="grid-template-columns: 1fr; gap: 2rem;">
+            <div class="bento-grid" style="grid-template-columns: 1fr; gap: 1.75rem;">
                 <div class="bento-card">
                     <h3><i data-lucide="search" style="width:20px; color:#f59e0b;"></i> Consultas Cruzadas</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; margin-bottom: 1.4rem;">
                         <div>
                             <label style="display:block; font-size:0.85rem; margin-bottom:0.4rem;">Empleados por Servicio:</label>
                             <div style="display:flex; gap:0.5rem;">
@@ -826,7 +785,6 @@
                     </div>
                 </div>
 
-                <!-- Carrusel / Visor de 3 vistas de la galería -->
                 <div class="bento-card">
                     <h3><i data-lucide="image" style="width:20px; color:#f59e0b;"></i> Carrusel y Visor de Galería</h3>
                     <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap; margin-bottom:1rem;">
@@ -864,13 +822,46 @@
 
     </div>
 
-    <!-- ======================================================================
-         MODAL 1: AGENDAMIENTO RÁPIDO DESDE LA PARRILLA
-         ====================================================================== -->
+    <!-- MODAL DE RESERVA AL PULSAR UN EMPLEADO DISPONIBLE EN EL ACORDEÓN -->
+    <div id="modal-reserva-empleado-disp" class="modal-backdrop">
+        <div class="modal-box">
+            <h3 style="font-family:'Playfair Display',serif; color:var(--amber-bright); margin-top:0;">Nueva Reserva para Empleado Disponible</h3>
+
+            <div style="margin-bottom:0.85rem;">
+                <label style="display:block; font-size:0.84rem; margin-bottom:0.3rem;">Empleado Seleccionado:</label>
+                <input type="text" id="disp-res-empleado-nombre" class="form-control" readonly style="width:100%; background:rgba(245,158,11,0.12); font-weight:700; color:var(--amber-bright);">
+                <input type="hidden" id="disp-res-empleado-id">
+                <input type="hidden" id="disp-res-fecha">
+                <input type="hidden" id="disp-res-hora">
+            </div>
+
+            <div style="margin-bottom:0.85rem;">
+                <label style="display:block; font-size:0.84rem; margin-bottom:0.3rem;">Fecha y Horario:</label>
+                <input type="text" id="disp-res-horario-info" class="form-control" readonly style="width:100%;">
+            </div>
+
+            <div style="margin-bottom:0.85rem;">
+                <label style="display:block; font-size:0.84rem; margin-bottom:0.3rem;">Cliente:</label>
+                <select id="disp-res-cliente" class="form-control" style="width:100%;"></select>
+            </div>
+
+            <div style="margin-bottom:1.25rem;">
+                <label style="display:block; font-size:0.84rem; margin-bottom:0.3rem;">Servicios que presta este empleado:</label>
+                <select id="disp-res-servicio" class="form-control" style="width:100%;"></select>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:0.65rem;">
+                <button type="button" class="btn-amber" onclick="cerrarModal('modal-reserva-empleado-disp')" style="background:transparent;">Cancelar</button>
+                <button type="button" class="btn-amber" onclick="guardarReservaEmpleadoDisponible()">Confirmar Reserva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE AGENDAMIENTO RÁPIDO DESDE PARRILLA GENERAL -->
     <div id="modal-agendar-rapido" class="modal-backdrop">
         <div class="modal-box">
             <h3 style="font-family:'Playfair Display',serif; color:var(--amber-bright); margin-top:0;">Agendar Cita Rápida</h3>
-            <p id="modal-agendar-subtitulo" style="color:#a8a29e; font-size:0.9rem; margin-bottom:1.15rem;"></p>
+            <p id="modal-agendar-subtitulo" style="color:#a8a29e; font-size:0.9rem; margin-bottom:1.1rem;"></p>
             <input type="hidden" id="rap-fecha">
             <input type="hidden" id="rap-hora">
 
@@ -882,7 +873,7 @@
                 <label style="display:block; font-size:0.85rem; margin-bottom:0.3rem;">Servicio:</label>
                 <select id="rap-servicio" class="form-control" style="width:100%;" onchange="cargarEmpleadosModalRapido()"></select>
             </div>
-            <div style="margin-bottom:1.35rem;">
+            <div style="margin-bottom:1.3rem;">
                 <label style="display:block; font-size:0.85rem; margin-bottom:0.3rem;">Empleado Asignado:</label>
                 <select id="rap-empleado" class="form-control" style="width:100%;"></select>
             </div>
@@ -894,13 +885,11 @@
         </div>
     </div>
 
-    <!-- ======================================================================
-         MODAL 2: GESTIONAR O ELIMINAR UNA CITA EXISTENTE
-         ====================================================================== -->
+    <!-- MODAL DE GESTIÓN / ELIMINACIÓN DE CITA -->
     <div id="modal-gestionar-cita" class="modal-backdrop">
         <div class="modal-box">
             <h3 style="font-family:'Playfair Display',serif; color:var(--amber-bright); margin-top:0;">Gestionar Cita Agendada</h3>
-            <div id="modal-cita-detalle" style="background:rgba(0,0,0,0.45); padding:1rem; border-radius:12px; border:1px solid rgba(255,255,255,0.1); margin-bottom:1.35rem; line-height:1.65; font-size:0.92rem;"></div>
+            <div id="modal-cita-detalle" style="background:rgba(0,0,0,0.45); padding:1rem; border-radius:12px; border:1px solid rgba(255,255,255,0.1); margin-bottom:1.3rem; line-height:1.65; font-size:0.92rem;"></div>
             <input type="hidden" id="gest-id-ser-agen">
 
             <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
@@ -916,13 +905,8 @@
     </div>
 
     <script>
-        /* ======================================================================
-           CONFIGURACIÓN DE API Y AUTENTICACIÓN CON NEONDB
-           ====================================================================== */
         lucide.createIcons();
 
-        // Si se sirve desde Flask (Render o localhost:5000), usa origen relativo.
-        // Si se abre con Live Server o file://, ajusta esta URL a tu despliegue en Render.
         const RENDER_BACKEND_URL = 'https://mi-agenda-api.onrender.com';
         const API = (window.location.protocol === 'file:' || window.location.port === '5500')
             ? RENDER_BACKEND_URL
@@ -936,20 +920,16 @@
             };
         }
 
-        // Estado en memoria de catálogos, carrito, informes y carrusel
         let catalogoServicios = [];
         let catalogoClientes  = [];
         let carritoReserva    = [];
         let ordenInforme      = 'HORA';
         let verSoloAtendidas  = false;
-        let agenda3ColData    = [];
-        let nivel2Abierto     = false;
+        let datosAcordeonDia  = [];
+        let horaAcordeonAbierta = null;
         let galeriaItems      = [];
         let galeriaIndex      = 0;
 
-        /* ======================================================================
-           NAVEGACIÓN ENTRE PESTAÑAS
-           ====================================================================== */
         function cambiarPestaña(nombreTab, btnEl) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -967,29 +947,16 @@
             if (nombreTab === 'informes') {
                 cargarInformeAgenda();
             } else if (nombreTab === 'agenda-dia') {
-                cerrarRecuadroInterno();
-                cargarDatos3Columnas();
+                cargarAcordeonAgenda();
             }
         }
 
-        /* ======================================================================
-           INICIALIZACIÓN Y CARGA DE CATÁLOGOS DESDE NEONDB
-           ====================================================================== */
         window.addEventListener('DOMContentLoaded', async () => {
             const hoy = new Date().toISOString().split('T')[0];
-            ['res-fecha', 'inf-fecha', 'gal-fecha', 'dia-3col-fecha'].forEach(id => {
+            ['res-fecha', 'inf-fecha', 'gal-fecha', 'acordeon-fecha'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el && !el.value) el.value = hoy;
             });
-
-            // Poblar selector de horas (08:00 a 20:00) para el informe de 3 columnas
-            const horaSel = document.getElementById('dia-3col-hora');
-            if (horaSel && !horaSel.options.length) {
-                for (let h = 8; h <= 20; h++) {
-                    const hh = `${String(h).padStart(2, '0')}:00`;
-                    horaSel.innerHTML += `<option value="${hh}">${hh}</option>`;
-                }
-            }
 
             await verificarSaludNeonDB();
             await cargarCatalogosDesdeNeon();
@@ -1090,7 +1057,7 @@
         }
 
         function poblarSelectClientes() {
-            ['res-cliente', 'rap-cliente'].forEach(id => {
+            ['res-cliente', 'rap-cliente', 'disp-res-cliente'].forEach(id => {
                 const sel = document.getElementById(id);
                 if (!sel) return;
                 sel.innerHTML = '<option value="">-- Seleccione Cliente --</option>';
@@ -1118,9 +1085,198 @@
             });
         }
 
-        /* ======================================================================
-           PESTAÑA 3: INFORME GENERAL DE AGENDA
-           ====================================================================== */
+        /* ==================================================================
+           ACORDEÓN DE AGENDA DIARIA POR HORARIO (DISPONIBLES / OCUPADOS / ATENDIDOS)
+           ================================================================== */
+        async function cargarAcordeonAgenda() {
+            const fecha = document.getElementById('acordeon-fecha').value;
+            const cont = document.getElementById('contenedor-acordeon-horas');
+            if (!fecha || !cont) return;
+
+            cont.innerHTML = '<p style="text-align:center; color:#fde68a;">Cargando toda la agenda del día...</p>';
+
+            try {
+                const res = await fetch(`${API}/api/agenda/resumen-horarios?fecha=${encodeURIComponent(fecha)}`, {
+                    headers: getAuthHeaders()
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || 'Error al cargar la agenda');
+                }
+                datosAcordeonDia = await res.json();
+                renderAcordeonHoras();
+            } catch (err) {
+                cont.innerHTML = `<p style="text-align:center; color:#f87171;">⚠️ ${err.message}</p>`;
+            }
+        }
+
+        function renderAcordeonHoras() {
+            const cont = document.getElementById('contenedor-acordeon-horas');
+            if (!datosAcordeonDia.length) {
+                cont.innerHTML = '<p style="text-align:center; color:#a8a29e;">No hay franjas horarias disponibles.</p>';
+                return;
+            }
+
+            cont.innerHTML = datosAcordeonDia.map(bloque => {
+                const estaAbierta = (horaAcordeonAbierta === bloque.hora);
+                return `
+                    <div id="bloque-hora-${bloque.hora.replace(':', '')}" class="acordeon-bloque ${estaAbierta ? 'abierto' : ''}">
+                        <button type="button" class="acordeon-hora-header" onclick="toggleAcordeonHora('${bloque.hora}')">
+                            <span style="font-size:1.05rem; font-weight:700; color:var(--amber-bright);">
+                                🕒 ${bloque.hora}
+                            </span>
+                            <span style="font-size:0.82rem; display:flex; gap:0.75rem; flex-wrap:wrap;">
+                                <span style="color:#4ade80;">● Disponibles: <strong>${bloque.total_disponibles}</strong></span>
+                                <span style="color:#a3e635;">● Ocupados: <strong>${bloque.total_ocupados}</strong></span>
+                                <span style="color:#fb923c;">● Atendidos: <strong>${bloque.total_atendidos}</strong></span>
+                                <span style="color:var(--amber-bright);">${estaAbierta ? '▲ Cerrar' : '▼ Ver'}</span>
+                            </span>
+                        </button>
+                        <div class="acordeon-panel">
+                            ${estaAbierta ? construirContenidoAcordeonHora(bloque) : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleAcordeonHora(hora) {
+            horaAcordeonAbierta = (horaAcordeonAbierta === hora) ? null : hora;
+            renderAcordeonHoras();
+        }
+
+        function construirContenidoAcordeonHora(bloque) {
+            const fecha = document.getElementById('acordeon-fecha').value;
+
+            const dispHtml = bloque.disponibles.length
+                ? bloque.disponibles.map((emp, idx) => `
+                    <div class="item-empleado-acordeon item-emp-disponible"
+                         onclick="abrirReservaDesdeEmpleadoDisponible('${fecha}', '${bloque.hora}', ${emp.id_empleado}, '${encodeURIComponent(emp.empleado)}', ${idx})">
+                        <div>
+                            <strong style="color:#4ade80;">🟢 ${emp.empleado}</strong>
+                            <span style="color:#a8a29e; font-size:0.8rem;"> (${emp.cargo})</span>
+                        </div>
+                        <span style="font-size:0.8rem; color:#86efac; font-weight:600;">Clic para reservar ➔</span>
+                    </div>
+                `).join('')
+                : '<div style="font-size:0.84rem; color:#a8a29e;">Sin empleados disponibles en esta hora.</div>';
+
+            const ocupHtml = bloque.ocupados.length
+                ? bloque.ocupados.map(emp => `
+                    <div class="item-empleado-acordeon item-emp-ocupado">
+                        <div>
+                            <strong style="color:#d9f99d;">🟡 ${emp.empleado}</strong> — ${emp.servicio}
+                            <span style="color:#a8a29e; font-size:0.82rem;">(Cliente: ${emp.cliente})</span>
+                        </div>
+                        <button type="button" class="btn-amber" style="padding:0.3rem 0.65rem; font-size:0.78rem;"
+                                onclick="event.stopPropagation(); toggleAtendida(${emp.id_ser_agen}).then(cargarAcordeonAgenda)">
+                            ☑ Atender ($${emp.precio.toFixed(2)})
+                        </button>
+                    </div>
+                `).join('')
+                : '<div style="font-size:0.84rem; color:#a8a29e;">Sin reservas pendientes en esta hora.</div>';
+
+            const atenHtml = bloque.atendidos.length
+                ? bloque.atendidos.map(emp => `
+                    <div class="item-empleado-acordeon item-emp-atendido">
+                        <div>
+                            <strong style="color:#fdba74;">🟠 ${emp.empleado}</strong> — ${emp.servicio}
+                            <span style="color:#a8a29e; font-size:0.82rem;">(Cliente: ${emp.cliente})</span>
+                        </div>
+                        <span style="font-weight:700; color:#fb923c;">$${emp.precio.toFixed(2)} · ATENDIDO</span>
+                    </div>
+                `).join('')
+                : '<div style="font-size:0.84rem; color:#a8a29e;">Sin servicios atendidos en esta hora.</div>';
+
+            return `
+                <div class="grupo-estado-titulo" style="color:#4ade80;">Disponibles (${bloque.total_disponibles})</div>
+                ${dispHtml}
+                <div class="grupo-estado-titulo" style="color:#a3e635;">Ocupados (${bloque.total_ocupados})</div>
+                ${ocupHtml}
+                <div class="grupo-estado-titulo" style="color:#fb923c;">Atendidos (${bloque.total_atendidos})</div>
+                ${atenHtml}
+            `;
+        }
+
+        function abrirReservaDesdeEmpleadoDisponible(fecha, hora, idEmpleado, nombreEncoded, idxDisp) {
+            const nombreEmp = decodeURIComponent(nombreEncoded);
+            const bloque = datosAcordeonDia.find(b => b.hora === hora);
+            const empObj = bloque ? bloque.disponibles[idxDisp] : null;
+            const serviciosEmp = (empObj && Array.isArray(empObj.servicios_disponibles))
+                ? empObj.servicios_disponibles
+                : [];
+
+            document.getElementById('disp-res-empleado-id').value = idEmpleado;
+            document.getElementById('disp-res-empleado-nombre').value = nombreEmp;
+            document.getElementById('disp-res-fecha').value = fecha;
+            document.getElementById('disp-res-hora').value = hora;
+            document.getElementById('disp-res-horario-info').value = `Fecha: ${fecha}  |  Hora: ${hora}`;
+
+            const selCli = document.getElementById('disp-res-cliente');
+            selCli.innerHTML = '<option value="">-- Seleccione Cliente --</option>' +
+                catalogoClientes.map(c => `<option value="${c.id_cliente}">${c.nombre_apellido} (${c.nro_celular})</option>`).join('');
+
+            const selServ = document.getElementById('disp-res-servicio');
+            if (serviciosEmp.length) {
+                selServ.innerHTML = serviciosEmp.map(s =>
+                    `<option value="${s.id_servicio}" data-precio="${s.precio}">${s.nom_servicio} ${s.estilo ? '[' + s.estilo + ']' : ''} - $${s.precio.toFixed(2)}</option>`
+                ).join('');
+            } else {
+                selServ.innerHTML = '<option value="">-- Este empleado no tiene servicios asignados --</option>';
+            }
+
+            document.getElementById('modal-reserva-empleado-disp').classList.add('open');
+        }
+
+        async function guardarReservaEmpleadoDisponible() {
+            const idCliente  = document.getElementById('disp-res-cliente').value;
+            const idServicio = document.getElementById('disp-res-servicio').value;
+            const idEmpleado = document.getElementById('disp-res-empleado-id').value;
+            const fecha      = document.getElementById('disp-res-fecha').value;
+            const hora       = document.getElementById('disp-res-hora').value;
+
+            if (!idCliente) {
+                alert('Selecciona un cliente para la reserva.');
+                return;
+            }
+            if (!idServicio) {
+                alert('Este empleado no tiene servicios habilitados para reservar.');
+                return;
+            }
+
+            const selServ = document.getElementById('disp-res-servicio');
+            const opcionSel = selServ.options[selServ.selectedIndex];
+            const precio = parseFloat(opcionSel?.dataset?.precio || 0);
+
+            const res = await fetch(`${API}/api/reservas`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({
+                    id_cliente: parseInt(idCliente, 10),
+                    fecha_reserva: fecha,
+                    propina: 0,
+                    items: [{
+                        id_servicio: parseInt(idServicio, 10),
+                        id_empleado: parseInt(idEmpleado, 10),
+                        hora: hora,
+                        precio: precio
+                    }]
+                })
+            });
+
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                alert(`⚠️ ${data.error || 'No se pudo registrar la reserva'}`);
+                return;
+            }
+
+            cerrarModal('modal-reserva-empleado-disp');
+            await cargarAcordeonAgenda();
+        }
+
+        /* ==================================================================
+           INFORME GENERAL DE AGENDA (08:00 - 20:00)
+           ================================================================== */
         function toggleOrdenInforme() {
             ordenInforme = (ordenInforme === 'HORA') ? 'EMPLEADO' : 'HORA';
             document.getElementById('btn-orden-informe').textContent = `🔀 Ordenar: Por ${ordenInforme}`;
@@ -1328,131 +1484,9 @@
             }
         }
 
-        /* ======================================================================
-           PESTAÑA 3B: INFORME DE 3 COLUMNAS Y RECUADRO INTERNO
-           ====================================================================== */
-        async function cargarDatos3Columnas() {
-            const fecha = document.getElementById('dia-3col-fecha').value;
-            const tbody = document.getElementById('tbody-nivel1-3col');
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#fde68a;">Cargando agenda por empleado...</td></tr>';
-
-            try {
-                const res = await fetch(`${API}/api/agenda/resumen-horarios?fecha=${encodeURIComponent(fecha)}`, {
-                    headers: getAuthHeaders()
-                });
-                if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.error || 'No se pudo consultar la agenda del día');
-                }
-                agenda3ColData = await res.json();
-                renderNivel1TresColumnas();
-            } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#f87171;">⚠️ ${err.message}</td></tr>`;
-            }
-        }
-
-        function renderNivel1TresColumnas() {
-            const hora = document.getElementById('dia-3col-hora').value || '08:00';
-            const bloque = agenda3ColData.find(b => b.hora === hora);
-            const tbody = document.getElementById('tbody-nivel1-3col');
-
-            if (!nivel2Abierto) {
-                document.getElementById('ruta-nav-3col').textContent = `Menú Principal ➔ Recuadro Central (${hora})`;
-            }
-
-            if (!bloque || !bloque.empleados.length) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#a8a29e;">Sin empleados registrados en el horario.</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = bloque.empleados.map((emp, idx) => {
-                const esReservada = emp.estado === 'RESERVADA' || emp.estado === 'ATENDIDA';
-                const estadoLabel = esReservada
-                    ? `RESERVADA${emp.estado === 'ATENDIDA' ? ' (ATENDIDA)' : ''}`
-                    : 'DISPONIBLE';
-                const colorEstado = esReservada ? '#fb923c' : '#4ade80';
-
-                return `
-                    <tr class="fila-3col-click" onclick="abrirRecuadroInterno('${hora}', ${idx})">
-                        <td><strong>${emp.empleado}</strong><br><small style="color:#a8a29e;">${emp.cargo}</small></td>
-                        <td style="font-weight:700; color:${colorEstado};">${estadoLabel}</td>
-                        <td style="color:var(--amber-bright); font-weight:600;">${hora} ➔ Detalle</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function abrirRecuadroInterno(hora, idxEmpleado) {
-            const bloque = agenda3ColData.find(b => b.hora === hora);
-            if (!bloque) return;
-            const emp = bloque.empleados[idxEmpleado];
-            if (!emp) return;
-
-            nivel2Abierto = true;
-            document.getElementById('ruta-nav-3col').textContent =
-                `Menú Principal ➔ Recuadro Central ➔ Recuadro Interno (${emp.empleado} · ${hora})`;
-
-            const interno = document.getElementById('recuadro-interno-agenda');
-            const fecha = document.getElementById('dia-3col-fecha').value;
-
-            const botonAccion = emp.id_ser_agen
-                ? `<button type="button" class="btn-amber" onclick="toggleAtendida(${emp.id_ser_agen}).then(cargarDatos3Columnas)">
-                       ${emp.estado === 'ATENDIDA' ? '☑ Marcar NO Atendida' : '☐ Marcar Atendida'}
-                   </button>`
-                : `<button type="button" class="btn-amber" onclick="abrirModalAgendarRapido('${fecha}', '${hora}')">
-                       + Agendar en ${hora}
-                   </button>`;
-
-            interno.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(245,158,11,0.25); padding-bottom:0.65rem; margin-bottom:0.9rem;">
-                    <strong style="color:var(--amber-bright); font-size:1.05rem;">Recuadro Interno · ${emp.empleado} (${hora})</strong>
-                    <button type="button" class="btn-amber" style="padding:0.35rem 0.75rem; font-size:0.8rem;" onclick="cerrarRecuadroInterno()">✕ Cerrar</button>
-                </div>
-                <div style="line-height:1.7; font-size:0.92rem; margin-bottom:1rem;">
-                    <div><strong>Estado:</strong> ${emp.estado}</div>
-                    <div><strong>Servicio:</strong> ${emp.servicio}</div>
-                    <div><strong>Cliente:</strong> ${emp.cliente}</div>
-                    <div><strong>Precio:</strong> $${Number(emp.precio || 0).toFixed(2)}</div>
-                </div>
-                <div style="display:flex; justify-content:flex-end; gap:0.6rem;">
-                    ${botonAccion}
-                </div>
-            `;
-            interno.style.display = 'block';
-        }
-
-        function cerrarRecuadroInterno() {
-            nivel2Abierto = false;
-            const interno = document.getElementById('recuadro-interno-agenda');
-            if (interno) {
-                interno.style.display = 'none';
-                interno.innerHTML = '';
-            }
-            const hora = document.getElementById('dia-3col-hora')?.value || '08:00';
-            const ruta = document.getElementById('ruta-nav-3col');
-            if (ruta) ruta.textContent = `Menú Principal ➔ Recuadro Central (${hora})`;
-        }
-
-        // Clic fuera del recuadro interno (dentro del central) regresa al Nivel 1
-        function clickFueraRecuadroInterno(event) {
-            if (event.target.id === 'recuadro-central-agenda' && nivel2Abierto) {
-                cerrarRecuadroInterno();
-            }
-        }
-
-        // Clic fuera del recuadro central regresa al menú principal
-        function clickFueraRecuadroCentral(event) {
-            if (event.target.id !== 'zona-externa-agenda') return;
-            if (nivel2Abierto) {
-                cerrarRecuadroInterno();
-                return;
-            }
-            cambiarPestaña('clientes');
-        }
-
-        /* ======================================================================
-           MODALES DE GESTIÓN RÁPIDA DE CITAS
-           ====================================================================== */
+        /* ==================================================================
+           MODALES Y OPERACIONES DE GESTIÓN
+           ================================================================== */
         function cerrarModal(idModal) {
             document.getElementById(idModal).classList.remove('open');
         }
@@ -1520,9 +1554,6 @@
 
             cerrarModal('modal-agendar-rapido');
             await cargarInformeAgenda();
-            if (document.getElementById('tab-agenda-dia').classList.contains('active')) {
-                await cargarDatos3Columnas();
-            }
         }
 
         function abrirModalGestionCita(cita) {
@@ -1559,9 +1590,6 @@
             }
         }
 
-        /* ======================================================================
-           REGISTROS, RESERVAS, CONSULTAS Y GALERÍA BASE64
-           ====================================================================== */
         async function registrarCliente(event) {
             event.preventDefault();
             const res = await fetch(`${API}/api/clientes`, {
@@ -1723,7 +1751,6 @@
             }
         }
 
-        // Redimensiona y comprime JPEG/PNG en el navegador antes de codificar en Base64
         function comprimirImagenABase64(file, maxAncho = 900, calidad = 0.72) {
             return new Promise((resolve, reject) => {
                 if (!file) return resolve(null);

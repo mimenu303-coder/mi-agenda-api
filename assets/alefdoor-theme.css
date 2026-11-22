@@ -480,3 +480,104 @@ table .empty-row td {
 .fila-3col-click:hover {
     background: rgba(245, 158, 11, 0.14);
 }
+/* ======================================================================
+   ACORDEÓN COMPACTO DE AGENDA DIARIA POR FRASCA HORARIA
+   ====================================================================== */
+.acordeon-agenda-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.acordeon-bloque {
+    border: 1px solid rgba(245, 158, 11, 0.28);
+    border-radius: 14px;
+    background: rgba(16, 13, 10, 0.85);
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+}
+
+.acordeon-bloque.abierto {
+    border-color: #f59e0b;
+    box-shadow: 0 0 22px rgba(245, 158, 11, 0.16);
+}
+
+/* Recuadro de la hora: al pulsarlo abre o cierra automáticamente el acordeón */
+.acordeon-hora-header {
+    width: 100%;
+    background: rgba(245, 158, 11, 0.08);
+    border: none;
+    color: #fff;
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: background 0.2s ease;
+}
+
+.acordeon-hora-header:hover {
+    background: rgba(245, 158, 11, 0.18);
+}
+
+.acordeon-panel {
+    display: none;
+    padding: 0.85rem 1rem 1rem 1rem;
+    border-top: 1px solid rgba(245, 158, 11, 0.18);
+    background: rgba(8, 6, 5, 0.75);
+}
+
+.acordeon-bloque.abierto .acordeon-panel {
+    display: block;
+    animation: fadeAcordeon 0.2s ease-out;
+}
+
+@keyframes fadeAcordeon {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.grupo-estado-titulo {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0.65rem 0 0.35rem 0;
+}
+
+.item-empleado-acordeon {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 10px;
+    margin-bottom: 0.35rem;
+    font-size: 0.88rem;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.item-emp-disponible {
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.35);
+    cursor: pointer;
+}
+
+.item-emp-disponible:hover {
+    background: rgba(34, 197, 94, 0.24);
+}
+
+.item-emp-ocupado {
+    background: rgba(132, 204, 22, 0.12);
+    border-color: rgba(132, 204, 22, 0.3);
+}
+
+.item-emp-atendido {
+    background: rgba(249, 115, 22, 0.14);
+    border-color: rgba(249, 115, 22, 0.35);
+}

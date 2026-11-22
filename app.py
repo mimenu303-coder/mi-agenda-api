@@ -556,10 +556,14 @@ def post_galeria():
         traceback.print_exc()
         return jsonify({'error': f'Error al guardar galería: {e}'}), 500
 
-
 @app.get('/api/agenda/resumen-horarios')
 @auth_required
 def get_resumen_horarios():
+    """
+    Devuelve la agenda completa del día (08:00 a 20:00) optimizada por franja horaria.
+    Incluye para cada empleado su estado en esa hora (DISPONIBLE, OCUPADO, ATENDIDO)
+    y los servicios que presta según empleado_servicio.
+    """
     fecha = (request.args.get('fecha') or '').strip()
     if not fecha:
         return jsonify({'error': 'Fecha requerida'}), 400
@@ -568,21 +572,46 @@ def get_resumen_horarios():
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
 
+        # 1. Empleados únicos con cargo y servicios habilitados
         cur.execute("""
-            SELECT e.id_empleado,
+            SELECT DISTINCT ON (e.id_empleado)
+                   e.id_empleado,
                    TRIM(e.nombres || ' ' || e.apellidos) AS nombre,
                    COALESCE(c.nomb_cargo, 'Especialista') AS cargo
             FROM empleado e
             LEFT JOIN asig_cargo ac ON ac.id_empleado = e.id_empleado
             LEFT JOIN cargo c ON c.id_cargo = ac.id_cargo
-            ORDER BY e.nombres ASC, e.apellidos ASC
+            ORDER BY e.id_empleado ASC, ac.id_asigcar DESC
         """)
         empleados = cur.fetchall()
 
+        # 2. Servicios asignados a cada empleado
+        cur.execute("""
+            SELECT es.id_empleado,
+                   s.id_servicio,
+                   s.nom_servicio,
+                   COALESCE(s.estilo, '') AS estilo,
+                   COALESCE(s.precio, 0) AS precio
+            FROM empleado_servicio es
+            JOIN servicio s ON s.id_servicio = es.id_servicio
+            WHERE COALESCE(es.activo, 'SI') = 'SI'
+            ORDER BY s.nom_servicio ASC
+        """)
+        filas_emp_serv = cur.fetchall()
+
+        servicios_por_emp = {}
+        for fs in filas_emp_serv:
+            servicios_por_emp.setdefault(fs['id_empleado'], []).append({
+                'id_servicio': fs['id_servicio'],
+                'nom_servicio': fs['nom_servicio'],
+                'estilo': fs['estilo'],
+                'precio': float(fs['precio'] or 0)
+            })
+
+        # 3. Citas del día normalizando fecha y hora (HH:MM)
         cur.execute("""
             SELECT sa.id_ser_agen,
-                   SUBSTRING(TRIM(sa.hora) FROM 1 FOR 5) AS hora_corta,
-                   sa.hora,
+                   TO_CHAR(TO_TIMESTAMP(TRIM(sa.hora), 'HH24:MI'), 'HH24:MI') AS hora_norm,
                    sa.precio,
                    COALESCE(sa.atendido, 'NO') AS atendido,
                    sa.id_empleado,
@@ -592,64 +621,74 @@ def get_resumen_horarios():
             JOIN agenda a ON a.id_agenda = sa.id_agenda
             JOIN servicio s ON s.id_servicio = sa.id_servicio
             JOIN cliente c ON c.id_cliente = a.id_cliente
-            WHERE a.fecha_reserva::text LIKE %s
+            WHERE a.fecha_reserva::date = %s::date
             ORDER BY sa.hora ASC, sa.id_ser_agen ASC
-        """, (f"{fecha}%",))
+        """, (fecha,))
         citas = cur.fetchall()
 
         citas_map = {}
         for ct in citas:
-            h_key = (ct['hora_corta'] or '').strip()
-            clave = (h_key, ct['id_empleado'])
-            citas_map.setdefault(clave, []).append(ct)
+            h_key = (ct['hora_norm'] or '').strip()
+            citas_map.setdefault((h_key, ct['id_empleado']), []).append(ct)
 
         bloques = [f"{h:02d}:00" for h in range(8, 21)]
         resultado = []
 
         for hora in bloques:
-            detalle_empleados = []
-            reservados_o_atendidos_cnt = 0
-            disponibles_cnt = 0
+            disponibles = []
+            ocupados = []
+            atendidos = []
 
             for emp in empleados:
-                asignaciones = citas_map.get((hora, emp['id_empleado']), [])
+                emp_id = emp['id_empleado']
+                lista_serv = servicios_por_emp.get(emp_id, [])
+                asignaciones = citas_map.get((hora, emp_id), [])
+
                 if asignaciones:
                     for asig in asignaciones:
                         es_atendida = (asig['atendido'] or 'NO').upper() == 'SI'
-                        reservados_o_atendidos_cnt += 1
-                        detalle_empleados.append({
-                            'id_empleado': emp['id_empleado'],
+                        registro = {
+                            'id_empleado': emp_id,
                             'empleado': emp['nombre'],
                             'cargo': emp['cargo'],
-                            'estado': 'ATENDIDA' if es_atendida else 'RESERVADA',
+                            'estado': 'ATENDIDO' if es_atendida else 'OCUPADO',
                             'id_ser_agen': asig['id_ser_agen'],
                             'servicio': asig['nom_servicio'],
                             'cliente': asig['cliente'],
-                            'precio': float(asig['precio'] or 0)
-                        })
+                            'precio': float(asig['precio'] or 0),
+                            'servicios_disponibles': lista_serv
+                        }
+                        if es_atendida:
+                            atendidos.append(registro)
+                        else:
+                            ocupados.append(registro)
                 else:
-                    disponibles_cnt += 1
-                    detalle_empleados.append({
-                        'id_empleado': emp['id_empleado'],
+                    disponibles.append({
+                        'id_empleado': emp_id,
                         'empleado': emp['nombre'],
                         'cargo': emp['cargo'],
                         'estado': 'DISPONIBLE',
                         'id_ser_agen': None,
-                        'servicio': 'Disponible en este horario',
+                        'servicio': 'Disponible',
                         'cliente': '—',
-                        'precio': 0.0
+                        'precio': 0.0,
+                        'servicios_disponibles': lista_serv
                     })
 
             resultado.append({
                 'hora': hora,
-                'reservados_total': reservados_o_atendidos_cnt,
-                'disponibles_total': disponibles_cnt,
-                'empleados': detalle_empleados
+                'total_disponibles': len(disponibles),
+                'total_ocupados': len(ocupados),
+                'total_atendidos': len(atendidos),
+                'disponibles': disponibles,
+                'ocupados': ocupados,
+                'atendidos': atendidos
             })
 
         return jsonify(resultado)
     finally:
         conn.close()
+
 
 # ============================================================================
 # CONSULTAS CRUZADAS
