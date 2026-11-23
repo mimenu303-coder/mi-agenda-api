@@ -182,11 +182,22 @@ def init_db():
         if cur.fetchone()[0] == 0:
             cur.execute("""
                 INSERT INTO area (nom_area, nom_departamento) VALUES
-                  ('ADMINISTRATIVA','GERENCIA'),
-                  ('OPERATIVA','ESTACIÓN DE CORTE CABALLEROS'),
-                  ('OPERATIVA','ESTACIÓN DE CORTE Y PEINADO DAMAS'),
-                  ('OPERATIVA','ÁREA DE MANICURE Y PEDICURE'),
-                  ('PERSONAL Y SERVICIOS INTERNOS','ÁREA DE MANICURE Y PEDICURE')
+                  ('ADMINISTRATIVA Y LOGISTICA','Administración / Gerencia'),
+                  ('ADMINISTRATIVA Y LOGISTICA','Inventario y Almacén'),
+                  ('ADMINISTRATIVA Y LOGISTICA','Área de Esterilización e Higiene'),
+                  ('ADMINISTRATIVA Y LOGISTICA','Cuarto de Lavandería'),
+                  ('OPERATIVA Y SERVICIOS','Estación de Corte y Peinado'),
+                  ('OPERATIVA Y SERVICIOS','Zona de Lavado (Lavacabezas)'),
+                  ('OPERATIVA Y SERVICIOS','Área de Colorimetría y Química'),
+                  ('OPERATIVA Y SERVICIOS','Estación de Manicure y Pedicure'),
+                  ('OPERATIVA Y SERVICIOS','Cabinas de Cosmiatría / Estética Facial'),
+                  ('OPERATIVA Y SPA','Cabinas de Masaje y Corporal (Spa)'),
+                  ('OPERATIVA Y SPA','Zona Húmeda / Hidroterapia (Spa)'),
+                  ('ATENCION AL CLIENTE Y VENTAS','Recepción y Caja'),
+                  ('ATENCION AL CLIENTE Y VENTAS','Sala de Espera'),
+                  ('ATENCION AL CLIENTE Y VENTAS','Boutique / Área de Venta de Productos'),
+                  ('PERSONAL Y SERVICIOS INTERNOS','Comedor / Sala de Descanso del Personal'),
+                  ('PERSONAL Y SERVICIOS INTERNOS','Sanitarios / Vestidores')
             """)
             conn.commit()
 
@@ -416,13 +427,15 @@ def get_servicios():
     conn = db()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute("""SELECT s.*, a.nom_area, a.nom_departamento
-                       FROM servicio s JOIN area a ON a.id_area = s.id_area
-                       ORDER BY s.id_servicio DESC""")
+        cur.execute("""
+            SELECT s.*, a.nom_area, a.nom_departamento
+            FROM servicio s
+            JOIN area a ON a.id_area = s.id_area
+            ORDER BY a.nom_area ASC, a.nom_departamento ASC, s.nom_servicio ASC
+        """)
         return jsonify(cur.fetchall())
     finally:
         conn.close()
-
 
 @app.post('/api/servicios')
 @auth_required
