@@ -1004,16 +1004,26 @@
 
                 if (rAreas.ok) {
                     const areas = await rAreas.json();
+                    const areasOrdenadas = [...areas].sort((a, b) => {
+                        const textoA = `${a.nom_area || ''} ${a.nom_departamento || ''}`.trim();
+                        const textoB = `${b.nom_area || ''} ${b.nom_departamento || ''}`.trim();
+                        return textoA.localeCompare(textoB, 'es', { sensitivity: 'base' });
+                    });
+
                     ['serv-area', 'emp-area'].forEach(id => {
                         const sel = document.getElementById(id);
                         if (!sel) return;
                         sel.innerHTML = '<option value="">-- Seleccione Área --</option>';
-                        areas.forEach(a => {
-                            sel.innerHTML += `<option value="${a.id_area}">${a.nom_area} — ${a.nom_departamento}</option>`;
+                        areasOrdenadas.forEach(a => {
+                            const opt = document.createElement('option');
+                            opt.value = a.id_area;
+                            opt.textContent = `${a.nom_area} — ${a.nom_departamento}`;
+                            sel.appendChild(opt);
                         });
                     });
                 }
 
+                
                 if (rCargos.ok) {
                     const cargos = await rCargos.json();
                     const selC = document.getElementById('emp-cargo');

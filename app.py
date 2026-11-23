@@ -336,7 +336,11 @@ def get_areas():
     conn = db()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT * FROM area ORDER BY id_area")
+        cur.execute("""
+            SELECT *
+            FROM area
+            ORDER BY nom_area ASC, nom_departamento ASC, id_area ASC
+        """)
         return jsonify(cur.fetchall())
     finally:
         conn.close()
