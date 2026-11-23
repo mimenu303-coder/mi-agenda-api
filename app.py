@@ -185,7 +185,8 @@ def init_db():
                   ('ADMINISTRATIVA','GERENCIA'),
                   ('OPERATIVA','ESTACIÓN DE CORTE CABALLEROS'),
                   ('OPERATIVA','ESTACIÓN DE CORTE Y PEINADO DAMAS'),
-                  ('OPERATIVA','ÁREA DE MANICURE Y PEDICURE')
+                  ('OPERATIVA','ÁREA DE MANICURE Y PEDICURE'),
+                  ('PERSONAL Y SERVICIOS INTERNOS','ÁREA DE MANICURE Y PEDICURE')
             """)
             conn.commit()
 
