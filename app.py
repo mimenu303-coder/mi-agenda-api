@@ -431,7 +431,7 @@ def get_servicios():
             SELECT s.*, a.nom_area, a.nom_departamento
             FROM servicio s
             JOIN area a ON a.id_area = s.id_area
-            ORDER BY a.nom_area ASC, a.nom_departamento ASC, s.nom_servicio ASC
+            ORDER BY a.nom_area ASC
         """)
         return jsonify(cur.fetchall())
     finally:
