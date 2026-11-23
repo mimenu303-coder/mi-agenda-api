@@ -1068,19 +1068,64 @@
         }
 
         function poblarSelectServicios() {
-            const ids = ['res-servicio', 'gal-serv-select', 'cons-serv', 'visor-galeria-serv', 'rap-servicio', 'emp-servicios-multi'];
+            // 1. Ordenar alfabéticamente por nombre de área, departamento y servicio
+            const serviciosOrdenados = [...catalogoServicios].sort((a, b) => {
+                const areaA = `${a.nom_area || ''} ${a.nom_departamento || ''}`.trim();
+                const areaB = `${b.nom_area || ''} ${b.nom_departamento || ''}`.trim();
+                const cmpArea = areaA.localeCompare(areaB, 'es', { sensitivity: 'base' });
+                if (cmpArea !== 0) return cmpArea;
+                return (a.nom_servicio || '').localeCompare((b.nom_servicio || ''), 'es', { sensitivity: 'base' });
+            });
+
+            // Agrupar servicios por área
+            const gruposPorArea = new Map();
+            serviciosOrdenados.forEach(s => {
+                const etiquetaArea = s.nom_departamento
+                    ? `${s.nom_area} — ${s.nom_departamento}`
+                    : (s.nom_area || 'Sin Área');
+                if (!gruposPorArea.has(etiquetaArea)) {
+                    gruposPorArea.set(etiquetaArea, []);
+                }
+                gruposPorArea.get(etiquetaArea).push(s);
+            });
+
+            const ids = [
+                'res-servicio',
+                'gal-serv-select',
+                'cons-serv',
+                'visor-galeria-serv',
+                'rap-servicio',
+                'emp-servicios-multi'
+            ];
+
             ids.forEach(id => {
                 const sel = document.getElementById(id);
                 if (!sel) return;
+
+                sel.innerHTML = '';
+
                 if (id !== 'emp-servicios-multi') {
-                    sel.innerHTML = id === 'visor-galeria-serv'
-                        ? '<option value="">-- Ver Todos los Servicios --</option>'
-                        : '<option value="">-- Seleccione Servicio --</option>';
-                } else {
-                    sel.innerHTML = '';
+                    const optInicial = document.createElement('option');
+                    optInicial.value = '';
+                    optInicial.textContent = id === 'visor-galeria-serv'
+                        ? '-- Ver Todos los Servicios --'
+                        : '-- Seleccione Servicio --';
+                    sel.appendChild(optInicial);
                 }
-                catalogoServicios.forEach(s => {
-                    sel.innerHTML += `<option value="${s.id_servicio}">${s.nom_servicio} [${s.estilo || 'Estándar'}] - $${Number(s.precio).toFixed(2)}</option>`;
+
+                // Insertar opciones agrupadas alfabéticamente por área
+                gruposPorArea.forEach((listaServ, nombreArea) => {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = nombreArea;
+
+                    listaServ.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.id_servicio;
+                        opt.textContent = `${s.nom_servicio} [${s.estilo || 'Estándar'}] - $${Number(s.precio).toFixed(2)}`;
+                        optgroup.appendChild(opt);
+                    });
+
+                    sel.appendChild(optgroup);
                 });
             });
         }
