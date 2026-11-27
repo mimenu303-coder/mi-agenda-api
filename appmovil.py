@@ -1181,15 +1181,38 @@ class AppMovil(tk.Tk):
             self.lbl_estado_carrusel.config(
                 text="▶  REPRODUCIENDO  —  toca la foto para pausar", fg=ACCENT)
 
+    def _resolver_ruta_imagen(self, ruta):
+        if not ruta:
+            return None
+        limpia = str(ruta).strip()
+        if not limpia or limpia.lower().startswith("data:image"):
+            return None
+        if os.path.isabs(limpia) and os.path.exists(limpia):
+            return limpia
+
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        candidatas = [
+            limpia,
+            os.path.join(base_dir, limpia),
+            os.path.join(base_dir, "galeria", os.path.basename(limpia)),
+            os.path.join(base_dir, "static", "galeria", os.path.basename(limpia)),
+            os.path.join(base_dir, "imagenes", os.path.basename(limpia)),
+        ]
+        for cand in candidatas:
+            if os.path.exists(cand):
+                return cand
+        return None
+
     def _render_cine(self, ruta):
-        if not ruta or not os.path.exists(ruta):
+        ruta_valida = self._resolver_ruta_imagen(ruta)
+        if not ruta_valida:
             self.lbl_foto.config(image="", text="[ Sin Toma ]")
             return
         if not HAS_PIL:
-            self.lbl_foto.config(image="", text=f"[ {os.path.basename(ruta)} ]")
+            self.lbl_foto.config(image="", text=f"[ {os.path.basename(ruta_valida)} ]")
             return
         try:
-            img = Image.open(ruta).convert("RGB")
+            img = Image.open(ruta_valida).convert("RGB")
             img = ImageOps.fit(img, (340, 340),
                                method=Image.Resampling.LANCZOS)
             tkimg = ImageTk.PhotoImage(img)
