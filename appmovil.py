@@ -10,6 +10,8 @@ import sys
 import threading
 import time
 import tkinter as tk
+import base64
+import io
 from tkinter import filedialog, messagebox, ttk
 
 import psycopg2
@@ -42,7 +44,7 @@ def _normalizar_url_neon(url: str) -> str:
         "channel_binding=require",
     ):
         limpia = limpia.replace(param, "")
-    if limpa and "sslmode=require" not in limpia:
+    if limpia and "sslmode=require" not in limpia:
         limpia += ("&" if "?" in limpia else "?") + "sslmode=require"
     return limpia
 
@@ -1203,18 +1205,52 @@ class AppMovil(tk.Tk):
                 return cand
         return None
 
+    # ---------- NUEVO: carga unificada (Base64 / ruta) ----------
+    def _cargar_imagen_pil(self, valor):
+        """Devuelve un PIL.Image en RGB desde Base64 o ruta local, o None."""
+        if not valor or not HAS_PIL:
+            return None
+        texto = str(valor).strip()
+        if not texto:
+            return None
+
+        # 1. Soporte Base64 (con o sin encabezado data:image/...)
+        b64_data = None
+        if texto.lower().startswith("data:image") and "," in texto:
+            b64_data = texto.split(",", 1)[1].strip()
+        elif len(texto) > 120 and not os.path.exists(texto):
+            b64_data = texto
+
+        if b64_data:
+            try:
+                raw = base64.b64decode(b64_data, validate=False)
+                return Image.open(io.BytesIO(raw)).convert("RGB")
+            except Exception:
+                pass
+
+        # 2. Soporte ruta local o relativa
+        ruta_valida = self._resolver_ruta_imagen(texto)
+        if ruta_valida:
+            try:
+                return Image.open(ruta_valida).convert("RGB")
+            except Exception:
+                return None
+        return None
+
+    # ---------- REEMPLAZO: usa la carga unificada ----------
     def _render_cine(self, ruta):
-        ruta_valida = self._resolver_ruta_imagen(ruta)
-        if not ruta_valida:
-            self.lbl_foto.config(image="", text="[ Sin Toma ]")
-            return
         if not HAS_PIL:
-            self.lbl_foto.config(image="", text=f"[ {os.path.basename(ruta_valida)} ]")
+            self.lbl_foto.config(
+                image="",
+                text=f"[ Instala Pillow: {os.path.basename(str(ruta or ''))} ]",
+            )
             return
         try:
-            img = Image.open(ruta_valida).convert("RGB")
-            img = ImageOps.fit(img, (340, 340),
-                               method=Image.Resampling.LANCZOS)
+            img = self._cargar_imagen_pil(ruta)
+            if img is None:
+                self.lbl_foto.config(image="", text="[ Sin Toma ]")
+                return
+            img = ImageOps.fit(img, (340, 340), method=Image.Resampling.LANCZOS)
             tkimg = ImageTk.PhotoImage(img)
             self.lbl_foto.image = tkimg
             self.lbl_foto.config(image=tkimg, text="")
